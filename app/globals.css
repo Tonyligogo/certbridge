@@ -1,26 +1,253 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   TRAINUB — DESIGN SYSTEM
+   Primary: Purple-800 (#2D1B69)
+   Accent:  Green (#36C5A3) · Amber (#F4A623)
+   ============================================================ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* --- Tailwind token bridge (shadcn semantic tokens) --- */
+  --color-background:                    var(--background);
+  --color-foreground:                    var(--foreground);
+  --color-card:                          var(--card);
+  --color-card-foreground:               var(--card-foreground);
+  --color-popover:                       var(--popover);
+  --color-popover-foreground:            var(--popover-foreground);
+  --color-primary:                       var(--primary);
+  --color-primary-foreground:            var(--primary-foreground);
+  --color-secondary:                     var(--secondary);
+  --color-secondary-foreground:          var(--secondary-foreground);
+  --color-muted:                         var(--muted);
+  --color-muted-foreground:              var(--muted-foreground);
+  --color-accent:                        var(--accent);
+  --color-accent-foreground:             var(--accent-foreground);
+  --color-destructive:                   var(--destructive);
+  --color-border:                        var(--border);
+  --color-input:                         var(--input);
+  --color-ring:                          var(--ring);
+
+  /* --- Sidebar tokens (kept from your original) --- */
+  --color-sidebar:                       var(--sidebar);
+  --color-sidebar-foreground:            var(--sidebar-foreground);
+  --color-sidebar-primary:               var(--sidebar-primary);
+  --color-sidebar-primary-foreground:    var(--sidebar-primary-foreground);
+  --color-sidebar-accent:                var(--sidebar-accent);
+  --color-sidebar-accent-foreground:     var(--sidebar-accent-foreground);
+  --color-sidebar-border:                var(--sidebar-border);
+  --color-sidebar-ring:                  var(--sidebar-ring);
+
+  /* --- Chart tokens (kept from your original) --- */
+  --color-chart-1:                       var(--chart-1);
+  --color-chart-2:                       var(--chart-2);
+  --color-chart-3:                       var(--chart-3);
+  --color-chart-4:                       var(--chart-4);
+  --color-chart-5:                       var(--chart-5);
+
+  /* --- Brand palette exposed as Tailwind utilities --- */
+  /* Usage: bg-purple-800, text-purple-300, bg-brand-green, etc. */
+  --color-purple-800:                    var(--purple-800);
+  --color-purple-700:                    var(--purple-700);
+  --color-purple-600:                    var(--purple-600);
+  --color-purple-500:                    var(--purple-500);
+  --color-purple-400:                    var(--purple-400);
+  --color-purple-300:                    var(--purple-300);
+  --color-purple-200:                    var(--purple-200);
+  --color-purple-100:                    var(--purple-100);
+  --color-purple-50:                     var(--purple-50);
+  --color-brand-green:                   var(--brand-green);
+  --color-brand-amber:                   var(--brand-amber);
+
+  /* --- Radius scale (kept from your original) --- */
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* --- Font families --- */
+ 
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+:root {
+  /* --- Full brand palette --- */
+  --purple-800: oklch(0.300 0.128 286.5);   /* main brand — navbar, hero, footer */
+  --purple-700: oklch(0.372 0.170 284.0);
+  --purple-600: oklch(0.419 0.180 285.5);
+  --purple-500: oklch(0.480 0.202 286.0);
+  --purple-400: oklch(0.578 0.189 289.4);
+  --purple-300: oklch(0.704 0.136 293.4);
+  --purple-200: oklch(0.821 0.083 296.2);
+  --purple-100: oklch(0.940 0.026 297.9);
+  --purple-50:  oklch(0.974 0.012 296.4);
+
+  --brand-green: oklch(0.741 0.129 172.9);  /* primary CTAs */
+  --brand-amber: oklch(0.783 0.158  73.4);  /* badges, highlights */
+
+  /* --- shadcn semantic tokens --- */
+  --background:              oklch(0.985 0 0);
+  --foreground:              oklch(0.181 0.014 284.9);
+
+  --card:                    oklch(1 0 0);
+  --card-foreground:         oklch(0.181 0.014 284.9);
+
+  --popover:                 oklch(1 0 0);
+  --popover-foreground:      oklch(0.181 0.014 284.9);
+
+  /* primary = purple-800 */
+  --primary:                 oklch(0.300 0.128 286.5);
+  --primary-foreground:      oklch(0.985 0 0);
+
+  /* secondary = purple-100 tint */
+  --secondary:               oklch(0.940 0.026 297.9);
+  --secondary-foreground:    oklch(0.300 0.128 286.5);
+
+  /* muted = barely-there purple-gray */
+  --muted:                   oklch(0.968 0.004 286.3);
+  --muted-foreground:        oklch(0.540 0.025 285.0);
+
+  /* accent = purple-100 (hover surfaces, menu highlights) */
+  --accent:                  oklch(0.940 0.026 297.9);
+  --accent-foreground:       oklch(0.300 0.128 286.5);
+
+  --destructive:             oklch(0.577 0.245 27.325);
+
+  /* borders get a subtle purple tint instead of plain gray */
+  --border:                  oklch(0.900 0.020 286.0);
+  --input:                   oklch(0.900 0.020 286.0);
+  --ring:                    oklch(0.480 0.202 286.0);  /* purple-500 focus ring */
+
+  /* --- Chart tokens --- */
+  --chart-1: oklch(0.480 0.202 286.0);   /* purple-500 */
+  --chart-2: oklch(0.741 0.129 172.9);   /* brand-green */
+  --chart-3: oklch(0.783 0.158  73.4);   /* brand-amber */
+  --chart-4: oklch(0.704 0.136 293.4);   /* purple-300 */
+  --chart-5: oklch(0.578 0.189 289.4);   /* purple-400 */
+
+  --radius: 0.625rem;
+
+  /* --- Sidebar tokens --- */
+  --sidebar:                       oklch(0.974 0.012 296.4);  /* purple-50 */
+  --sidebar-foreground:            oklch(0.181 0.014 284.9);
+  --sidebar-primary:               oklch(0.300 0.128 286.5);  /* purple-800 */
+  --sidebar-primary-foreground:    oklch(0.985 0 0);
+  --sidebar-accent:                oklch(0.940 0.026 297.9);  /* purple-100 */
+  --sidebar-accent-foreground:     oklch(0.300 0.128 286.5);
+  --sidebar-border:                oklch(0.900 0.020 286.0);
+  --sidebar-ring:                  oklch(0.480 0.202 286.0);
+}
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+.dark {
+  --background:              oklch(0.181 0.014 284.9);   /* gray-900 */
+  --foreground:              oklch(0.974 0.012 296.4);   /* purple-50 */
+
+  --card:                    oklch(0.241 0.023 284.6);   /* gray-800 */
+  --card-foreground:         oklch(0.974 0.012 296.4);
+
+  --popover:                 oklch(0.241 0.023 284.6);
+  --popover-foreground:      oklch(0.974 0.012 296.4);
+
+  /* primary lightens to purple-400 so it's visible on dark bg */
+  --primary:                 oklch(0.578 0.189 289.4);
+  --primary-foreground:      oklch(0.985 0 0);
+
+  --secondary:               oklch(0.299 0.025 284.8);   /* gray-700 */
+  --secondary-foreground:    oklch(0.974 0.012 296.4);
+
+  --muted:                   oklch(0.299 0.025 284.8);
+  --muted-foreground:        oklch(0.704 0.136 293.4);   /* purple-300 */
+
+  --accent:                  oklch(0.372 0.170 284.0);   /* purple-700 */
+  --accent-foreground:       oklch(0.974 0.012 296.4);
+
+  --destructive:             oklch(0.704 0.191 22.216);
+
+  --border:                  oklch(1 0 0 / 10%);
+  --input:                   oklch(1 0 0 / 15%);
+  --ring:                    oklch(0.578 0.189 289.4);   /* purple-400 */
+
+  --chart-1: oklch(0.704 0.136 293.4);
+  --chart-2: oklch(0.741 0.129 172.9);
+  --chart-3: oklch(0.783 0.158  73.4);
+  --chart-4: oklch(0.578 0.189 289.4);
+  --chart-5: oklch(0.480 0.202 286.0);
+
+  --sidebar:                       oklch(0.241 0.023 284.6);
+  --sidebar-foreground:            oklch(0.974 0.012 296.4);
+  --sidebar-primary:               oklch(0.578 0.189 289.4);
+  --sidebar-primary-foreground:    oklch(0.985 0 0);
+  --sidebar-accent:                oklch(0.372 0.170 284.0);
+  --sidebar-accent-foreground:     oklch(0.974 0.012 296.4);
+  --sidebar-border:                oklch(1 0 0 / 10%);
+  --sidebar-ring:                  oklch(0.578 0.189 289.4);
+}
+
+/* ============================================================
+   BASE LAYER
+   ============================================================ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    @apply font-bold tracking-tight;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   CUSTOM UTILITIES
+   ============================================================ */
+@layer utilities {
+  /* Green CTA — primary booking/action buttons */
+  .btn-cta {
+    background-color: var(--brand-green);
+    color: oklch(0.985 0 0);
+    @apply font-semibold rounded-xl px-6 py-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  /* Badge variants */
+  .badge-purple {
+    background-color: var(--purple-100);
+    color: var(--purple-700);
+    @apply text-xs font-semibold px-2.5 py-0.5 rounded-full;
+  }
+  .badge-amber {
+    background-color: oklch(0.950 0.045 73.4);
+    color: oklch(0.500 0.130 60.0);
+    @apply text-xs font-semibold px-2.5 py-0.5 rounded-full;
+  }
+
+  /* Card hover lift */
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Dark purple surface — navbar, hero, footer */
+  .surface-dark {
+    background-color: var(--purple-800);
+    color: oklch(0.985 0 0);
+  }
+
+  /* Light purple tint — alternating page sections */
+  .surface-tint {
+    background-color: var(--purple-50);
+  }
 }
