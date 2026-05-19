@@ -98,7 +98,7 @@ export default function CourseDetail({slug}: {slug: string}) {
     <>
       {/* Hero */}
       <section className="bg-purple-900 text-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10 pt-12 pb-16 lg:pr-[28rem]">
+        <div className="mx-auto max-w-7xl px-4 pt-12 pb-16 lg:pr-112">
           <nav className="flex items-center gap-2 text-sm text-text-on-dark-muted mb-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <ChevronRight className="h-4 w-4" />
@@ -145,7 +145,7 @@ export default function CourseDetail({slug}: {slug: string}) {
 
       {/* Two-column body */}
       <section className="bg-purple-50/40">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10 py-16 grid lg:grid-cols-[1fr_22rem] gap-12">
+        <div className="mx-auto max-w-7xl px-4 py-16 grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-12">
           {/* Main */}
           <div className="min-w-0 space-y-14">
             {/* What you'll learn */}
@@ -271,11 +271,12 @@ export default function CourseDetail({slug}: {slug: string}) {
           </div>
 
           {/* Sticky booking card */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">
+          <aside className="">
+            <div className="lg:sticky top-24">
               <BookingCard course={course} />
             </div>
           </aside>
+
         </div>
       </section>
 

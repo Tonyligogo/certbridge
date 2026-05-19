@@ -64,7 +64,7 @@ export function HeroSlider() {
   }, []);
 
   return (
-    <section className="relative h-[calc(100vh-5rem)] min-h-[600px] w-full overflow-hidden bg-slate-50">
+    <section className="relative h-[calc(100vh-5rem)] min-h-150 w-full overflow-hidden bg-slate-50">
       {slides.map((s, i) => (
         <div
           key={i}
@@ -89,7 +89,7 @@ export function HeroSlider() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-primary/10 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
 
           <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10 h-full flex items-center">
             <div className="max-w-2xl text-white">

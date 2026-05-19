@@ -1,6 +1,6 @@
 const ActionCTA = () => {
   return (
-    <section className="w-full py-16 px-4 bg-[#f8fafd]">
+    <section className="w-full px-4 bg-[#f8fafd]">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-12">

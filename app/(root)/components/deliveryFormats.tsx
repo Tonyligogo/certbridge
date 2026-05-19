@@ -26,7 +26,7 @@ const DeliveryFormats = () => {
   ];
 
   return (
-    <section className="w-full pt-16 pb-16 bg-slate-50">
+    <section className="w-full bg-slate-50">
       <div className="max-w-7xl mx-auto px-4">
         
         {/* Header Section */}

@@ -13,14 +13,14 @@ export const metadata = generatePageMetadata({
 });
 const LandingPage = () => {
   return (
-    <>
+    <div className="space-y-16">
     <HeroSlider/>
     <PopularCourses/>
     <PopularCategories/>
     <DeliveryFormats/>
     <ActionCTA/>
     <Footer/>
-    </>
+    </div>
   )
 }
 

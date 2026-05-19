@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function PopularCourses() {
   return (
-      <section className="py-24 bg-slate-50">
+      <section className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <div className="max-w-2xl">
