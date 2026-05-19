@@ -4,6 +4,7 @@ import PopularCategories from "./components/categories";
 import ActionCTA from "./components/cta";
 import { PopularCourses } from "./components/courses";
 import DeliveryFormats from "./components/deliveryFormats";
+import Footer from "./components/footer";
 
 export const metadata = generatePageMetadata({
   title: "Browse Courses",
@@ -18,6 +19,7 @@ const LandingPage = () => {
     <PopularCategories/>
     <DeliveryFormats/>
     <ActionCTA/>
+    <Footer/>
     </>
   )
 }

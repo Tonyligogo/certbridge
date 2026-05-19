@@ -26,7 +26,7 @@ const DeliveryFormats = () => {
   ];
 
   return (
-    <section className="w-full pb-16 bg-slate-50">
+    <section className="w-full pt-16 pb-16 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4">
         
         {/* Header Section */}
@@ -76,7 +76,7 @@ const DeliveryFormats = () => {
                   {format.description}
                 </p>
 
-                <button className="flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-900 w-fit transition-all pb-1">
+                <button className="flex items-center gap-2 cursor-pointer text-sm font-bold text-primary border-b-2 border-transparent hover:border-primary w-fit transition-all pb-1">
                   {format.linkText}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </button>

@@ -7,6 +7,7 @@ import {
   Headphones, 
   ArrowRight 
 } from 'lucide-react';
+import Link from 'next/link';
 
 const PopularCategories = () => {
   const categories = [
@@ -52,15 +53,25 @@ const PopularCategories = () => {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto p-4 bg-slate-50 min-h-screen">
-      {/* Header Section */}
+    <section className="max-w-7xl mx-auto p-4 bg-slate-50 ">
       <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
-          Our Course Portfolio
-        </p>
-        <h2 className="text-4xl font-bold text-slate-900 mb-8">
-          Explore our expert-led professional training categories
-        </h2>
+      {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+            <div className="max-w-3xl">
+              <span className="text-sm font-semibold uppercase tracking-wider">
+                Our Course Portfolio
+              </span>
+              <h2 className="mt-3 text-4xl lg:text-5xl font-bold ">
+                Explore our expert-led professional training categories
+              </h2>
+            </div>
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2 text-primary font-semibold transition"
+            >
+              View all categories <ArrowRight className="h-4 w-4" />
+            </Link>
+        </div>
 
         {/* Filter Pills */}
         <div className="flex flex-wrap gap-3">
@@ -69,8 +80,8 @@ const PopularCategories = () => {
               key={cat}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 i === 0 
-                ? "bg-[#004a83] text-white ring-2 ring-blue-200 ring-offset-2" 
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                ? "bg-primary text-white ring-2 ring-blue-200 ring-offset-2" 
+                : "bg-primary/10 text-slate-700 hover:bg-slate-300"
               }`}
             >
               {cat}
@@ -98,7 +109,7 @@ const PopularCategories = () => {
             <p className="text-slate-200 mb-6 text-sm leading-relaxed">
               Develop management skills, build strong teams, and lead with clarity and vision.
             </p>
-            <button className="bg-blue-100 text-[#004a83] px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-white transition-colors">
+            <button className="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-white transition-colors">
               Explore all leadership courses
             </button>
           </div>
@@ -111,16 +122,13 @@ const PopularCategories = () => {
               key={idx} 
               className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full"
             >
-              <div className="mb-6 p-3 bg-slate-50 w-fit rounded-xl">
-                {course.icon}
-              </div>
               <h4 className="text-xl font-bold text-slate-900 mb-3 leading-tight">
                 {course.title}
               </h4>
-              <p className="text-slate-500 text-sm mb-8 flex-grow">
+              <p className="text-slate-500 text-sm mb-8 grow">
                 {course.desc}
               </p>
-              <button className="flex items-center gap-2 text-[#004a83] font-semibold text-sm hover:underline group">
+              <button className="flex items-center gap-2 text-primary font-semibold text-sm hover:underline group">
                 Explore the courses
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </button>

@@ -9,16 +9,16 @@ export function PopularCourses() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <div className="max-w-2xl">
-              <span className="text-sm font-semibold uppercase tracking-wider text-purple-600">
+              <span className="text-sm font-semibold uppercase tracking-wider">
                 Popular Courses
               </span>
-              <h2 className="mt-3 font-display text-4xl lg:text-5xl font-bold text-text-primary">
+              <h2 className="mt-3 text-4xl lg:text-5xl font-bold ">
                 Training your team will actually use
               </h2>
             </div>
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 text-purple-700 font-semibold hover:text-purple-500 transition"
+              className="inline-flex items-center gap-2 text-primary font-semibold transition"
             >
               View all courses <ArrowRight className="h-4 w-4" />
             </Link>

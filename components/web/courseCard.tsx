@@ -15,10 +15,9 @@ export function CourseCard({ course }: { course: Course }) {
       </div>
       <div className="p-6 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md">
+          <span className="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">
             {course.category}
           </span>
-          <span className="text-xs font-medium text-text-muted">{course.level}</span>
         </div>
         <h3 className="font-display text-xl font-bold text-text-primary leading-snug mb-2">
           {course.title}

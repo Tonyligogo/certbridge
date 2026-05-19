@@ -4,12 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ============================================================
-   TRAINUB — DESIGN SYSTEM
-   Primary: Purple-800 (#2D1B69)
-   Accent:  Green (#36C5A3) · Amber (#F4A623)
-   ============================================================ */
-
 @theme inline {
   /* --- Tailwind token bridge (shadcn semantic tokens) --- */
   --color-background:                    var(--background);
@@ -31,7 +25,7 @@
   --color-input:                         var(--input);
   --color-ring:                          var(--ring);
 
-  /* --- Sidebar tokens (kept from your original) --- */
+  /* --- Sidebar tokens --- */
   --color-sidebar:                       var(--sidebar);
   --color-sidebar-foreground:            var(--sidebar-foreground);
   --color-sidebar-primary:               var(--sidebar-primary);
@@ -41,28 +35,29 @@
   --color-sidebar-border:                var(--sidebar-border);
   --color-sidebar-ring:                  var(--sidebar-ring);
 
-  /* --- Chart tokens (kept from your original) --- */
+  /* --- Chart tokens --- */
   --color-chart-1:                       var(--chart-1);
   --color-chart-2:                       var(--chart-2);
   --color-chart-3:                       var(--chart-3);
   --color-chart-4:                       var(--chart-4);
   --color-chart-5:                       var(--chart-5);
 
-  /* --- Brand palette exposed as Tailwind utilities --- */
-  /* Usage: bg-purple-800, text-purple-300, bg-brand-green, etc. */
-  --color-purple-800:                    var(--purple-800);
-  --color-purple-700:                    var(--purple-700);
-  --color-purple-600:                    var(--purple-600);
-  --color-purple-500:                    var(--purple-500);
-  --color-purple-400:                    var(--purple-400);
-  --color-purple-300:                    var(--purple-300);
-  --color-purple-200:                    var(--purple-200);
-  --color-purple-100:                    var(--purple-100);
-  --color-purple-50:                     var(--purple-50);
+  /* --- Brand blue palette as Tailwind utilities --- */
+  /* Usage: bg-blue-600, text-blue-300, border-blue-200, etc. */
+  --color-blue-900:                      var(--blue-900);
+  --color-blue-800:                      var(--blue-800);
+  --color-blue-700:                      var(--blue-700);
+  --color-blue-600:                      var(--blue-600);   /* = #0078d4 primary */
+  --color-blue-500:                      var(--blue-500);
+  --color-blue-400:                      var(--blue-400);
+  --color-blue-300:                      var(--blue-300);
+  --color-blue-200:                      var(--blue-200);
+  --color-blue-100:                      var(--blue-100);
+  --color-blue-50:                       var(--blue-50);
   --color-brand-green:                   var(--brand-green);
   --color-brand-amber:                   var(--brand-amber);
 
-  /* --- Radius scale (kept from your original) --- */
+  /* --- Radius scale --- */
   --radius-sm:  calc(var(--radius) * 0.6);
   --radius-md:  calc(var(--radius) * 0.8);
   --radius-lg:  var(--radius);
@@ -71,131 +66,129 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* --- Font families --- */
-
-  --font-heading:                    var(--font-sans);
-
-  --font-sans:                    var(--font-sans);
-
 }
 
 /* ============================================================
    LIGHT MODE
    ============================================================ */
 :root {
-  /* --- Full brand palette --- */
-  --purple-800: oklch(0.300 0.128 286.5);   /* main brand — navbar, hero, footer */
-  --purple-700: oklch(0.372 0.170 284.0);
-  --purple-600: oklch(0.419 0.180 285.5);
-  --purple-500: oklch(0.480 0.202 286.0);
-  --purple-400: oklch(0.578 0.189 289.4);
-  --purple-300: oklch(0.704 0.136 293.4);
-  --purple-200: oklch(0.821 0.083 296.2);
-  --purple-100: oklch(0.940 0.026 297.9);
-  --purple-50:  oklch(0.974 0.012 296.4);
+  /* --- Full brand blue palette (hue 251.31, anchored to #0078d4) --- */
+  --blue-900: oklch(0.18 0.1415 251.31);   /* near-black blue — rarely used */
+  --blue-800: oklch(0.28 0.1665 251.31);   /* dark navy */
+  --blue-700: oklch(0.38 0.1665 251.31);   /* deep blue — navbar, hero, footer */
+  --blue-600: oklch(0.5677 0.1665 251.31); /* #0078d4 — PRIMARY */
+  --blue-500: oklch(0.56 0.1665 251.31);   /* one shade lighter than primary */
+  --blue-400: oklch(0.65 0.1665 251.31);   /* medium blue */
+  --blue-300: oklch(0.74 0.1665 251.31);   /* light blue */
+  --blue-200: oklch(0.84 0.1665 251.31);   /* pale blue */
+  --blue-100: oklch(0.93 0.0416 251.31);   /* very pale tint */
+  --blue-50:  oklch(0.97 0.0416 251.31);   /* barely-there blue */
 
-  --brand-green: oklch(0.741 0.129 172.9);  /* primary CTAs */
-  --brand-amber: oklch(0.783 0.158  73.4);  /* badges, highlights */
+  --brand-green: oklch(0.7407 0.1288 172.85);  /* CTAs, success — unchanged */
+  --brand-amber: oklch(0.7825 0.1581  73.37);  /* badges, highlights — unchanged */
 
   /* --- shadcn semantic tokens --- */
 
+  /* Page: slate-50 background, near-black text */
+  --background:              oklch(0.9842 0.0034 247.86); /* slate-50 = #f8fafc */
+  --foreground:              oklch(0.18 0.1415 251.31);   /* blue-900 for rich dark text */
+
+  /* Cards: pure white so they lift off the slate-50 background */
   --card:                    oklch(1 0 0);
-  --card-foreground:                    oklch(0.145 0 0);
+  --card-foreground:         oklch(0.18 0.1415 251.31);
 
-  --popover:                    oklch(1 0 0);
-  --popover-foreground:                    oklch(0.145 0 0);
+  --popover:                 oklch(1 0 0);
+  --popover-foreground:      oklch(0.18 0.1415 251.31);
 
-  /* primary = purple-800 */
-  --primary:                    oklch(0.205 0 0);
-  --primary-foreground:                    oklch(0.985 0 0);
+  /* primary = blue-600 (#0078d4) */
+  --primary:                 oklch(0.5677 0.1665 251.31);
+  --primary-foreground:      oklch(0.985 0 0);            /* white text on primary */
 
-  /* secondary = purple-100 tint */
-  --secondary:                    oklch(0.97 0 0);
-  --secondary-foreground:                    oklch(0.205 0 0);
+  /* secondary = blue-100 tint */
+  --secondary:               oklch(0.93 0.0416 251.31);
+  --secondary-foreground:    oklch(0.28 0.1665 251.31);   /* blue-800 text */
 
-  /* muted = barely-there purple-gray */
-  --muted:                    oklch(0.97 0 0);
-  --muted-foreground:                    oklch(0.556 0 0);
+  /* muted = blue-50 — for disabled areas, skeletons */
+  --muted:                   oklch(0.97 0.0416 251.31);
+  --muted-foreground:        oklch(0.55 0.04 251.31);     /* mid-slate for placeholders */
 
-  /* accent = purple-100 (hover surfaces, menu highlights) */
-  --accent:                    oklch(0.97 0 0);
-  --accent-foreground:                    oklch(0.205 0 0);
+  /* accent = blue-100 — menu item hovers, subtle highlights */
+  --accent:                  oklch(0.93 0.0416 251.31);
+  --accent-foreground:       oklch(0.28 0.1665 251.31);
 
-  --destructive:                    oklch(0.577 0.245 27.325);
+  --destructive:             oklch(0.577 0.245 27.325);
 
-  /* borders get a subtle purple tint instead of plain gray */
-  --border:                    oklch(0.922 0 0);
-  --input:                    oklch(0.922 0 0);
-  --ring:                    oklch(0.708 0 0);  /* purple-500 focus ring */
+  /* borders: very subtle blue tint */
+  --border:                  oklch(0.88 0.018 251.31);
+  --input:                   oklch(0.88 0.018 251.31);
+  --ring:                    oklch(0.5677 0.1665 251.31); /* blue-600 focus ring */
 
-  /* --- Chart tokens --- */
-  --chart-1:                    oklch(0.87 0 0);   /* purple-500 */
-  --chart-2:                    oklch(0.556 0 0);   /* brand-green */
-  --chart-3:                    oklch(0.439 0 0);   /* brand-amber */
-  --chart-4:                    oklch(0.371 0 0);   /* purple-300 */
-  --chart-5:                    oklch(0.269 0 0);   /* purple-400 */
+  /* --- Chart tokens (blue palette + accents) --- */
+  --chart-1: oklch(0.5677 0.1665 251.31);  /* blue-600 */
+  --chart-2: oklch(0.7407 0.1288 172.85);  /* brand-green */
+  --chart-3: oklch(0.7825 0.1581  73.37);  /* brand-amber */
+  --chart-4: oklch(0.74 0.1665 251.31);    /* blue-300 */
+  --chart-5: oklch(0.38 0.1665 251.31);    /* blue-700 */
 
-  --radius:                    0.625rem;
+  --radius: 0.625rem;
 
   /* --- Sidebar tokens --- */
-  --sidebar:                    oklch(0.985 0 0);  /* purple-50 */
-  --sidebar-foreground:                    oklch(0.145 0 0);
-  --sidebar-primary:                    oklch(0.205 0 0);  /* purple-800 */
-  --sidebar-primary-foreground:                    oklch(0.985 0 0);
-  --sidebar-accent:                    oklch(0.97 0 0);  /* purple-100 */
-  --sidebar-accent-foreground:                    oklch(0.205 0 0);
-  --sidebar-border:                    oklch(0.922 0 0);
-  --sidebar-ring:                    oklch(0.708 0 0);
-  --background:                    oklch(1 0 0);
-  --foreground:                    oklch(0.145 0 0);
+  --sidebar:                       oklch(0.97 0.0416 251.31);   /* blue-50 */
+  --sidebar-foreground:            oklch(0.18 0.1415 251.31);   /* blue-900 */
+  --sidebar-primary:               oklch(0.5677 0.1665 251.31); /* blue-600 */
+  --sidebar-primary-foreground:    oklch(0.985 0 0);
+  --sidebar-accent:                oklch(0.93 0.0416 251.31);   /* blue-100 */
+  --sidebar-accent-foreground:     oklch(0.28 0.1665 251.31);   /* blue-800 */
+  --sidebar-border:                oklch(0.88 0.018 251.31);
+  --sidebar-ring:                  oklch(0.5677 0.1665 251.31);
 }
 
 /* ============================================================
    DARK MODE
    ============================================================ */
 .dark {
-  --background:                    oklch(0.145 0 0);   /* gray-900 */
-  --foreground:                    oklch(0.985 0 0);   /* purple-50 */
+  --background:              oklch(0.18 0.1415 251.31);   /* blue-900 */
+  --foreground:              oklch(0.97 0.0416 251.31);   /* blue-50 */
 
-  --card:                    oklch(0.205 0 0);   /* gray-800 */
-  --card-foreground:                    oklch(0.985 0 0);
+  --card:                    oklch(0.24 0.1200 251.31);   /* between 900 and 800 */
+  --card-foreground:         oklch(0.97 0.0416 251.31);
 
-  --popover:                    oklch(0.205 0 0);
-  --popover-foreground:                    oklch(0.985 0 0);
+  --popover:                 oklch(0.24 0.1200 251.31);
+  --popover-foreground:      oklch(0.97 0.0416 251.31);
 
-  /* primary lightens to purple-400 so it's visible on dark bg */
-  --primary:                    oklch(0.922 0 0);
-  --primary-foreground:                    oklch(0.205 0 0);
+  /* primary lightens in dark mode so it stays readable */
+  --primary:                 oklch(0.65 0.1665 251.31);   /* blue-400 */
+  --primary-foreground:      oklch(0.985 0 0);
 
-  --secondary:                    oklch(0.269 0 0);   /* gray-700 */
-  --secondary-foreground:                    oklch(0.985 0 0);
+  --secondary:               oklch(0.30 0.1100 251.31);
+  --secondary-foreground:    oklch(0.97 0.0416 251.31);
 
-  --muted:                    oklch(0.269 0 0);
-  --muted-foreground:                    oklch(0.708 0 0);   /* purple-300 */
+  --muted:                   oklch(0.30 0.1100 251.31);
+  --muted-foreground:        oklch(0.74 0.1665 251.31);   /* blue-300 */
 
-  --accent:                    oklch(0.269 0 0);   /* purple-700 */
-  --accent-foreground:                    oklch(0.985 0 0);
+  --accent:                  oklch(0.38 0.1665 251.31);   /* blue-700 */
+  --accent-foreground:       oklch(0.97 0.0416 251.31);
 
-  --destructive:                    oklch(0.704 0.191 22.216);
+  --destructive:             oklch(0.704 0.191 22.216);
 
-  --border:                    oklch(1 0 0 / 10%);
-  --input:                    oklch(1 0 0 / 15%);
-  --ring:                    oklch(0.556 0 0);   /* purple-400 */
+  --border:                  oklch(1 0 0 / 10%);
+  --input:                   oklch(1 0 0 / 15%);
+  --ring:                    oklch(0.65 0.1665 251.31);   /* blue-400 */
 
-  --chart-1:                    oklch(0.87 0 0);
-  --chart-2:                    oklch(0.556 0 0);
-  --chart-3:                    oklch(0.439 0 0);
-  --chart-4:                    oklch(0.371 0 0);
-  --chart-5:                    oklch(0.269 0 0);
+  --chart-1: oklch(0.74 0.1665 251.31);
+  --chart-2: oklch(0.7407 0.1288 172.85);
+  --chart-3: oklch(0.7825 0.1581  73.37);
+  --chart-4: oklch(0.65 0.1665 251.31);
+  --chart-5: oklch(0.56 0.1665 251.31);
 
-  --sidebar:                    oklch(0.205 0 0);
-  --sidebar-foreground:                    oklch(0.985 0 0);
-  --sidebar-primary:                    oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground:                    oklch(0.985 0 0);
-  --sidebar-accent:                    oklch(0.269 0 0);
-  --sidebar-accent-foreground:                    oklch(0.985 0 0);
-  --sidebar-border:                    oklch(1 0 0 / 10%);
-  --sidebar-ring:                    oklch(0.556 0 0);
+  --sidebar:                       oklch(0.24 0.1200 251.31);
+  --sidebar-foreground:            oklch(0.97 0.0416 251.31);
+  --sidebar-primary:               oklch(0.65 0.1665 251.31);   /* blue-400 */
+  --sidebar-primary-foreground:    oklch(0.985 0 0);
+  --sidebar-accent:                oklch(0.38 0.1665 251.31);   /* blue-700 */
+  --sidebar-accent-foreground:     oklch(0.97 0.0416 251.31);
+  --sidebar-border:                oklch(1 0 0 / 10%);
+  --sidebar-ring:                  oklch(0.65 0.1665 251.31);
 }
 
 /* ============================================================
@@ -229,9 +222,9 @@
   }
 
   /* Badge variants */
-  .badge-purple {
-    background-color: var(--purple-100);
-    color: var(--purple-700);
+  .badge-blue {
+    background-color: var(--blue-100);
+    color: var(--blue-700);
     @apply text-xs font-semibold px-2.5 py-0.5 rounded-full;
   }
   .badge-amber {
@@ -245,14 +238,14 @@
     @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
   }
 
-  /* Dark purple surface — navbar, hero, footer */
+  /* Dark blue surface — navbar, hero, footer */
   .surface-dark {
-    background-color: var(--purple-800);
+    background-color: var(--blue-700);
     color: oklch(0.985 0 0);
   }
 
-  /* Light purple tint — alternating page sections */
+  /* Light blue tint — alternating page sections */
   .surface-tint {
-    background-color: var(--purple-50);
+    background-color: var(--blue-50);
   }
 }
