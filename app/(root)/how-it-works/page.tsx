@@ -40,9 +40,9 @@ const benefits = [
 export default function HowItWorksPage() {
   return (
     <>
-      <section className="bg-purple-900 text-white py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <span className="text-sm font-semibold uppercase tracking-wider text-purple-300">
+      <section className="bg-primary text-white py-20">
+        <div className="mx-auto px-4 lg:px-10">
+          <span className="text-sm font-semibold uppercase tracking-wider text-white">
             How It Works
           </span>
           <h1 className="mt-3 font-display text-5xl lg:text-6xl font-bold max-w-3xl">
@@ -56,18 +56,18 @@ export default function HowItWorksPage() {
       </section>
 
       <section className="py-24 bg-white">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10">
+        <div className="mx-auto max-w-5xl px-4 lg:px-10">
           <ol className="space-y-8">
             {steps.map((s, i) => (
               <li
                 key={s.title}
-                className="card-hover flex gap-6 bg-white border border-purple-100 rounded-2xl p-8 shadow-sm"
+                className="card-hover flex flex-col sm:flex-row gap-6 bg-white border border-blue-100 rounded-2xl p-8 shadow-sm"
               >
-                <div className="shrink-0">
-                  <div className="h-14 w-14 rounded-xl bg-purple-500 text-white grid place-items-center">
+                <div className="shrink-0 flex sm:flex-col gap-4 items-center">
+                  <div className="h-14 w-14 rounded-xl bg-primary text-white grid place-items-center">
                     <s.Icon className="h-6 w-6" />
                   </div>
-                  <div className="mt-3 text-center font-display text-sm font-bold text-purple-300">
+                  <div className="text-center font-display text-sm font-bold text-primary">
                     Step {i + 1}
                   </div>
                 </div>
@@ -83,15 +83,15 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-purple-50">
+      <section className="py-24 bg-slate-50">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <h2 className="font-display text-4xl font-bold text-center text-text-primary mb-14">
             Why companies choose CertBridge Global
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             {benefits.map(({ Icon, title, desc }) => (
-              <div key={title} className="bg-white rounded-2xl border border-purple-100 p-8 card-hover">
-                <div className="h-12 w-12 rounded-xl bg-purple-100 text-purple-700 grid place-items-center mb-5">
+              <div key={title} className="bg-white rounded-2xl border border-slate-100 p-8 card-hover">
+                <div className="h-12 w-12 rounded-xl bg-blue-50 text-primary grid place-items-center mb-5">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-display text-xl font-bold mb-2">{title}</h3>
@@ -102,14 +102,14 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-purple-900 text-white">
+      <section className="py-20 bg-primary text-white">
         <div className="mx-auto max-w-4xl px-6 lg:px-10 text-center">
           <h2 className="font-display text-4xl lg:text-5xl font-bold">
             Let&apos;s plan your next training
           </h2>
           <Link
             href="/contact"
-            className="mt-8 inline-flex items-center gap-2 px-7 py-4 bg-accent-green text-white rounded-xl font-semibold shadow-xl shadow-accent-green/25"
+            className="mt-8 inline-flex items-center gap-2 px-7 py-4 bg-white text-primary rounded-xl font-semibold shadow-xl shadow-accent-green/25"
           >
             Submit a Request <ArrowRight className="h-4 w-4" />
           </Link>

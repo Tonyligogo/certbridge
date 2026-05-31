@@ -125,7 +125,7 @@ function Navbar() {
         {/* Drawer links */}
         <ul className="flex-1 overflow-y-auto px-4 py-6 space-y-1" role="list">
           {NAV_LINKS.map((link, i) => (
-            <li key={link.href}>
+            <li key={link.href} onClick={()=>setOpen(false)}>
               <MobileLink
                 href={link.href}
                 label={link.label}

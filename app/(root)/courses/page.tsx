@@ -111,9 +111,9 @@ export default function CoursesPage() {
 
   return (
     <>
-      <section className="bg-purple-900 text-white py-16 lg:py-20">
-        <div className="mx-auto max-w-10/12 px-6 lg:px-10">
-          <span className="text-sm font-semibold uppercase tracking-wider text-purple-300">
+      <section className="bg-primary text-white py-16 lg:py-20">
+        <div className="mx-auto max-w-[1400px] px-4 lg:px-10">
+          <span className="text-sm font-semibold uppercase tracking-wider text-white">
             Course Catalogue
           </span>
           <h1 className="mt-3 font-display text-4xl lg:text-6xl font-bold max-w-3xl">
@@ -137,7 +137,7 @@ export default function CoursesPage() {
       </section>
 
       <section className="py-12 lg:py-16 bg-white">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10">
+        <div className="mx-auto max-w-[1400px] px-4 lg:px-10">
           <div className="grid lg:grid-cols-[16rem_1fr] gap-10">
             {/* Desktop sidebar */}
             <aside className="hidden lg:block sticky top-24 self-start">
@@ -152,12 +152,12 @@ export default function CoursesPage() {
                 </p>
                 <button
                   onClick={() => setMobileOpen(true)}
-                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-purple-200 text-sm font-semibold text-purple-800"
+                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 text-sm font-semibold text-primary"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                   Filters
                   {activeCount > 0 && (
-                    <span className="ml-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-purple-700 text-white text-xs">
+                    <span className="ml-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-white text-xs">
                       {activeCount}
                     </span>
                   )}
