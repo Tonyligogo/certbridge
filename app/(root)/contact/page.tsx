@@ -9,9 +9,9 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="bg-purple-900 text-white py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <span className="text-sm font-semibold uppercase tracking-wider text-purple-300">
+      <section className="bg-primary text-white py-20">
+        <div className="mx-auto max-w-[1400px] px-4 lg:px-10">
+          <span className="text-sm font-semibold uppercase tracking-wider text-white">
             Book a Training
           </span>
           <h1 className="mt-3 font-display text-5xl lg:text-6xl font-bold max-w-3xl">
@@ -29,7 +29,7 @@ export default function ContactPage() {
           {/* Form */}
           <div className="lg:col-span-2">
             {submitted ? (
-              <div className="bg-purple-50 border border-purple-100 rounded-2xl p-12 text-center">
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-12 text-center">
                 <CheckCircle2 className="h-14 w-14 text-accent-green mx-auto mb-4" />
                 <h2 className="font-display text-3xl font-bold mb-2">
                   Request received
@@ -45,7 +45,7 @@ export default function ContactPage() {
                   e.preventDefault();
                   setSubmitted(true);
                 }}
-                className="bg-white border border-purple-100 rounded-2xl p-8 lg:p-10 shadow-sm space-y-6"
+                className="bg-white border border-blue-100 rounded-2xl p-8 lg:p-10 shadow-sm space-y-6"
               >
                 <div className="grid gap-6 sm:grid-cols-2">
                   <Field label="Company name" required>
@@ -119,25 +119,25 @@ export default function ContactPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            <div className="bg-purple-900 text-white rounded-2xl p-8">
+            <div className="bg-primary text-white rounded-2xl p-8">
               <h3 className="font-display text-xl font-bold mb-5">Talk to us</h3>
               <ul className="space-y-4 text-sm">
                 <li className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-purple-300 mt-0.5" />
+                  <Mail className="h-5 w-5 text-white mt-0.5" />
                   <span>hello@trainhub.co.ke</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-purple-300 mt-0.5" />
+                  <Phone className="h-5 w-5 text-white mt-0.5" />
                   <span>+254 700 000 000</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-purple-300 mt-0.5" />
+                  <MapPin className="h-5 w-5 text-white mt-0.5" />
                   <span>Westlands Office Park,
                     <br /> Nairobi, Kenya</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-purple-50 border border-purple-100 rounded-2xl p-8">
+            <div className="bg-slate-100 border border-slate-200 rounded-2xl p-8">
               <h3 className="font-display text-lg font-bold mb-2">Response time</h3>
               <p className="text-sm text-text-secondary">
                 We respond to every booking request within one business day,

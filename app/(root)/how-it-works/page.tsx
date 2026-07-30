@@ -41,7 +41,7 @@ export default function HowItWorksPage() {
   return (
     <>
       <section className="bg-primary text-white py-20">
-        <div className="mx-auto px-4 lg:px-10">
+        <div className="mx-auto max-w-[1400px] px-4 lg:px-10">
           <span className="text-sm font-semibold uppercase tracking-wider text-white">
             How It Works
           </span>

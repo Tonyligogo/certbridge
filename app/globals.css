@@ -133,7 +133,7 @@
   --radius: 0.625rem;
 
   /* --- Sidebar tokens --- */
-  --sidebar:                       oklch(0.97 0.0416 251.31);   /* blue-50 */
+  --sidebar:                       oklch(100% 0.00011 271.152);   /* white */
   --sidebar-foreground:            oklch(0.18 0.1415 251.31);   /* blue-900 */
   --sidebar-primary:               oklch(0.5677 0.1665 251.31); /* blue-600 */
   --sidebar-primary-foreground:    oklch(0.985 0 0);

@@ -97,8 +97,8 @@ export default function CourseDetail({slug}: {slug: string}) {
   return (
     <>
       {/* Hero */}
-      <section className="bg-purple-900 text-white">
-        <div className="mx-auto max-w-7xl px-4 pt-12 pb-16 lg:pr-112">
+      <section className="bg-primary text-white">
+        <div className="mx-auto max-w-[1400px] px-4 pt-12 pb-16 lg:px-10">
           <nav className="flex items-center gap-2 text-sm text-text-on-dark-muted mb-6">
             <Link href="/" className="hover:text-white">Home</Link>
             <ChevronRight className="h-4 w-4" />
@@ -107,7 +107,7 @@ export default function CourseDetail({slug}: {slug: string}) {
             <span className="text-white">{course.title}</span>
           </nav>
 
-          <span className="text-sm font-semibold uppercase tracking-wider text-purple-300">
+          <span className="text-sm font-semibold uppercase tracking-wider text-white">
             {course.category}
           </span>
           <h1 className="mt-3 font-display text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight max-w-3xl">
@@ -144,17 +144,17 @@ export default function CourseDetail({slug}: {slug: string}) {
       </section>
 
       {/* Two-column body */}
-      <section className="bg-purple-50/40">
+      <section className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16 grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-12">
           {/* Main */}
           <div className="min-w-0 space-y-14">
             {/* What you'll learn */}
-            <div className="bg-white border border-purple-100 rounded-2xl p-8">
+            <div className="bg-white border border-blue-100 rounded-2xl p-8">
               <h2 className="font-display text-2xl lg:text-3xl font-bold mb-6">What You&apos;ll Learn</h2>
               <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
                 {learningObjectives.map((o) => (
                   <li key={o} className="flex gap-3 text-text-secondary leading-relaxed">
-                    <Check className="h-5 w-5 text-accent-green shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                     <span>{o}</span>
                   </li>
                 ))}
@@ -192,7 +192,7 @@ export default function CourseDetail({slug}: {slug: string}) {
                   "Founders and operators building their first management layer",
                 ].map((x) => (
                   <li key={x} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                     {x}
                   </li>
                 ))}
@@ -202,9 +202,9 @@ export default function CourseDetail({slug}: {slug: string}) {
             {/* Outline */}
             <div>
               <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">Course Outline</h2>
-              <Accordion type="single" collapsible defaultValue="item-0" className="bg-white border border-purple-100 rounded-2xl px-6">
+              <Accordion type="single" collapsible defaultValue="item-0" className="bg-white border border-blue-100 rounded-2xl px-6">
                 {modules.map((m, i) => (
-                  <AccordionItem key={m.title} value={`item-${i}`} className="border-purple-100">
+                  <AccordionItem key={m.title} value={`item-${i}`} className="border-blue-100">
                     <AccordionTrigger className="text-left font-display text-base font-bold text-text-primary py-5">
                       {m.title}
                     </AccordionTrigger>
@@ -221,8 +221,8 @@ export default function CourseDetail({slug}: {slug: string}) {
               <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">Delivery Formats</h2>
               <div className="grid md:grid-cols-3 gap-5">
                 {formats.map((f) => (
-                  <div key={f.name} className="bg-white border border-purple-100 rounded-2xl p-6">
-                    <div className="h-11 w-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center mb-4">
+                  <div key={f.name} className="bg-white border border-blue-100 rounded-2xl p-6">
+                    <div className="h-11 w-11 rounded-xl bg-blue-100 text-primary flex items-center justify-center mb-4">
                       <f.icon className="h-5 w-5" />
                     </div>
                     <h3 className="font-display text-lg font-bold mb-2">{f.name}</h3>
@@ -250,10 +250,10 @@ export default function CourseDetail({slug}: {slug: string}) {
             </div>
 
             {/* Trainer */}
-            <div className="bg-white border border-purple-100 rounded-2xl p-8">
+            <div className="bg-white border border-blue-100 rounded-2xl p-8">
               <h2 className="font-display text-2xl lg:text-3xl font-bold mb-6">About the Trainer</h2>
               <div className="flex items-start gap-5">
-                <div className="h-16 w-16 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-display text-xl font-bold shrink-0">
+                <div className="h-16 w-16 rounded-full bg-blue-100 text-primary flex items-center justify-center font-display text-xl font-bold shrink-0">
                   TH
                 </div>
                 <div>
@@ -281,14 +281,14 @@ export default function CourseDetail({slug}: {slug: string}) {
       </section>
 
       {/* Mobile bottom bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-purple-100 shadow-[0_-8px_24px_-12px_rgba(45,27,105,0.2)] px-4 py-3 flex items-center justify-between gap-4">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-blue-100 shadow-[0_-8px_24px_-12px_rgba(45,27,105,0.2)] px-4 py-3 flex items-center justify-between gap-4">
         <div>
           <div className="font-display text-lg font-bold leading-none">From KES 45,000</div>
           <div className="text-xs text-text-muted mt-1">per group</div>
         </div>
         <Link
           href="/contact"
-          className="inline-flex items-center gap-2 px-5 py-3 bg-accent-green text-white rounded-lg font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-lg font-semibold text-sm"
         >
           Book Now <ArrowRight className="h-4 w-4" />
         </Link>
@@ -300,34 +300,34 @@ export default function CourseDetail({slug}: {slug: string}) {
 
 function BookingCard({ course }: { course: { image: string; title: string } }) {
   return (
-    <div className="bg-white rounded-2xl border border-purple-100 shadow-[0_24px_60px_-20px_rgba(45,27,105,0.35)] overflow-hidden">
-      <div className="aspect-video bg-purple-100 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-blue-100 shadow-[0_24px_60px_-20px_rgba(45,27,105,0.35)] overflow-hidden">
+      <div className="aspect-video bg-blue-100 overflow-hidden">
         <img src={course.image} alt={course.title} className="h-full w-full object-cover" />
       </div>
       <div className="p-6">
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-3xl font-bold text-text-primary">From KES 45,000</span>
+          <span className="font-display text-3xl font-bold text-primary">From KES 45,000</span>
         </div>
         <p className="text-sm text-text-muted">per group</p>
         <p className="mt-2 text-sm text-text-secondary">
-          <span className="font-semibold text-text-primary">KES 12,000</span> per person (individual)
+          <span className="font-semibold text-primary">KES 12,000</span> per person (individual)
         </p>
 
-        <ul className="mt-5 space-y-3 text-sm text-text-secondary border-y border-purple-100 py-5">
+        <ul className="mt-5 space-y-3 text-sm text-text-secondary border-y border-blue-100 py-5">
           <li className="flex items-center gap-3">
-            <Clock className="h-4 w-4 text-purple-600" /> Duration: 2 days
+            <Clock className="h-4 w-4 text-primary" /> Duration: 2 days
           </li>
           <li className="flex items-center gap-3">
-            <Users className="h-4 w-4 text-purple-600" /> Up to 20 participants
+            <Users className="h-4 w-4 text-primary" /> Up to 20 participants
           </li>
           <li className="flex items-center gap-3">
-            <MapPin className="h-4 w-4 text-purple-600" /> Online · On-Site · At a Venue
+            <MapPin className="h-4 w-4 text-primary" /> Online · On-Site · At a Venue
           </li>
         </ul>
 
         <Link
           href="/contact"
-          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-accent-green text-white rounded-xl font-semibold hover:opacity-90 transition"
+          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-primary text-white rounded-xl font-semibold hover:opacity-90 transition"
         >
           Book This Course <ArrowRight className="h-4 w-4" />
         </Link>
@@ -338,7 +338,7 @@ function BookingCard({ course }: { course: { image: string; title: string } }) {
 
         <Link
           href="/contact"
-          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 border border-purple-200 text-purple-700 rounded-xl font-semibold hover:bg-purple-50 transition"
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 border border-blue-200 text-primary rounded-xl font-semibold hover:bg-blue-50 transition"
         >
           Request a Quote
         </Link>
@@ -355,17 +355,17 @@ function BookingCard({ course }: { course: { image: string; title: string } }) {
           </li>
         </ul>
 
-        <div className="mt-6 pt-5 border-t border-purple-100 flex items-center gap-3 text-text-muted">
+        <div className="mt-6 pt-5 border-t border-blue-100 flex items-center gap-3 text-text-muted">
           <Share2 className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase tracking-wider">Share</span>
           <div className="ml-auto flex items-center gap-2">
             {[Link2].map((Icon, i) => (
               <button
                 key={i}
-                className="h-8 w-8 rounded-full border border-purple-100 hover:bg-purple-50 flex items-center justify-center"
+                className="h-8 w-8 rounded-full border border-blue-100 hover:bg-blue-50 flex items-center justify-center"
                 aria-label="Share"
               >
-                <Icon className="h-3.5 w-3.5 text-purple-700" />
+                <Icon className="h-3.5 w-3.5 text-primary" />
               </button>
             ))}
           </div>

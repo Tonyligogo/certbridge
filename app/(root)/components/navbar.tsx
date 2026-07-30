@@ -11,7 +11,7 @@ import { useRef, useState } from "react";
 const NAV_LINKS = [
   { label: "Courses",      href: "/courses" },
   { label: "How It Works", href: "/how-it-works" },
-  { label: "About",        href: "/about" },
+  // { label: "About",        href: "/about" },
   { label: "Contact",      href: "/contact" },
 ] as const;
 

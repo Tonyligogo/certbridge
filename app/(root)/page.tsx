@@ -10,7 +10,7 @@ export const metadata = generatePageMetadata({
   description: "Explore 200+ professional training courses across leadership, IT, compliance and more — delivered across Kenya.",
   path: "/",
 });
-const LandingPage = () => {
+const LandingPage = async() => {
   return (
     <div className="space-y-16">
     <HeroSlider/>

@@ -1,4 +1,3 @@
-// app/courses/[slug]/page.tsx
 import type { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/metadata";
 import { courses } from "@/lib/courses";
@@ -8,10 +7,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Next.js calls this at build/request time to get the metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // Fetch the course — from your DB, CMS, or static data
-//   const course = await getCourseBySlug(params.slug);
 const { slug } = await params;
 const course =
     courses.find((c) => c.slug === slug) ?? {

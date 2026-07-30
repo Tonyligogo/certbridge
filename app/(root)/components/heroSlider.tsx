@@ -89,7 +89,7 @@ export function HeroSlider() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[3px]" />
 
           <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10 h-full flex items-center">
             <div className="max-w-2xl text-white">
