@@ -327,7 +327,7 @@ function BookingCard({ course }: { course: { image: string; title: string } }) {
 
         <Link
           href="/contact"
-          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-primary text-white rounded-xl font-semibold hover:opacity-90 transition"
+          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-semibold hover:opacity-90 transition"
         >
           Book This Course <ArrowRight className="h-4 w-4" />
         </Link>

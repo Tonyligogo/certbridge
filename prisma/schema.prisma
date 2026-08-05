@@ -18,11 +18,16 @@ model User {
   email         String
   emailVerified Boolean   @default(false)
   image         String?
-  role          String?   
+  role          String? 
+  banned Boolean?
+	banReason String?
+	banExpires DateTime? @db.Timestamptz(3)  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+
+  profiles Profile[]
 
   @@unique([email])
   @@map("user")
@@ -38,6 +43,7 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
 
   @@unique([token])
   @@index([userId])
@@ -74,4 +80,242 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Profile {
+  id        String @id @default(cuid())
+
+  userId    String @unique
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      ProfileType
+
+  // Contact information
+  phone     String?
+  country   String?
+  city      String?
+  displayName      String
+  
+  logoUrl              String?
+  website              String?
+  kraPin               String?
+  address              String?
+
+  onboardingComplete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants Participant[]
+
+  bookings Booking[]
+
+}
+
+model Participant {
+  id         String @id @default(cuid())
+
+  profileId  String
+  profile    Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  fullName   String
+
+  email      String?
+  phone      String?
+
+  department String?
+  jobTitle   String?
+
+  notes      String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  bookings   BookingParticipant[]
+}
+
+model CourseCategory {
+  id          String @id @default(cuid())
+
+  name        String
+  slug        String @unique
+
+  description String?
+
+  isActive    Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  courses     Course[]
+}
+
+model CourseAudience {
+  id          String @id @default(cuid())
+
+  name        String
+  slug        String @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  courses     Course[]
+}
+
+model Course {
+  id          String @id @default(cuid())
+
+  categoryId  String
+  category    CourseCategory @relation(fields: [categoryId], references: [id])
+   pricing     CoursePricing?
+
+  title       String
+  slug        String @unique
+
+  shortDescription String
+  description String
+
+  durationDays Int
+
+  level       CourseLevel
+
+  status      CourseStatus @default(DRAFT)
+
+  thumbnailUrl String?
+  
+  featured    Boolean @default(false)
+  certificateProvided Boolean @default(false)
+  isPopular   Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  audiences          CourseAudience[]
+
+  modules     CourseModule[]
+
+  bookings    Booking[]
+}
+
+model CoursePricing {
+  id           String       @id @default(cuid())
+
+  courseId     String @unique
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  deliveryMode DeliveryMode
+  amount       Decimal      @db.Decimal(10, 2)
+  currency     String       @default("KES")
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model CourseModule {
+  id          String @id @default(cuid())
+
+  courseId    String
+  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title       String
+
+  description String?
+
+  estimatedDuration       Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Booking {
+  id          String @id @default(cuid())
+
+  reference   String @unique
+
+  profileId   String
+  profile     Profile @relation(fields: [profileId], references: [id])
+
+  courseId    String
+  course      Course @relation(fields: [courseId], references: [id])
+
+  deliveryMode DeliveryMode
+
+  preferredStartDate DateTime?
+  preferredEndDate   DateTime?
+
+  scheduledStartDate DateTime?
+  scheduledEndDate   DateTime?
+
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  participantCount Int
+
+  specialRequirements String?
+
+  quotedAmount Decimal? @db.Decimal(10,2)
+  finalAmount  Decimal? @db.Decimal(10,2)
+
+  currency String @default("KES")
+
+  status BookingStatus @default(PENDING)
+
+  adminNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants BookingParticipant[]
+}
+
+model BookingParticipant {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  attended Boolean @default(false)
+
+  certificateIssued Boolean @default(false)
+
+  feedbackSubmitted Boolean @default(false)
+
+  @@unique([bookingId, participantId])
+}
+
+
+enum ProfileType {
+  INDIVIDUAL
+  ORGANIZATION
+  GROUP
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DeliveryMode {
+  ONLINE
+  CLIENT_SITE
+  OUR_VENUE
+}
+
+enum BookingStatus {
+  PENDING
+  QUOTED
+  CONFIRMED
+  TRAINER_ASSIGNED
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }

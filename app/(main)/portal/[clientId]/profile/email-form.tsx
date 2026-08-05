@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/web/loadingButton";
+import { changeEmail } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,8 +36,15 @@ export function EmailForm({ currentEmail }: EmailFormProps) {
     },
   });
 
-  async function onSubmit(values: UpdateEmailValues) {
-    // TODO: Handle email update
+  async function onSubmit({newEmail}: UpdateEmailValues) {
+    setError(null);
+    setStatus(null);
+    const { error } = await changeEmail({newEmail, callbackURL:"/email-verified"});
+    if (error) {
+      setError(error.message || "An error occurred while changing email");
+    } else {
+      setStatus("Email change requested successfully. Please check your inbox for confirmation.");
+    }
   }
 
   const loading = form.formState.isSubmitting;

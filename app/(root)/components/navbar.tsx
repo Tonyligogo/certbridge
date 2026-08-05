@@ -53,17 +53,15 @@ function Navbar() {
           </ul>
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/login"
+              href="/sign-in"
               className={cn(
-                "text-sm font-medium text-white/80 px-4 py-2 rounded-lg",
-                "border border-white/20 transition-all duration-200",
-                "hover:text-white hover:border-white/50 hover:bg-white/8"
+                "text-sm font-medium px-4 py-2 transition-all duration-200",
               )}
             >
               Log In
             </Link>
             <Link
-              href="/courses"
+              href="/sign-up"
               className="text-sm font-semibold px-5 py-2 rounded-lg bg-primary text-white transition-all duration-300 hover:scale-105"
             >
               Get Started

@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { passwordSchema } from "@/lib/validation";
+import { passwordSchema } from "@/lib/validation/password";
 import { LoadingButton } from "@/components/web/loadingButton";
 import { changePassword } from "@/lib/auth-client";
 

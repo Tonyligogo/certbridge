@@ -9,14 +9,14 @@ export function SiteHeader() {
         <SidebarTrigger className="-ml-1" />
       </div>
       <div className="flex gap-3">
-        <button className="relative cursor-pointer mr-5">
+        <button className="relative cursor-pointer mr-3 sm:mr-5">
           <Bell size={18} />
           <span className="absolute flex size-2 top-1 right-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
             <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
           </span>
         </button>
-        <Button variant='outline'> <CalendarCheck /> Shedule</Button>
+        <Button variant='outline'> <CalendarCheck /> <span className="hidden sm:inline-block">Schedule</span> </Button>
         <Button> <BookOpenText /> Book Training</Button>
       </div>
     </header>

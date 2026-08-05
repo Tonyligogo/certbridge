@@ -14,7 +14,7 @@ import { LabelInputGroup } from "@/components/web/labelInputGroup";
 import { LoadingButton } from "@/components/web/loadingButton";
 import { PasswordInput } from "@/components/web/password-input";
 import { signUp } from "@/lib/auth-client";
-import { passwordSchema } from "@/lib/validation";
+import { passwordSchema } from "@/lib/validation/password";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

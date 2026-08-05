@@ -1,26 +1,14 @@
-import SignOutButton from "@/app/(auth)/components/signOutButton"
-import { User } from "@/lib/auth";
-import { getServerSession } from "@/lib/get-server-session"
-import { redirect } from "next/navigation";
+import { getCurrentProfile } from "@/lib/server/profile";
+import CompleteProfileBanner from "./components/complete-profile-banner"
 
-interface ClientInformationProps{
-  user:User
-}
+const Dashboard = async() => {
+  const profile = await getCurrentProfile();
 
-const ClientPortal = async() => {
-  const session = await getServerSession()
-  const user = session?.user;
-
-  if(!user) {
-    redirect('/')
-  }
-
-  console.log(user)
   return (
-    <div>ClientPortal
-      <SignOutButton/>
+    <div>
+        {profile && !profile.onboardingComplete && <CompleteProfileBanner/>}
     </div>
   )
 }
 
-export default ClientPortal
+export default Dashboard

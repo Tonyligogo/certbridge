@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/web/loadingButton";
-import { passwordSchema } from "@/lib/validation";
+import { passwordSchema } from "@/lib/validation/password";
 import { resetPassword } from "@/lib/auth-client";
 
 const resetPasswordSchema = z

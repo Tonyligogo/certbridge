@@ -3,7 +3,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
 import { sendEmail } from "./email";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { passwordSchema } from "./validation";
+import { passwordSchema } from "./validation/password";
+import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -67,7 +68,10 @@ export const auth = betterAuth({
         }
       }
     })
-  }
+  },
+  plugins:[
+    admin()
+  ]
 });
 
 export type Session = typeof auth.$Infer.Session
