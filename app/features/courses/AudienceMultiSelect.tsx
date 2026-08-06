@@ -105,11 +105,7 @@ export function AudienceMultiSelect({
             );
           })}
         </div>
-      ) : (
-        <p className="mt-2 text-xs text-muted-foreground">
-          No audiences linked yet — selected audiences appear here as removable tags.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -22,6 +22,7 @@ import {
 import type { Course } from "../types/catalogue";
 import { ShareCourseButton } from "./ShareCourseButton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { usePathname, useRouter } from "next/navigation";
 
 interface CourseDetailsSheetProps {
   course: Course | null;
@@ -38,7 +39,11 @@ export function CourseDetailsSheet({
   onOpenChange,
   onEnroll,
 }: CourseDetailsSheetProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   if (!course) return null;
+
+  const isAdminRoute = pathname.startsWith("/admin/courses"); 
 
   const price = Number(course.pricing?.amount ?? 0);
   const currency = course.pricing?.currency;
@@ -76,7 +81,16 @@ export function CourseDetailsSheet({
                 <MapPin className="h-4 w-4 text-primary" /> Online · On-Site · At a Venue
             </li>
             </ul>
-            <div>
+            {
+              isAdminRoute ? 
+              <Button
+                onClick={() => router.push(`/admin/courses/edit/${course.slug}`)}
+                className="w-full inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
+                >
+                Edit This Course <ArrowRight className="h-4 w-4" />
+                </Button>
+                :
+              <div>
                 <Button
                 onClick={() => onEnroll?.(course)}
                 className="w-full inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
@@ -94,7 +108,7 @@ export function CourseDetailsSheet({
                 >
                 Request a Quote
                 </a>
-            </div>
+            </div>}
 
             <ul className="space-y-3 text-sm text-text-secondary">
             <li className="flex items-center gap-3">

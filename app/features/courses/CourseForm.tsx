@@ -1,4 +1,5 @@
-'use client';
+"use client";
+
 import {
   Award,
   BadgeCheck,
@@ -15,7 +16,7 @@ import {
   Star,
   Wand2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,15 +30,17 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import { EmptyState, ErrorText, FieldLabel, SectionCard } from "../../components/course/SectionCard";
-import { AudienceMultiSelect } from "../../components/course/AudienceMultiSelect";
-import { ThumbnailDropzone } from "../../components/course/ThumbnailDropzone";
-import { PricingSection } from "../../components/course/PricingSection";
-import { SyllabusModules } from "../../components/course/SyllabusModules";
-import { RichTextEditor } from "../../components/course/Editor";
 import {
-  AUDIENCES,
-  CATEGORIES,
+  EmptyState,
+  ErrorText,
+  FieldLabel,
+  SectionCard,
+} from "./SectionCard";
+import { ThumbnailDropzone } from "./ThumbnailDropzone";
+import { PricingSection } from "./PricingSection";
+import { SyllabusModules } from "./SyllabusModules";
+import { RichTextEditor } from "./Editor";
+import {
   COURSE_STATUSES,
   DIFFICULTY_LABELS,
   DIFFICULTY_LEVELS,
@@ -46,18 +49,18 @@ import {
   slugify,
   DeliveryMode,
   uid,
-} from "../../components/course/schema";
+} from "./schema";
 import { toast } from "sonner";
-import { useCreateCourse } from "@/hooks/course/use-course";
 import { CreateCourseInput } from "@/lib/validation/course";
-import { Chip } from "../../components/course/Chip";
-import { SummaryRow } from "../../components/course/SummaryRow";
-import { ToggleTile } from "../../components/course/ToggleTile";
-import { StatusPill } from "../../components/course/StatusPill";
-import { CreateCategoryDialog } from "../../components/course/CreateCategoryDialog";
+import { ToggleTile } from "./ToggleTile";
+import { StatusPill } from "./StatusPill";
+import { CreateCategoryDialog } from "./CreateCategoryDialog";
 import { useCourseCategories } from "@/hooks/course-category/use-course-category";
-import { CreateAudienceDialog } from "../../components/course/CreateAudienceDialog";
+import { CreateAudienceDialog } from "./CreateAudienceDialog";
 import { useCourseAudiences } from "@/hooks/course-audience/use-course-audience";
+import { AudienceMultiSelect } from "./AudienceMultiSelect";
+import { SummaryRow } from "./SummaryRow";
+import { Chip } from "./Chip";
 
 const MAX_SHORT_WORDS = 250;
 
@@ -75,7 +78,7 @@ export type CourseForm = {
   isPopular: boolean;
   certificateProvided: boolean;
 
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
 
   categoryId: string;
 
@@ -96,7 +99,7 @@ export type CourseForm = {
   }[];
 };
 
-const initialForm: CourseForm = {
+export const defaultInitialForm: CourseForm = {
   title: "",
   slug: "",
   shortDescription: "",
@@ -119,14 +122,35 @@ const initialForm: CourseForm = {
   modules: [],
 };
 
-type Errors = Partial<Record<keyof CourseForm, string>> & { pricingIds?: string[] };
+type Errors = Partial<Record<keyof CourseForm, string>> & {
+  pricingIds?: string[];
+};
 
-export default function NewCoursePage() {
-  const [form, setForm] = useState<CourseForm>(initialForm);
+interface CourseFormProps {
+  initialData?: CourseForm;
+  onSubmit: (payload: CreateCourseInput, status: CreateCourseInput["status"]) => void;
+  isSubmitting?: boolean;
+  submitButtonText?: string;
+}
+
+export function CourseForm({
+  initialData,
+  onSubmit,
+  isSubmitting = false,
+  submitButtonText,
+}: CourseFormProps) {
+  const [form, setForm] = useState<CourseForm>(initialData ?? defaultInitialForm);
   const [errors, setErrors] = useState<Errors>({});
-  const {mutate:createCourse} = useCreateCourse();
   const { data: courseCategories } = useCourseCategories();
   const { data: courseAudiences } = useCourseAudiences();
+
+  const isEditing = Boolean(initialData);
+
+//   useEffect(() => {
+//     if (initialData) {
+//       setForm(initialData);
+//     }
+//   }, [initialData]);
 
   const set = <K extends keyof CourseForm>(key: K, value: CourseForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -135,11 +159,11 @@ export default function NewCoursePage() {
 
   const shortWords = countWords(form.shortDescription);
 
-const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
-  set("pricing", {
-    ...form.pricing,
-    ...patch,
-  });
+  const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
+    set("pricing", {
+      ...form.pricing,
+      ...patch,
+    });
 
   const addModule = () =>
     set("modules", [
@@ -147,16 +171,19 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
       { id: uid(), title: "", estimatedDuration: 0, description: "" },
     ]);
 
-  const patchModule = (id: string, patch: Partial<CourseForm["modules"][number]>) =>
+  const patchModule = (
+    id: string,
+    patch: Partial<CourseForm["modules"][number]>
+  ) =>
     set(
       "modules",
-      form.modules.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+      form.modules.map((m) => (m.id === id ? { ...m, ...patch } : m))
     );
 
   const removeModule = (id: string) =>
     set(
       "modules",
-      form.modules.filter((m) => m.id !== id),
+      form.modules.filter((m) => m.id !== id)
     );
 
   const reorderModules = (from: number, to: number) => {
@@ -168,8 +195,12 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
   };
 
   const totalMinutes = useMemo(
-    () => form.modules.reduce((sum, m) => sum + (Number(m.estimatedDuration) || 0), 0),
-    [form.modules],
+    () =>
+      form.modules.reduce(
+        (sum, m) => sum + (Number(m.estimatedDuration) || 0),
+        0
+      ),
+    [form.modules]
   );
 
   const completion = useMemo(() => {
@@ -182,8 +213,8 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
       Boolean(form.categoryId),
       form.audiences.length > 0,
       Boolean(form.pricing.amount),
-  Boolean(form.pricing.currency.trim()),
-  Boolean(form.pricing.deliveryMode),
+      Boolean(form.pricing.currency.trim()),
+      Boolean(form.pricing.deliveryMode),
       form.modules.length > 0,
       Boolean(form.thumbnailUrl),
     ];
@@ -193,86 +224,85 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
   const validate = () => {
     const next: Errors = {};
     if (!form.title.trim()) next.title = "Course title is required.";
-    if (!form.slug.trim()) next.slug = "Slug is required — generate it from the title.";
-    if (!form.shortDescription.trim()) next.shortDescription = "Short description is required.";
+    if (!form.slug.trim())
+      next.slug = "Slug is required — generate it from the title.";
+    if (!form.shortDescription.trim())
+      next.shortDescription = "Short description is required.";
     else if (shortWords > MAX_SHORT_WORDS)
       next.shortDescription = `Short description must be under ${MAX_SHORT_WORDS} words.`;
-    if (!form.description.trim()) next.description = "A full course overview is required.";
+    if (!form.description.trim())
+      next.description = "A full course overview is required.";
     if (!form.durationDays || Number(form.durationDays) <= 0)
       next.durationDays = "Enter a duration of at least 1 day.";
     if (!form.categoryId) next.categoryId = "Select a course category.";
-    if (form.audiences.length === 0) next.audiences = "Select at least one target audience.";
+    if (form.audiences.length === 0)
+      next.audiences = "Select at least one target audience.";
     if (
-  !form.pricing.amount ||
-  !form.pricing.currency.trim() ||
-  !form.pricing.deliveryMode
-) {
-  next.pricing = "Please complete the pricing information.";
-}
-    if (form.modules.length === 0) next.modules = "Add at least one syllabus module.";
+      !form.pricing.amount ||
+      !form.pricing.currency.trim() ||
+      !form.pricing.deliveryMode
+    ) {
+      next.pricing = "Please complete the pricing information.";
+    }
+    if (form.modules.length === 0)
+      next.modules = "Add at least one syllabus module.";
     else if (form.modules.some((m) => !m.title.trim()))
       next.modules = "Every module needs a title.";
     setErrors(next);
-    return Object.keys(next).filter((k) => next[k as keyof Errors]).length === 0;
+    return (
+      Object.keys(next).filter((k) => next[k as keyof Errors]).length === 0
+    );
   };
 
-  const saveDraft = () => {
-    set("status", "DRAFT");
-    toast.success("Draft saved", {
-      description: `“${form.title.trim() || "Untitled course"}” stored as DRAFT.`,
-    });
+  const handleSaveDraft = () => {
+    const nextStatus = "DRAFT";
+    set("status", nextStatus);
+    const payload: CreateCourseInput = buildPayload(nextStatus);
+    onSubmit(payload, nextStatus);
   };
 
-  const publish = () => {
+  const handlePublishOrUpdate = () => {
     if (!validate()) {
-      toast.error("Cannot publish yet", {
-        description: "Resolve the highlighted fields before publishing.",
+      toast.error("Validation failed", {
+        description: "Resolve the highlighted fields before saving.",
       });
       document
         .querySelector(".field-error, [data-invalid='true']")
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    set("status", "PUBLISHED");
-    
-    const payload: CreateCourseInput = {
-  ...form,
 
-  durationDays: Number(form.durationDays),
-
-  pricing: {
-    ...form.pricing,
-    amount: Number(form.pricing.amount),
-  },
-
-  modules: form.modules.map((m) => ({
-    title: m.title,
-    description: m.description,
-    estimatedDuration: m.estimatedDuration
-      ? Number(m.estimatedDuration)
-      : undefined,
-  })),
-};
-  createCourse(payload, {
-    onSuccess: () => {
-      toast.success("Course published", {
-      description: `“${form.title}” is now live in the CertBridge catalogue.`,
-    });
-    },
-    onError: () => {
-      toast.error("Failed to publish course", {
-      description: `“${form.title}” could not be published. Please try again.`,
-    });
-    }
-  });
+    const nextStatus = isEditing ? form.status : "PUBLISHED";
+    set("status", nextStatus);
+    const payload: CreateCourseInput = buildPayload(nextStatus);
+    onSubmit(payload, nextStatus);
   };
 
+  const buildPayload = (targetStatus: CreateCourseInput["status"]): CreateCourseInput => ({
+    ...form,
+    status: targetStatus,
+    durationDays: Number(form.durationDays),
+    pricing: {
+      ...form.pricing,
+      amount: Number(form.pricing.amount),
+    },
+    modules: form.modules.map((m) => ({
+      title: m.title,
+      description: m.description,
+      estimatedDuration: m.estimatedDuration
+        ? Number(m.estimatedDuration)
+        : undefined,
+    })),
+  });
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-16">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-            <h1 className="mt-1 text-3xl font-semibold text-foreground">Create a new course</h1>
-            <StatusPill status={form.status} />
+          <h1 className="mt-1 text-3xl font-semibold text-foreground">
+            {isEditing ? "Edit Course" : "Create a new course"}
+          </h1>
+          <StatusPill status={form.status} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -309,13 +339,15 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                         value={form.slug}
                         placeholder="advanced-occupational-safety-leadership"
                         onChange={(e) => set("slug", slugify(e.target.value))}
-                        className={cn("font-mono text-sm", errors.slug && "field-error")}
+                        className={cn(
+                          "font-mono text-sm",
+                          errors.slug && "field-error"
+                        )}
                       />
                       <Button
                         type="button"
                         variant="secondary"
                         onClick={() => set("slug", slugify(form.title))}
-                        // disabled={!form.title.trim()}
                       >
                         <Wand2 className="size-4" /> Generate
                       </Button>
@@ -331,7 +363,8 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                     hint={
                       <span
                         className={cn(
-                          shortWords > MAX_SHORT_WORDS && "font-semibold text-destructive",
+                          shortWords > MAX_SHORT_WORDS &&
+                            "font-semibold text-destructive"
                         )}
                       >
                         {shortWords} / {MAX_SHORT_WORDS} words
@@ -375,8 +408,13 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                       min="1"
                       value={form.durationDays}
                       placeholder="5"
-                      onChange={(e) => set("durationDays", Number(e.target.value))}
-                      className={cn("tabular-nums", errors.durationDays && "field-error")}
+                      onChange={(e) =>
+                        set("durationDays", Number(e.target.value))
+                      }
+                      className={cn(
+                        "tabular-nums",
+                        errors.durationDays && "field-error"
+                      )}
                     />
                     <ErrorText>{errors.durationDays}</ErrorText>
                   </div>
@@ -392,7 +430,7 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                             "flex-1 rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors",
                             form.status === status
                               ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground",
+                              : "text-muted-foreground hover:text-foreground"
                           )}
                         >
                           {status}
@@ -407,7 +445,9 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                   <ToggleGroup
                     type="single"
                     value={form.level}
-                    onValueChange={(v) => v && set("level", v as CourseForm["level"])}
+                    onValueChange={(v) =>
+                      v && set("level", v as CourseForm["level"])
+                    }
                     className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
                   >
                     {DIFFICULTY_LEVELS.map((level) => (
@@ -458,11 +498,12 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
 
               <FieldLabel>
                 <span className="inline-flex items-center gap-2">
-                  <ImageIcon className="size-4 text-muted-foreground" /> Thumbnail image
+                  <ImageIcon className="size-4 text-muted-foreground" />{" "}
+                  Thumbnail image
                 </span>
               </FieldLabel>
               <ThumbnailDropzone
-                value={form.thumbnailUrl}
+                value={form.thumbnailUrl ?? ""}
                 onChange={(v) => set("thumbnailUrl", v)}
               />
             </SectionCard>
@@ -483,12 +524,15 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                     >
                       <SelectTrigger
                         data-invalid={Boolean(errors.categoryId)}
-                        className={cn("w-full", errors.categoryId && "field-error")}
+                        className={cn(
+                          "w-full",
+                          errors.categoryId && "field-error"
+                        )}
                       >
                         <SelectValue placeholder="Select a training sector" />
                       </SelectTrigger>
                       <SelectContent>
-                        {courseCategories && courseCategories?.map((category) => (
+                        {courseCategories?.map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
                           </SelectItem>
@@ -498,7 +542,7 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                     <CreateCategoryDialog
                       existingCategories={courseCategories ?? []}
                       onCreated={(newCat) => {
-                        set("categoryId", newCat.id); // Auto-select the newly created category
+                        set("categoryId", newCat.id);
                       }}
                       trigger={
                         <Button
@@ -516,30 +560,29 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                 </div>
                 <div>
                   <FieldLabel required>Target audiences</FieldLabel>
-                  <div>
+                  <div className="flex gap-2 items-center">
                     <AudienceMultiSelect
                       value={form.audiences}
                       onChange={(v) => set("audiences", v)}
                       invalid={Boolean(errors.audiences)}
                       audiences={courseAudiences ?? []}
                     />
-                     <CreateAudienceDialog
+                    <CreateAudienceDialog
                       existingAudiences={courseAudiences ?? []}
                       onCreated={(newAudience) => {
-                        set("audiences", [...form.audiences, newAudience.id]); // Auto-select the newly created audience
+                        set("audiences", [...form.audiences, newAudience.id]);
                       }}
                       trigger={
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          aria-label="Add new category"
+                          aria-label="Add new audience"
                         >
                           <Plus className="size-4" />
                         </Button>
                       }
                     />
-
                   </div>
                   <ErrorText>{errors.audiences}</ErrorText>
                 </div>
@@ -547,17 +590,14 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
             </SectionCard>
 
             <SectionCard
-  icon={CircleDollarSign}
-  step="Section 04"
-  title="Pricing"
-  description="Configure the pricing for this course."
->
-  <PricingSection
-    pricing={form.pricing}
-    onChange={patchPricing}
-  />
-  <ErrorText>{errors.pricing}</ErrorText>
-</SectionCard>
+              icon={CircleDollarSign}
+              step="Section 04"
+              title="Pricing"
+              description="Configure the pricing for this course."
+            >
+              <PricingSection pricing={form.pricing} onChange={patchPricing} />
+              <ErrorText>{errors.pricing}</ErrorText>
+            </SectionCard>
 
             <SectionCard
               icon={LayoutList}
@@ -566,7 +606,12 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
               description="Drag to reorder the learner journey."
               action={
                 form.modules.length > 0 ? (
-                  <Button type="button" variant="outline" size="sm" onClick={addModule}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addModule}
+                  >
                     <Plus className="size-4" /> Add Module
                   </Button>
                 ) : undefined
@@ -587,14 +632,22 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <div className="panel overflow-hidden">
               <div className="border-b border-border bg-surface px-5 py-4">
-                <h2 className="text-sm font-semibold text-foreground">Course summary</h2>
-                <p className="text-xs text-muted-foreground">Live preview of the payload</p>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Course summary
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Live preview of the payload
+                </p>
               </div>
               <div className="space-y-4 p-5">
                 <div>
                   <div className="mb-1.5 flex items-center justify-between text-xs">
-                    <span className="font-medium text-muted-foreground">Completion</span>
-                    <span className="font-semibold text-foreground">{completion}%</span>
+                    <span className="font-medium text-muted-foreground">
+                      Completion
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {completion}%
+                    </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div
@@ -616,20 +669,26 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                 <SummaryRow
                   label="Category"
                   value={
-                    CATEGORIES.find((c) => c.id === form.categoryId)?.name ?? "Not selected"
+                    courseCategories?.find((c) => c.id === form.categoryId)?.name ??
+                    "Not selected"
                   }
                 />
-                <SummaryRow label="Level" value={DIFFICULTY_LABELS[form.level]} />
+                <SummaryRow
+                  label="Level"
+                  value={DIFFICULTY_LABELS[form.level]}
+                />
                 <SummaryRow
                   label="Duration"
-                  value={form.durationDays ? `${form.durationDays} day(s)` : "—"}
+                  value={
+                    form.durationDays ? `${form.durationDays} day(s)` : "—"
+                  }
                 />
                 <SummaryRow
                   label="Audiences"
                   value={
                     form.audiences.length
                       ? form.audiences
-                          .map((id) => AUDIENCES.find((a) => a.id === id)?.name)
+                          .map((id) => courseAudiences?.find((a) => a.id === id)?.name)
                           .filter(Boolean)
                           .join(", ")
                       : "None"
@@ -643,27 +702,30 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
                 <Separator />
 
                 <div>
-  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-    Pricing
-  </p>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Pricing
+                  </p>
 
-  <div className="flex items-center justify-between text-xs">
-    <span className="text-muted-foreground">
-      {form.pricing.deliveryMode
-        ? DELIVERY_MODE_LABELS[form.pricing.deliveryMode]
-        : "No delivery mode"}
-    </span>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {form.pricing.deliveryMode
+                        ? DELIVERY_MODE_LABELS[form.pricing.deliveryMode]
+                        : "No delivery mode"}
+                    </span>
 
-    <span className="font-semibold tabular-nums text-foreground">
-      {form.pricing.currency || "KES"} {form.pricing.amount || "0.00"}
-    </span>
-  </div>
-</div>
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {form.pricing.currency || "KES"}{" "}
+                      {form.pricing.amount || "0.00"}
+                    </span>
+                  </div>
+                </div>
 
                 <div className="flex flex-wrap gap-1.5">
                   {form.featured ? <Chip icon={Star}>Featured</Chip> : null}
                   {form.isPopular ? <Chip icon={Flame}>Popular</Chip> : null}
-                  {form.certificateProvided ? <Chip icon={BadgeCheck}>Certificate</Chip> : null}
+                  {form.certificateProvided ? (
+                    <Chip icon={BadgeCheck}>Certificate</Chip>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -682,18 +744,28 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
       </div>
 
       {/* Sticky action bar */}
-      <div className="border-t">
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
           <p className="text-xs text-muted-foreground">
-            {completion}% complete · autosaved locally ·{" "}
+            {completion}% complete ·{" "}
             <span className="font-medium text-foreground">{form.status}</span>
           </p>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={saveDraft}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSubmitting}
+              onClick={handleSaveDraft}
+            >
               <Save className="size-4" /> Save Draft
             </Button>
-            <Button type="button" onClick={publish}>
-              <Send className="size-4" /> Publish Course
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handlePublishOrUpdate}
+            >
+              <Send className="size-4" />
+              {submitButtonText || (isEditing ? "Save Changes" : "Publish Course")}
             </Button>
           </div>
         </div>
@@ -701,4 +773,3 @@ const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
     </div>
   );
 }
-

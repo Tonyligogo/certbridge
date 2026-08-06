@@ -50,7 +50,6 @@ export function SignInForm() {
   async function onSubmit({ email, password, rememberMe }: SignInValues) {
     setError(null);
     setLoading(true);
-    console.log(email, password, rememberMe, 'sign-in')
     const {error} = await signIn.email({
       email,
       password,

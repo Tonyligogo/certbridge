@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 
 import prisma from "@/lib/prisma";
-import { createCourseSchema } from "@/lib/validation/course";
+import { createCourseSchema, updateCourseSchema } from "@/lib/validation/course";
 import { requireAdmin } from "@/lib/server/course";
+import z, { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
   try {
@@ -153,5 +154,131 @@ export async function POST(req: NextRequest) {
         status: 500,
       }
     );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    requireAdmin();
+
+    const body = await request.json();
+
+    const validated = updateCourseSchema.safeParse(body);
+
+    if (!validated.success) {
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          issues: validated.error.issues,
+        },
+        { status: 400 }
+      );
+    }
+
+    const {
+      id,
+      audiences,
+      modules,
+      pricing,
+      ...courseData
+    } = validated.data;
+
+    const existing = await prisma.course.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        {
+          success:false,
+          error: "Course not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    const course = await prisma.course.update({
+      where: {
+        id,
+      },
+
+      data: {
+        ...courseData,
+
+        audiences: {
+          set: [],
+
+          connect: audiences.map((audience) => ({
+            id: audience,
+          })),
+        },
+
+        modules: {
+          deleteMany: {},
+
+          create: modules.map((module) => ({
+            title: module.title,
+            description: module.description,
+            estimatedDuration: module.estimatedDuration,
+          })),
+        },
+
+        pricing: {
+          upsert: {
+            create: {
+              deliveryMode: pricing.deliveryMode,
+              amount: pricing.amount,
+              currency: pricing.currency,
+            },
+
+            update: {
+              deliveryMode: pricing.deliveryMode,
+              amount: pricing.amount,
+              currency: pricing.currency,
+            },
+          },
+        },
+      },
+
+      include: {
+        category: true,
+        audiences: true,
+        modules: true,
+        pricing: true,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Course updated successfully.",
+        data: course,
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Validation failed.",
+              errors: z.flattenError(error).fieldErrors,
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+        console.error(error);
+    
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Something went wrong.",
+          },
+          { status: 500 },
+        );
   }
 }

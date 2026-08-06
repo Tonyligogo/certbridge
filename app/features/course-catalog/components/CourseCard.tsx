@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from "next/link";
@@ -45,7 +46,14 @@ export function CourseCard({
         role="img"
         aria-label={`${course.category?.name ?? "Course"} thumbnail`}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.35),transparent_60%)]" />
+        {course.thumbnailUrl && <div className="aspect-16/10 overflow-hidden bg-slate-100">
+        <img
+          src={course.thumbnailUrl}
+          alt={course.title}
+          loading="lazy"
+          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      </div>}
         {highlight ? (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
             {course.featured ? (

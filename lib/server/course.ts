@@ -1,5 +1,6 @@
 import { getAllCourses } from "../db/course";
 import { getServerSession } from "../get-server-session";
+import prisma from "../prisma";
 
 export async function requireAdmin() {
   const session = await getServerSession();
@@ -17,4 +18,16 @@ export async function requireAdmin() {
 
 export async function getCoursesServerSide() {
   return getAllCourses();
+}
+
+export async function getCourseBySlug(slug: string) {
+  return prisma.course.findUnique({
+    where: { slug },
+    include: {
+        category: true,
+        audiences: true,
+        modules: true,
+        pricing: true,
+      }
+  });
 }

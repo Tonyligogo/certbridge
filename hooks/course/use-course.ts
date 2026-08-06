@@ -1,5 +1,5 @@
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { courseService, CreateCoursePayload } from "@/services/course";
+import { courseService, CreateCoursePayload, UpdateCoursePayload } from "@/services/course";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCourses() {
@@ -19,5 +19,42 @@ export function useCreateCourse() {
     onSuccess: (response) => {
       queryClient.setQueryData(queryKeys.courses, response);
     },
+  });
+}
+
+export function useUpdateCourse() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateCoursePayload;
+    }) => courseService.updateCourse(id, data),
+
+    onSuccess: (updatedCourse) => {
+      // Update the individual course cache
+      queryClient.setQueryData(
+        ["course", updatedCourse?.id],
+        updatedCourse
+      );
+
+      // Invalidate course lists so they refetch
+      queryClient.invalidateQueries({
+        queryKey: ["courses"],
+      });
+    },
+  });
+}
+
+export function useGetCourseBySlug(slug: string) {
+  return useQuery({
+    queryKey: ["course", slug],
+
+    queryFn: () => courseService.getCourseBySlug(slug),
+
+    enabled: !!slug,
   });
 }

@@ -122,6 +122,12 @@ export const createCourseSchema = z.object({
 
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 
+export const updateCourseSchema = createCourseSchema.extend({
+  id: z.string()
+});
+
+export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
+
 export const createCategorySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   slug: z

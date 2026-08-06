@@ -67,7 +67,6 @@ export function SignUpForm() {
       router.push("/portal"); 
     }
 
-    console.log(email, password, 'sign-up')
   }
 
   const loading = form.formState.isSubmitting;

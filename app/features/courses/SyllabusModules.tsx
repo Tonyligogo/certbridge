@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState, FieldLabel } from "./SectionCard";
 import { cn } from "@/lib/utils";
-import { CourseForm } from "../../courses/[id]/page";
+import { CourseForm } from "./CourseForm";
 
 export function SyllabusModules({
   modules,
