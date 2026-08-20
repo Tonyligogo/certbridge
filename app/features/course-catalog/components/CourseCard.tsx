@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import { Clock, Users, Award, Sparkles, Flame, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Course } from "../types/catalogue";
@@ -69,9 +68,9 @@ export function CourseCard({
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center gap-2">
           {course.category?.name && (
-            <Badge variant="secondary" className="font-medium">
-              {course.category.name}
-            </Badge>
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">
+            {course.category.name}
+          </span>
           )}
           {course.level && (
             <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
@@ -81,15 +80,15 @@ export function CourseCard({
         </div>
 
         <div className="min-w-0">
-          <h3 className="line-clamp-2 text-base font-semibold leading-snug text-foreground">
-              {course.title}
-          </h3>
-          <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-            {course.shortDescription || course.description}
-          </p>
+          <h3 className="font-display line-clamp-2 text-xl font-bold text-text-primary leading-snug mb-2">
+          {course.title}
+        </h3>
+          <p className="text-sm text-text-secondary leading-relaxed mb-5 line-clamp-2">
+          {course.description}
+        </p>
         </div>
 
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs ">
           {course.durationDays > 0 && (
             <li className="flex items-center gap-1.5">
               <Clock className="size-3.5 shrink-0" aria-hidden="true" />
@@ -112,10 +111,7 @@ export function CourseCard({
           )}
         </ul>
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2">
-          <p className="text-lg font-semibold text-foreground">
-            {formatStartingPrice(course)}
-          </p>
+        <div className="mt-auto flex flex-col gap-3 pt-2">
           {
             isDashboard ? 
             (<Button size="sm" className="gap-1.5" onClick={onClick}>
@@ -124,7 +120,7 @@ export function CourseCard({
               <span className="sr-only">: {course.title}</span>
           </Button>)
              :
-            (<Button size="sm" className="gap-1.5" asChild>
+            (<Button size="lg" className="gap-1.5" asChild>
             <Link href={`/courses/${course.slug}`}>
               View Course
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -132,8 +128,15 @@ export function CourseCard({
             </Link>
           </Button>)
         }
+          <p className="text-lg border-t border-[#232323] mt-2 pt-3 font-semibold text-foreground">
+            {formatStartingPrice(course)} <span className="text-xs font-normal">/ participant</span>
+          </p>
         </div>
       </div>
+      {course.status === 'ARCHIVED' && 
+      <div className="bg-rose-200 text-rose-500 text-center">
+        <span className="text-sm">Archived</span>
+      </div>}
     </article>
   );
 }

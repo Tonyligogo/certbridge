@@ -23,6 +23,10 @@ import type { Course } from "../types/catalogue";
 import { ShareCourseButton } from "./ShareCourseButton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useDeleteCourse, useUpdateCourseStatus } from "@/hooks/course/use-course";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface CourseDetailsSheetProps {
   course: Course | null;
@@ -41,14 +45,45 @@ export function CourseDetailsSheet({
 }: CourseDetailsSheetProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const {mutate: deleteCourse, isPending: isDeleting} = useDeleteCourse();
+  const {mutate: archiveCourse, isPending: isArchiving} = useUpdateCourseStatus();
   if (!course) return null;
 
-  const isAdminRoute = pathname.startsWith("/admin/courses"); 
+  const isAdminRoute = pathname.startsWith("/admin/courses");
 
   const price = Number(course.pricing?.amount ?? 0);
   const currency = course.pricing?.currency;
 
   const imgUrl = course.thumbnailUrl || "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg";
+
+  const handleDelete = async () => {
+    deleteCourse(course.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        console.error("Error deleting course:", error);
+        toast.error("Failed to delete the course. Please try again.");
+      }
+    });
+  }
+
+  const handleArchive = async () => {
+    const newStatus = course.status === 'ARCHIVED' ? 'PUBLISHED' : 'ARCHIVED';
+    archiveCourse({id: course.id, status: newStatus}, {
+      onSuccess: () => {
+        setArchiveOpen(false);
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        console.error("Error archiving course:", error);
+        toast.error("Failed to archive the course. Please try again.");
+      }
+    });
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -65,7 +100,7 @@ export function CourseDetailsSheet({
                 </div>
                 <div className="border-b border-primary/20 pb-6">
                     <p className="font-display text-2xl font-bold">{`From ${currency} ${price.toLocaleString()}`}</p>
-                    <p className="text-sm text-muted-foreground">per group</p>
+                    <p className="text-sm text-muted-foreground">per participant</p>
                 </div>
                     <ul className="space-y-3 text-sm text-text-secondary border-b border-primary/20 pb-6">
             <li className="flex items-center gap-3">
@@ -82,15 +117,25 @@ export function CourseDetailsSheet({
             </li>
             </ul>
             {
-              isAdminRoute ? 
+              isAdminRoute ?
+              (
+              <div className="flex gap-2 items-center justify-between">
               <Button
                 onClick={() => router.push(`/admin/courses/edit/${course.slug}`)}
-                className="w-full inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
+                className="inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
                 >
                 Edit This Course <ArrowRight className="h-4 w-4" />
                 </Button>
+              <Button
+              onClick={() => setArchiveOpen(true)}
+              variant='outline'
+               className="py-6 font-semibold hover:opacity-90 transition"
+                >
+                {course.status === 'ARCHIVED' ? 'Unarchive' : 'Archive'} This Course <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>)
                 :
-              <div>
+              (<div>
                 <Button
                 onClick={() => onEnroll?.(course)}
                 className="w-full inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
@@ -108,7 +153,8 @@ export function CourseDetailsSheet({
                 >
                 Request a Quote
                 </a>
-            </div>}
+            </div>)
+            }
 
             <ul className="space-y-3 text-sm text-text-secondary">
             <li className="flex items-center gap-3">
@@ -124,7 +170,17 @@ export function CourseDetailsSheet({
           </div>
 
             {/* Footer Metadata */}
-           <ShareCourseButton courseSlug={course.slug} />
+            {isAdminRoute ? (
+              <Button
+                onClick={() => setDeleteOpen(true)}
+                variant="destructive"
+                className="py-6 font-semibold hover:opacity-90 transition"
+                >
+                Delete This Course
+                </Button>
+            ) : (
+              <ShareCourseButton courseSlug={course.slug} />
+            )}
           </div>
 
           {/* RIGHT COLUMN: Stepper Progress, Tabs, & Main Content (~8 cols) */}
@@ -242,6 +298,26 @@ export function CourseDetailsSheet({
           </div>
 
         </div>
+        <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title='Are you sure you want to delete this course?'
+        description={`This action cannot be undone. This will permanently delete "${course.title}".`}
+        action='Delete'
+        variant='destructive'
+      />
+      <ConfirmDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        onConfirm={handleArchive}
+        isLoading={isArchiving}
+        title={course.status === 'ARCHIVED' ? 'Are you sure you want to unarchive this course?' : 'Are you sure you want to archive this course?'}
+        description={` This will ${course.status === 'ARCHIVED' ? 'unarchive' : 'archive'} "${course.title}". This course will ${course.status === 'ARCHIVED' ? 'be visible' : 'not be visible'} on the platform`}
+        action={course.status === 'ARCHIVED' ? 'Unarchive' : 'Archive'}
+        variant={course.status === 'ARCHIVED' ? 'secondary' : 'destructive'}
+      />
       </SheetContent>
     </Sheet>
   );

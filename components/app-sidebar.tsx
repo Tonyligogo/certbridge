@@ -90,37 +90,32 @@ const adminSidebar = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/admin",
       icon: <LayoutDashboardIcon />,
     },
     {
       title: "Courses",
-      url: "#",
+      url: "/admin/courses",
       icon: <GraduationCap />,
     },
     {
       title: "Bookings",
-      url: "#",
+      url: "/admin/bookings",
       icon: <ClipboardList />,
     },
     {
       title: "Trainers",
-      url: "#",
+      url: "/admin/trainers",
       icon: <BriefcaseBusiness />,
     },
     {
       title: "Clients",
-      url: "#",
+      url: "/admin/clients",
       icon: <UsersIcon />,
     },
     {
-      title: "Admins",
-      url: "#",
-      icon: <UserCog />,
-    },
-    {
       title: "Reports",
-      url: "#",
+      url: "/admin/reports",
       icon: <BarChart3 />,
     },
   ],
@@ -128,7 +123,7 @@ const adminSidebar = {
   documents: [
     {
       name: "Documents",
-      url: "#",
+      url: "/admin/documents",
       icon: <FileIcon />,
     },
   ],
@@ -136,12 +131,12 @@ const adminSidebar = {
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/admin/settings",
       icon: <Settings2Icon />,
     },
     {
-      title: "Get Help",
-      url: "#",
+      title: "Help Requests",
+      url: "/admin/help-requests",
       icon: <CircleHelpIcon />,
     },
   ],

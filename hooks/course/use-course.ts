@@ -1,3 +1,4 @@
+import { CourseStatus } from "@/app/features/course-catalog/types/catalogue";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { courseService, CreateCoursePayload, UpdateCoursePayload } from "@/services/course";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,7 +44,7 @@ export function useUpdateCourse() {
 
       // Invalidate course lists so they refetch
       queryClient.invalidateQueries({
-        queryKey: ["courses"],
+        queryKey: queryKeys.courses,
       });
     },
   });
@@ -56,5 +57,39 @@ export function useGetCourseBySlug(slug: string) {
     queryFn: () => courseService.getCourseBySlug(slug),
 
     enabled: !!slug,
+  });
+}
+
+export function useDeleteCourse() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => courseService.deleteCourse(id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.courses,
+      });
+    },
+  });
+}
+
+export function useUpdateCourseStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: CourseStatus;
+    }) => courseService.updateCourseStatus(id, status),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.courses,
+      });
+    },
   });
 }

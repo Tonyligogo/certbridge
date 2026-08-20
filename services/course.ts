@@ -1,5 +1,5 @@
 import { Course as UpdateCourse } from "@/app/features/course-catalog/types/catalogue";
-import { Course } from "@/generated/prisma/client";
+import { Course, CourseStatus } from "@/generated/prisma/client";
 import { api } from "@/lib/api";
 import { CreateCourseInput } from "@/lib/validation/course";
 
@@ -35,7 +35,22 @@ export const courseService = {
   },
 
   async deleteCourse(id: string) {
-    const response = await api.delete(`/api/courses/${id}`);
-    return response.data;
-  },
+  const response = await api.delete<{
+    success: boolean;
+    message: string;
+  }>(`/api/courses/${id}`);
+
+  return response.data;
+},
+
+async updateCourseStatus(id: string, status: CourseStatus) {
+  const response = await api.patch<{
+    success: boolean;
+    message: string;
+  }>(`/api/courses/${id}/status`, {
+    status,
+  });
+
+  return response.data;
+}
 };

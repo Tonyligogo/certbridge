@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 import { CourseLevel } from "../types/catalogue";
+import { getServerSession } from "@/lib/get-server-session";
+import { CourseStatus } from "@/generated/prisma/enums";
 
 interface GetCatalogueCoursesOptions {
   q?: string;
@@ -18,9 +20,12 @@ export async function getCatalogueCourses({
   featured,
   popular,
 }: GetCatalogueCoursesOptions = {}) {
+  const session = await getServerSession();
+  const isAdmin = session?.user?.role === "admin";
+  const statusFilter = isAdmin ? {} : { status: CourseStatus.PUBLISHED };
   const courses = await prisma.course.findMany({
     where: {
-      status: "PUBLISHED",
+      ...statusFilter,
 
       ...(q
         ? {

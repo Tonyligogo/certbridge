@@ -112,28 +112,6 @@ model Profile {
 
 }
 
-model Participant {
-  id         String @id @default(cuid())
-
-  profileId  String
-  profile    Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  fullName   String
-
-  email      String?
-  phone      String?
-
-  department String?
-  jobTitle   String?
-
-  notes      String?
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  bookings   BookingParticipant[]
-}
-
 model CourseCategory {
   id          String @id @default(cuid())
 
@@ -224,46 +202,84 @@ model CourseModule {
   updatedAt         DateTime @updatedAt
 }
 
+model Participant {
+  id String @id @default(cuid())
+
+  profileId String?
+  profile   Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+
+  firstName String
+  lastName String
+
+  email String
+  phone String
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings BookingParticipant[]
+}
+
 model Booking {
-  id          String @id @default(cuid())
+  id String @id @default(cuid())
 
-  reference   String @unique
+  reference String @unique
 
-  profileId   String
-  profile     Profile @relation(fields: [profileId], references: [id])
+  // Optional because guests can submit bookings.
+  profileId String?
+  profile   Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
 
-  courseId    String
-  course      Course @relation(fields: [courseId], references: [id])
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
 
   deliveryMode DeliveryMode
 
-  preferredStartDate DateTime?
-  preferredEndDate   DateTime?
-
-  scheduledStartDate DateTime?
-  scheduledEndDate   DateTime?
-
+  // Customer/contact information at the time of booking.
   contactName  String
   contactEmail String
-  contactPhone String?
+  contactPhone String
+
+  organizationName String?
 
   participantCount Int
 
+  // Preferred training dates provided by the customer.
+  preferredStartDate DateTime?
+  preferredEndDate   DateTime?
+
+  // Actual confirmed dates.
+  scheduledStartDate DateTime?
+  scheduledEndDate   DateTime?
+
+  // Physical training location.
+  locationCountry String?
+  locationCity    String?
+  locationAddress String?
+  locationNotes   String?
+
   specialRequirements String?
 
-  quotedAmount Decimal? @db.Decimal(10,2)
-  finalAmount  Decimal? @db.Decimal(10,2)
+  adminNotes String?
+
+  // Pricing.
+  quotedAmount Decimal? @db.Decimal(10, 2)
+  finalAmount  Decimal? @db.Decimal(10, 2)
 
   currency String @default("KES")
 
   status BookingStatus @default(PENDING)
 
-  adminNotes String?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   participants BookingParticipant[]
+
+  @@index([profileId])
+  @@index([courseId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model BookingParticipant {
@@ -272,18 +288,20 @@ model BookingParticipant {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  participantId String
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String?
+  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  firstName String
+  lastName String
+  email    String
+  phone    String
 
   attended Boolean @default(false)
-
   certificateIssued Boolean @default(false)
-
   feedbackSubmitted Boolean @default(false)
 
-  @@unique([bookingId, participantId])
+  @@index([bookingId])
 }
-
 
 enum ProfileType {
   INDIVIDUAL
