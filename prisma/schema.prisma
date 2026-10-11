@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -15,37 +10,34 @@ datasource db {
 model User {
   id            String    @id
   name          String
-  email         String
+  email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          String? 
-  banned Boolean?
-	banReason String?
-	banExpires DateTime? @db.Timestamptz(3)  
+  role          String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  sessions      Session[]
+  banExpires    DateTime? @db.Timestamptz(3)
+  banReason     String?
+  banned        Boolean?
+  profiles      Profile?
   accounts      Account[]
+  sessions      Session[]
 
-  profiles Profile[]
-
-  @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
   impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -55,7 +47,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -65,6 +56,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -83,198 +75,145 @@ model Verification {
 }
 
 model Profile {
-  id        String @id @default(cuid())
-
-  userId    String @unique
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  type      ProfileType
-
-  // Contact information
-  phone     String?
-  country   String?
-  city      String?
-  displayName      String
-  
-  logoUrl              String?
-  website              String?
-  kraPin               String?
-  address              String?
-
-  onboardingComplete Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  participants Participant[]
-
-  bookings Booking[]
-
+  id                 String        @id @default(cuid())
+  userId             String        @unique
+  type               ProfileType
+  phone              String?
+  country            String?
+  city               String?
+  displayName        String
+  logoUrl            String?
+  website            String?
+  kraPin             String?
+  address            String?
+  onboardingComplete Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  bookings           Booking[]
+  participants       Participant[]
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CourseCategory {
-  id          String @id @default(cuid())
-
+  id          String   @id @default(cuid())
   name        String
-  slug        String @unique
-
+  slug        String   @unique
   description String?
-
-  isActive    Boolean @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
+  featured   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
   courses     Course[]
 }
 
 model CourseAudience {
-  id          String @id @default(cuid())
-
-  name        String
-  slug        String @unique
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  courses     Course[]
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  featured   Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  courses   Course[] @relation("CourseToCourseAudience")
 }
 
 model Course {
-  id          String @id @default(cuid())
-
-  categoryId  String
-  category    CourseCategory @relation(fields: [categoryId], references: [id])
-   pricing     CoursePricing?
-
-  title       String
-  slug        String @unique
-
-  shortDescription String
-  description String
-
-  durationDays Int
-
-  level       CourseLevel
-
-  status      CourseStatus @default(DRAFT)
-
-  thumbnailUrl String?
-  
-  featured    Boolean @default(false)
-  certificateProvided Boolean @default(false)
-  isPopular   Boolean @default(false)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  audiences          CourseAudience[]
-
-  modules     CourseModule[]
-
-  bookings    Booking[]
+  id                  String           @id @default(cuid())
+  categoryId          String
+  title               String
+  slug                String           @unique
+  description         String
+  learningOutcomes    String[]
+  durationDays        Int
+  level               CourseLevel
+  status              CourseStatus     @default(DRAFT)
+  thumbnailUrl        String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  certificateProvided Boolean          @default(false)
+  featured            Boolean          @default(false)
+  isPopular           Boolean          @default(false)
+  shortDescription    String
+  bookings            Booking[]
+  category            CourseCategory   @relation(fields: [categoryId], references: [id])
+  modules             CourseModule[]
+  pricing             CoursePricing[]
+  audiences           CourseAudience[] @relation("CourseToCourseAudience")
+  trainers TrainerCourse[]
 }
 
 model CoursePricing {
   id           String       @id @default(cuid())
-
-  courseId     String @unique
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
+  courseId     String
   deliveryMode DeliveryMode
   amount       Decimal      @db.Decimal(10, 2)
   currency     String       @default("KES")
-
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  course Course @relation( fields: [courseId], references: [id],onDelete: Cascade)
+
+  @@unique([courseId, deliveryMode])
+  @@index([courseId])
 }
 
 model CourseModule {
-  id          String @id @default(cuid())
-
-  courseId    String
-  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  title       String
-
-  description String?
-
-  estimatedDuration       Int?
+  id                String   @id @default(cuid())
+  courseId          String
+  title             String
+  topics       String[]
   createdAt         DateTime @default(now())
+  estimatedDuration Int?
   updatedAt         DateTime @updatedAt
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Participant {
-  id String @id @default(cuid())
-
+  id        String               @id @default(cuid())
   profileId String?
-  profile   Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
-
+  email     String
+  phone     String
+  notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
   firstName String
-  lastName String
-
-  email String
-  phone String
-
-  notes String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  bookings BookingParticipant[]
+  lastName  String
+  bookings  BookingParticipant[]
+  profile   Profile?             @relation(fields: [profileId], references: [id])
 }
 
 model Booking {
-  id String @id @default(cuid())
-
-  reference String @unique
-
-  // Optional because guests can submit bookings.
-  profileId String?
-  profile   Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
-
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id])
-
-  deliveryMode DeliveryMode
-
-  // Customer/contact information at the time of booking.
-  contactName  String
-  contactEmail String
-  contactPhone String
-
-  organizationName String?
-
-  participantCount Int
-
-  // Preferred training dates provided by the customer.
-  preferredStartDate DateTime?
-  preferredEndDate   DateTime?
-
-  // Actual confirmed dates.
-  scheduledStartDate DateTime?
-  scheduledEndDate   DateTime?
-
-  // Physical training location.
-  locationCountry String?
-  locationCity    String?
-  locationAddress String?
-  locationNotes   String?
-
+  id                  String               @id @default(cuid())
+  reference           String               @unique
+  profileId           String?
+  courseId            String
+  deliveryMode        DeliveryMode
+  preferredStartDate  DateTime?
+  preferredEndDate    DateTime?
+  scheduledStartDate  DateTime?
+  scheduledEndDate    DateTime?
+  contactName         String
+  contactEmail        String
+  contactPhone        String
+  participantCount    Int
   specialRequirements String?
-
-  adminNotes String?
-
-  // Pricing.
-  quotedAmount Decimal? @db.Decimal(10, 2)
-  finalAmount  Decimal? @db.Decimal(10, 2)
-
-  currency String @default("KES")
-
-  status BookingStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  participants BookingParticipant[]
+  currency            String               @default("KES")
+  status              BookingStatus        @default(OPEN)
+  adminNotes          String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  locationAddress     String?
+  locationCity        String?
+  locationCountry     String?
+  locationNotes       String?
+  organizationName    String?
+  course              Course               @relation(fields: [courseId], references: [id])
+  profile             Profile?             @relation(fields: [profileId], references: [id])
+  participants        BookingParticipant[]
+  trainers BookingTrainer[]
+  venues    BookingVenue[]
+  quote Quote?
+  invoices Invoice[]
+  activities BookingActivity[]
 
   @@index([profileId])
   @@index([courseId])
@@ -283,24 +222,340 @@ model Booking {
 }
 
 model BookingParticipant {
+  id                String       @id @default(cuid())
+  bookingId         String
+  participantId     String?
+  attended          Boolean?      
+  certificateIssued Boolean      @default(false)
+  feedbackSubmitted Boolean      @default(false)
+  email             String
+  firstName         String
+  lastName          String
+  phone             String
+  booking           Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  participant       Participant? @relation(fields: [participantId], references: [id])
+
+  @@index([bookingId])
+}
+
+model Trainer {
+  id String @id @default(cuid())
+
+  firstName String
+  lastName  String
+
+  email String
+  phone String
+
+  primaryCountry String?
+  primaryCity    String?
+
+  expertise         String?
+  yearsOfExperience Int?
+  languages         String?
+
+  status TrainerStatus @default(ACTIVE)
+
+  certified Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses       TrainerCourse[]
+  certifications TrainerCertification[]
+  bookings      BookingTrainer[]
+
+  @@index([status])
+  @@index([primaryCity])
+  @@index([certified])
+}
+
+model TrainerCourse {
+  id String @id @default(cuid())
+
+  trainerId String
+  trainer   Trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([trainerId, courseId])
+  @@index([trainerId])
+  @@index([courseId])
+}
+
+model TrainerCertification {
+  id String @id @default(cuid())
+
+  trainerId String
+  trainer   Trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  name String
+
+  issuedBy String?
+
+  issuedAt  DateTime?
+  expiresAt DateTime?
+
+  status TrainerCertificationStatus @default(PENDING)
+
+  // Supabase Storage reference
+  storagePath String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model BookingTrainer {
   id String @id @default(cuid())
 
   bookingId String
-  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  booking   Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
 
-  participantId String?
-  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+  trainerId String
+  trainer   Trainer @relation(fields: [trainerId],references: [id])
 
-  firstName String
-  lastName String
-  email    String
-  phone    String
+  status ResourceSourcingStatus @default(CONSIDERING)
 
-  attended Boolean @default(false)
-  certificateIssued Boolean @default(false)
-  feedbackSubmitted Boolean @default(false)
+  role TrainerAssignmentRole @default(LEAD)
+
+  agreedAmount Decimal? @db.Decimal(10, 2)
+  currency     String  @default("KES")
+
+  notes String?
+
+  confirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookingId, trainerId])
+  @@index([bookingId])
+  @@index([trainerId])
+  @@index([status])
+}
+
+model Venue {
+  id String @id @default(cuid())
+
+  name String
+  description String?
+
+  country String
+  city String
+  address String?
+
+  phone String?
+  email String?
+
+  website String?
+
+  capacity Int?
+
+  notes String?
+
+  status VenueStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings BookingVenue[]
+
+  @@index([status])
+  @@index([country])
+  @@index([city])
+}
+
+model BookingVenue {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+
+  venueId String
+  venue Venue @relation(fields: [venueId],references: [id])
+
+  status ResourceSourcingStatus @default(CONSIDERING)
+
+  agreedAmount Decimal? @db.Decimal(10, 2)
+  currency String @default("KES")
+
+  notes String?
+
+  confirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookingId, venueId])
+  @@index([bookingId])
+  @@index([venueId])
+  @@index([status])
+}
+
+model BookingActivity {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+
+  type BookingActivityType
+  metadata    Json?
+
+  description String
+
+  createdBy String?
+  createdAt DateTime @default(now())
 
   @@index([bookingId])
+  @@index([createdAt])
+}
+
+model Quote {
+  id String @id @default(cuid())
+
+  bookingId String @unique
+  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+
+  reference String @unique
+
+  status QuoteStatus @default(DRAFT)
+  currency String
+
+  taxType TaxType @default(STANDARD)
+  taxRate Decimal @default(16) @db.Decimal(5, 2)
+  subtotal    Decimal @default(0) @db.Decimal(12, 2)
+  taxAmount   Decimal @default(0) @db.Decimal(12, 2)
+  totalAmount Decimal @default(0) @db.Decimal(12, 2)
+
+  issuedAt DateTime?
+  expiresAt DateTime?
+
+  acceptedAt DateTime?
+  declinedAt DateTime?
+
+  responseNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items QuoteItem[]
+  invoices Invoice[]
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+model QuoteItem {
+  id String @id @default(cuid())
+
+  quoteId String
+  quote   Quote @relation(fields: [quoteId],references: [id],onDelete: Cascade)
+
+  name String
+  quantity Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @db.Decimal(10, 2)
+  amount Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+}
+
+model Invoice {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+
+  quoteId String?
+  quote   Quote? @relation(fields: [quoteId],references: [id])
+
+  reference String @unique
+
+  status InvoiceStatus @default(DRAFT)
+
+  taxType TaxType
+  taxRate Decimal @db.Decimal(5, 2)
+
+  currency String
+
+  subtotal Decimal @db.Decimal(10, 2)
+
+  taxAmount Decimal @db.Decimal(10, 2)
+
+  totalAmount Decimal @db.Decimal(10, 2)
+
+  issuedAt DateTime?
+  dueAt    DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([dueAt])
+  @@index([createdAt])
+}
+
+model InvoiceItem {
+  id String @id @default(cuid())
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId],references: [id],onDelete: Cascade)
+
+  name String
+
+  quantity Decimal @db.Decimal(10, 2)
+
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  amount Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id String @id @default(cuid())
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId],references: [id])
+
+  reference String @unique
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("KES")
+
+  method PaymentMethod
+
+  status PaymentStatus @default(PENDING)
+
+  transactionReference String?
+
+  paidAt DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([status])
+  @@index([paidAt])
 }
 
 enum ProfileType {
@@ -325,15 +580,117 @@ enum CourseStatus {
 enum DeliveryMode {
   ONLINE
   CLIENT_SITE
-  OUR_VENUE
+  ARRANGED_VENUE
 }
 
 enum BookingStatus {
+  OPEN //Booking exists and is still being worked through
+  CONFIRMED //Client has committed/accepted and booking will proceed
+  COMPLETED //Training has taken place and booking is finished
+  CANCELLED //Booking will no longer proceed
+}
+enum TrainerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+enum TrainerCertificationStatus {
   PENDING
-  QUOTED
+  VALID
+  EXPIRED
+  REJECTED
+}
+enum TrainerAssignmentRole {
+  LEAD
+  ASSISTANT
+}
+enum VenueStatus {
+  ACTIVE
+  INACTIVE
+}
+enum ResourceSourcingStatus {
+  CONSIDERING
+  CONTACTED
+  AVAILABLE
+  UNAVAILABLE
   CONFIRMED
-  TRAINER_ASSIGNED
-  SCHEDULED
-  COMPLETED
+  REPLACED
   CANCELLED
+}
+enum BookingActivityType {
+  CREATED
+  STATUS_CHANGED
+
+  TRAINER_ADDED
+  TRAINER_CONTACTED
+  TRAINER_CONFIRMED
+  TRAINER_REMOVED
+  TRAINER_REPLACED
+
+  VENUE_ADDED
+  VENUE_CONTACTED
+  VENUE_CONFIRMED
+  VENUE_REMOVED
+  VENUE_REPLACED
+
+  QUOTE_CREATED
+  QUOTE_UPDATED
+  QUOTE_SENT
+  QUOTE_ACCEPTED
+  QUOTE_DECLINED
+
+  SCHEDULED
+  RESCHEDULED
+
+  CLIENT_CONTACTED
+  NOTE_ADDED
+
+  CANCELLED
+  COMPLETED
+
+  INVOICE_CREATED
+INVOICE_UPDATED
+INVOICE_ISSUED
+INVOICE_VOIDED
+
+PAYMENT_RECEIVED
+PAYMENT_UPDATED
+PAYMENT_REFUNDED
+}
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+}
+enum PaymentMethod {
+  BANK_TRANSFER
+  MOBILE_MONEY
+  CARD
+  CASH
+  CHEQUE
+  OTHER
+}
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum TaxType {
+  STANDARD
+  ZERO_RATED
+  EXEMPT
+  NONE
 }

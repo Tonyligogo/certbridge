@@ -124,16 +124,15 @@ export default function ContactPage() {
               <ul className="space-y-4 text-sm">
                 <li className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-white mt-0.5" />
-                  <span>hello@trainhub.co.ke</span>
+                  <span>info@certbridgeglobal.com</span>
                 </li>
-                <li className="flex items-start gap-3">
+                {/* <li className="flex items-start gap-3">
                   <Phone className="h-5 w-5 text-white mt-0.5" />
                   <span>+254 700 000 000</span>
-                </li>
+                </li> */}
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-white mt-0.5" />
-                  <span>Westlands Office Park,
-                    <br /> Nairobi, Kenya</span>
+                  <span>Nairobi, Kenya</span>
                 </li>
               </ul>
             </div>

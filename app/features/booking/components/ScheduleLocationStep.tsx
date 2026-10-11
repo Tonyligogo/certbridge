@@ -3,7 +3,7 @@ import { CalendarDays, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Course } from "../lib/pricing";
+import type { Course } from "@/app/features/course-catalog/types/catalogue";
 import { FieldError } from "./FieldError";
 import type { StepProps } from "../types";
 
@@ -14,7 +14,7 @@ export function ScheduleLocationStep({
   course,
 }: StepProps & { course: Course }) {
   const needsLocation =
-    draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "OUR_VENUE";
+    draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "ARRANGED_VENUE";
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -36,29 +36,43 @@ export function ScheduleLocationStep({
               className="mt-2"
               min={today}
               value={draft.preferredStartDate}
-              onChange={(e) => onChange({ preferredStartDate: e.target.value })}
+              onChange={(e) => {
+                const startDate = e.target.value;
+                  onChange({
+                    preferredStartDate: startDate,
+                    preferredEndDate: calculateEndDate(
+                      startDate,
+                      course.durationDays
+                    ),
+                  });
+              }}
               aria-invalid={Boolean(errors["preferredStartDate"])}
             />
             <FieldError message={errors["preferredStartDate"]} />
           </div>
           <div>
-            <Label htmlFor="preferredEndDate">Preferred end date</Label>
+            <Label htmlFor="preferredEndDate">
+              Expected end date
+            </Label>
+
             <Input
               id="preferredEndDate"
               type="date"
-              className="mt-2"
-              min={draft.preferredStartDate || today}
+              className="mt-2 bg-muted/50 cursor-not-allowed"
               value={draft.preferredEndDate}
-              onChange={(e) => onChange({ preferredEndDate: e.target.value })}
-              aria-invalid={Boolean(errors["preferredEndDate"])}
+              readOnly
+              tabIndex={-1}
             />
-            <FieldError message={errors["preferredEndDate"]} />
+
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Automatically calculated for a {course.durationDays}-day course.
+            </p>
           </div>
         </div>
 
         <p className="flex gap-2 rounded-lg bg-accent p-3 text-sm text-accent-foreground">
           <CalendarDays className="mt-0.5 size-4 shrink-0" />
-          Nothing is scheduled yet — this course runs {course.durationDays} day{course.durationDays > 1 ? "s" : ""} once confirmed.
+          Nothing is scheduled yet — our team will confirm the final training schedule with you.
         </p>
       </section>
 
@@ -151,4 +165,21 @@ export function ScheduleLocationStep({
       </section>
     </div>
   );
+}
+
+function calculateEndDate(
+  startDate: string,
+  durationDays: number
+): string {
+  if (!startDate || !Number.isInteger(durationDays) || durationDays < 1) {
+    return "";
+  }
+
+  const [year, month, day] = startDate.split("-").map(Number);
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  date.setUTCDate(date.getUTCDate() + durationDays - 1);
+
+  return date.toISOString().slice(0, 10);
 }

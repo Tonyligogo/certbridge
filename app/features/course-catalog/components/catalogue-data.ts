@@ -1,4 +1,5 @@
-import { Course, CourseLevel, DeliveryMode } from "../types/catalogue";
+import { DeliveryMode } from "@/generated/prisma/enums";
+import { Course, CourseLevel } from "../types/catalogue";
 
 export const LEVEL_OPTIONS: { id: CourseLevel; label: string }[] = [
   { id: "BEGINNER", label: "Beginner" },
@@ -10,7 +11,7 @@ export const LEVEL_OPTIONS: { id: CourseLevel; label: string }[] = [
 export const DELIVERY_MODE_OPTIONS: { id: DeliveryMode; label: string }[] = [
   { id: "ONLINE", label: "Online" },
   { id: "CLIENT_SITE", label: "Client Site" },
-  { id: "OUR_VENUE", label: "Our Venue" },
+  { id: "ARRANGED_VENUE", label: "Our Venue" },
 ];
 
 export const DURATION_BUCKETS = [
@@ -33,20 +34,33 @@ export const slugify = (v: string) =>
 /**
  * Utility to extract and format the price from a course's pricing record
  */
-export const formatStartingPrice = (course: Pick<Course, "pricing">): string => {
-  if (!course.pricing) {
+
+
+export const formatStartingPrice = (
+  course: Pick<Course, "pricing">
+): string => {
+  const pricing = course.pricing?.find(
+    (price) => price.deliveryMode === DeliveryMode.ARRANGED_VENUE
+  );
+
+  if (!pricing) {
     return "Contact for Pricing";
   }
 
-  const numericAmount = Number(course.pricing.amount);
+  const numericAmount = Number(pricing.amount);
+
+  if (!Number.isFinite(numericAmount)) {
+    return "Contact for Pricing";
+  }
 
   if (numericAmount === 0) return "Free";
 
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-KE", {
     style: "currency",
-    currency: course.pricing.currency || "KES",
+    currency: pricing.currency || "KES",
     maximumFractionDigits: 0,
   }).format(numericAmount);
 };
 
-export const DEFAULT_PRICE_MAX = 1000000;
+
+export const DEFAULT_PRICE_MAX = 10000000;

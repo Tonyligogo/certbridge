@@ -4,13 +4,14 @@ import { cn } from "@/lib/utils";
 import {
   DELIVERY_MODE_DESCRIPTIONS,
   deliveryModeLabel,
-  type Course,
   type DeliveryMode,
 } from "../lib/pricing";
 import { FieldError } from "./FieldError";
 import type { StepProps } from "../types";
+import type { Course } from "@/app/features/course-catalog/types/catalogue";
 
-const ALL_DELIVERY_MODES: DeliveryMode[] = ["ONLINE", "CLIENT_SITE", "OUR_VENUE"];
+
+const ALL_DELIVERY_MODES: DeliveryMode[] = ["ONLINE", "CLIENT_SITE", "ARRANGED_VENUE"];
 
 export function TrainingDetailsStep({
   draft,
@@ -18,19 +19,20 @@ export function TrainingDetailsStep({
   onChange,
   course,
 }: StepProps & { course: Course }) {
+  console.log(draft)
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">How should we deliver it?</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Choose how you would like {course.title} to be delivered.
+          Choose how you would like <span className="font-semibold text-primary">{course.title}</span> to be delivered.
         </p>
       </div>
 
       <div className="grid gap-3">
         {ALL_DELIVERY_MODES.map((mode) => {
           const selected = draft.deliveryMode === mode;
-          const requiresLocation = mode === "CLIENT_SITE" || mode === "OUR_VENUE";
+          const requiresLocation = mode === "CLIENT_SITE" || mode === "ARRANGED_VENUE";
 
           return (
             <button
@@ -39,10 +41,10 @@ export function TrainingDetailsStep({
               onClick={() => onChange({ deliveryMode: mode })}
               aria-pressed={selected}
               className={cn(
-                "flex gap-3 rounded-xl border p-4 text-left transition-colors",
+                "flex gap-3 cursor-pointer rounded-xl border p-4 text-left transition-colors",
                 selected
-                  ? "border-primary bg-accent/60 ring-1 ring-primary"
-                  : "border-border bg-card hover:border-primary/50",
+                  ? "border-primary bg-primary/10"
+                  : "hover:border-primary",
               )}
             >
               <MapPin className="mt-0.5 size-5 shrink-0 text-primary" />

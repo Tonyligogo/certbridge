@@ -3,10 +3,10 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { BookingConfirmation as Confirmation } from "../lib/booking-schema";
 import { deliveryModeLabel, formatMoney } from "../lib/pricing";
+import { ConfirmedBooking } from "../services/booking";
 
-export function BookingConfirmation({ confirmation }: { confirmation: Confirmation }) {
+export function BookingConfirmation({ confirmation }: { confirmation: ConfirmedBooking }) {
   // Format preferred dates for display
   const formatDate = (d: string | Date | null | undefined) => {
     if (!d) return null;
@@ -26,8 +26,7 @@ export function BookingConfirmation({ confirmation }: { confirmation: Confirmati
       : startDateFormatted
     : "Flexible";
 
-  const totalAmount =
-    confirmation.quotedAmount ?? confirmation.finalAmount;
+  const totalAmount = 0;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -40,8 +39,8 @@ export function BookingConfirmation({ confirmation }: { confirmation: Confirmati
         
         <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
           Thanks {confirmation.contactName.split(" ")[0]} — your booking request for{" "}
-          <strong className="text-foreground">{confirmation.courseTitle}</strong> is pending review. Our team
-          will confirm availability and pricing within one business day.
+          <strong className="text-foreground">{confirmation.course.title}</strong> is pending review. Our team
+          will confirm availability and pricing within the hour and reach out to <strong className="text-foreground">{confirmation.contactPhone}</strong>.
         </p>
 
         <div className="mt-6 inline-flex flex-col items-center rounded-xl border border-dashed border-primary/40 bg-accent/50 px-6 py-4">

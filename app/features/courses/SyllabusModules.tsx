@@ -1,3 +1,4 @@
+'use client';
 import { ArrowDown, ArrowUp, GripVertical, LayoutList, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { EmptyState, FieldLabel } from "./SectionCard";
 import { cn } from "@/lib/utils";
 import { CourseForm } from "./CourseForm";
+import dynamic from "next/dynamic";
+
+const RichTextEditor = dynamic(
+  () => import("@/app/features/courses/RichTextEditor"),
+  { ssr: false}
+);
 
 export function SyllabusModules({
   modules,
@@ -13,12 +20,14 @@ export function SyllabusModules({
   onRemove,
   onReorder,
   onAdd,
+  editorKey,
 }: {
   modules: CourseForm["modules"];
   onPatch: (id: string, patch: Partial<CourseForm["modules"][number]>) => void;
   onRemove: (id: string) => void;
   onReorder: (from: number, to: number) => void;
   onAdd: () => void;
+  editorKey: number;
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
@@ -128,14 +137,19 @@ export function SyllabusModules({
 
           <div className="mt-3">
             <FieldLabel htmlFor={`mod-desc-${module.id}`}>Module description</FieldLabel>
-            <Textarea
+            {/* <Textarea
               id={`mod-desc-${module.id}`}
               rows={3}
               className="bg-card"
               placeholder="What learners will cover and achieve in this module."
               value={module.description}
               onChange={(e) => onPatch(module.id, { description: e.target.value })}
-            />
+            /> */}
+            <RichTextEditor
+                    key={editorKey}
+                    defaultValue={module.description ? JSON.parse(module.description) : []}
+                    onChange={(contentJson) => onPatch(module.id, { description: contentJson })}
+                  />
           </div>
         </div>
       ))}

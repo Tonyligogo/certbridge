@@ -27,6 +27,12 @@ import { useState } from "react";
 import { useDeleteCourse, useUpdateCourseStatus } from "@/hooks/course/use-course";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import dynamic from "next/dynamic";
+
+const MarkdownRenderer = dynamic(
+  () => import("@/app/features/courses/MarkdownRenderer"),
+  { ssr: false }
+);
 
 interface CourseDetailsSheetProps {
   course: Course | null;
@@ -232,7 +238,7 @@ export function CourseDetailsSheet({
                   {/* Detailed Description */}
                   <div>
                     <h2 className="font-display text-xl font-bold mb-3">Course Description</h2>
-                    <p className="text-base leading-relaxed">{course.description}</p>
+                    <MarkdownRenderer value={course.description} />
                   </div>
 
                   {/* Audience */}
@@ -286,8 +292,8 @@ export function CourseDetailsSheet({
                         <span className="text-[13px] tracking-wide font-normal text-muted-foreground">Estimated duration • {m.estimatedDuration} Mins</span> 
                         </span>
                     </AccordionTrigger>
-                    <AccordionContent className="leading-relaxed pb-5 pl-8">
-                      {m.description}
+                    <AccordionContent className="leading-relaxed pb-5 pl-4">
+                      <MarkdownRenderer value={m.description || ''} />
                     </AccordionContent>
                   </AccordionItem>
                 ))}

@@ -10,6 +10,15 @@ export function useCourses() {
   });
 }
 
+// available courses for trainers to link
+export function useAvailableCourses(expertise: string[], currentStep: boolean) {
+  return useQuery({
+    queryKey: ["available-courses", expertise],
+    queryFn: () => courseService.getAvailableCourses(expertise),
+    enabled: expertise.length > 0 && currentStep === true,
+  });
+}
+
 export function useCreateCourse() {
   const queryClient = useQueryClient();
 

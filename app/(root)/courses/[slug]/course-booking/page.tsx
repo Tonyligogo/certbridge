@@ -15,8 +15,7 @@ const page = async ({
   </div>
   }
   return (
-    <div>
-      <p>Booking page</p>
+    <div className="p-6 max-w-7xl mx-auto py-32">
       <BookingWizard course={course} isSignedIn={false}/>
     </div>
   )

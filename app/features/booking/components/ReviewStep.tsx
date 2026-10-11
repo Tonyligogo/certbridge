@@ -2,8 +2,10 @@ import { Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { deliveryModeLabel, type Course, type DeliveryMode } from "../lib/pricing";
+import { deliveryModeLabel, type DeliveryMode } from "../lib/pricing";
 import type { BookingDraft } from "../types";
+import type { Course } from "@/app/features/course-catalog/types/catalogue";
+
 
 function formatDate(value?: string) {
   if (!value) return "Flexible";
@@ -21,7 +23,7 @@ export function ReviewStep({
   course: Course;
   onEditStep: (step: number) => void;
 }) {
-  const requiresLocation = draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "OUR_VENUE";
+  const requiresLocation = draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "ARRANGED_VENUE";
   const location = [draft.locationAddress, draft.locationCity, draft.locationCountry]
     .filter(Boolean)
     .join(", ");
@@ -120,7 +122,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-0.5 text-sm sm:grid-cols-[10rem_1fr] sm:gap-3">
       <span className="text-muted-foreground">{label}</span>
-      <span className="wrap-break-word whitespace-pre-line">{value}</span>
+      <span className="wrap-break-word whitespace-pre-line font-medium text-base">{value}</span>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "react-quill-new/dist/quill.snow.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -248,4 +249,55 @@
   .surface-tint {
     background-color: var(--blue-50);
   }
+}
+
+.ql-toolbar {
+  background-color: #ffffff !important;
+  border-top-left-radius : 10px;
+  border-top-right-radius : 10px;
+  border-color: #cfd9e3 !important;
+}
+.ql-toolbar .ql-formats:not(:last-child) {
+  border-right: 1px solid #dcdcdc !important;
+  padding-right: 12px !important;
+}
+
+.ql-container {
+  font-family: "Lato", sans-serif !important;
+  border-bottom-left-radius : 10px;
+  border-bottom-right-radius : 10px;
+  border-color: #cfd9e3 !important;
+  height: unset !important;
+}
+
+.ql-editor {
+  line-height: 24px !important;
+  padding: 8px 22px !important;
+  color: #00054c !important;
+  /* font-weight: 400 !important; */
+  /* font-family: "Geist", "Geist Fallback" !important; */
+  /* font-size: 16px !important; */
+  letter-spacing: 0.25px !important;
+}
+
+.ql-editor a {
+  text-decoration: underline !important;
+}
+
+.ql-editor a:hover {
+  text-decoration: underline !important;
+}
+
+.ql-renderer {
+  padding: 0 !important;
+}
+
+.ql-editor:before {
+  left: 12px !important;
+  font-family: "Lato", sans-serif !important;
+  color: #6b7d90 !important;
+  font-style: normal !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  @apply truncate;
 }

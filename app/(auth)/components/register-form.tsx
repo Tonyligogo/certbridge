@@ -59,12 +59,12 @@ export function SignUpForm() {
       email,
       password,
       name,
-      callbackURL:"/email-verfified"
+      callbackURL:"/auth/redirect"
     }); 
     if (res.error) {
       setError(res.error.message || "Registration failed. Please try again later."); 
     } else {
-      router.push("/portal"); 
+      router.push("/verify-email"); 
     }
 
   }

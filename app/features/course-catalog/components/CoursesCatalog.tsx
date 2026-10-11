@@ -22,15 +22,18 @@ import { CourseCard } from "./CourseCard";
 import type { Course, CourseCategory, CourseAudience } from "../types/catalogue";
 import { CourseDetailsSheet } from "./CourseDetailSheet";
 import { usePathname } from "next/navigation";
+import { CoursePagination, type PaginationData } from "./CoursePagination";
 
 interface CourseCatalogueProps {
   courses: Course[];
+  pagination: PaginationData;
   sheetCategories?: CourseCategory[];
   sheetAudiences?: CourseAudience[];
 }
 
 export function CourseCatalogue({
   courses = [],
+  pagination,
   sheetCategories = [],
   sheetAudiences = [],
 }: CourseCatalogueProps) {
@@ -44,11 +47,21 @@ export function CourseCatalogue({
   const list = search.view === "list";
 
   return (
-        <div className="min-w-0 flex-1">
+        <div id="course-results" className="min-w-0 flex-1 scroll-mt-24">
           <div className="mb-5 space-y-4">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
-              <p className="min-w-0 truncate text-sm font-medium text-foreground" aria-live="polite">
-                Showing {courses.length} course{courses.length === 1 ? "" : "s"}
+              <p
+                className="min-w-0 truncate text-sm font-medium text-foreground"
+                aria-live="polite"
+              >
+                {pagination.total === 0
+                  ? "No courses found"
+                  : `Showing ${
+                      (pagination.page - 1) * pagination.limit + 1
+                    }–${Math.min(
+                      pagination.page * pagination.limit,
+                      pagination.total
+                    )} of ${pagination.total} courses`}
               </p>
 
               <div className="flex items-center gap-2">
@@ -123,7 +136,7 @@ export function CourseCatalogue({
             <div
               className={cn(
                 "grid gap-5",
-                list ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                list ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4"
               )}
             >
               {courses.map((course) => (
@@ -132,6 +145,7 @@ export function CourseCatalogue({
             </div>
           )
           }
+          <CoursePagination pagination={pagination} />
           {/* Side Drawer for Course Details */}
       <CourseDetailsSheet
         course={selectedCourse}

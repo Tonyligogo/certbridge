@@ -1,10 +1,18 @@
 import { getCatalogueCourses } from "../server/course";
-import type { CourseAudience, CourseCategory, CourseLevel } from "../types/catalogue";
+
+import type {
+  CourseAudience,
+  CourseCategory,
+  CourseLevel,
+} from "../types/catalogue";
+
 import { CourseCatalogue } from "./CoursesCatalog";
 
-
 interface Props {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Record<
+    string,
+    string | string[] | undefined
+  >;
   sheetCategories?: CourseCategory[];
   sheetAudiences?: CourseAudience[];
 }
@@ -14,36 +22,53 @@ export async function CoursesGrid({
   sheetCategories = [],
   sheetAudiences = [],
 }: Props) {
-  const q =
-    typeof searchParams.q === "string"
-      ? searchParams.q
-      : undefined;
+  const getString = (key: string) => {
+    const value = searchParams[key];
+    return typeof value === "string" ? value : undefined;
+  };
 
-  const categories =
-    typeof searchParams.categories === "string"
-      ? searchParams.categories.split(",")
-      : [];
+  const getArray = (key: string) => {
+    return (
+      getString(key)
+        ?.split(",")
+        .map((value) => value.trim())
+        .filter(Boolean) ?? []
+    );
+  };
 
-  const audiences =
-    typeof searchParams.audiences === "string"
-      ? searchParams.audiences.split(",")
-      : [];
+  const q = getString("q");
 
-  const levels =
-  typeof searchParams.levels === "string"
-    ? (searchParams.levels.split(",") as CourseLevel[])
-    : [];
+  const categories = getArray("categories");
+  const audiences = getArray("audiences");
 
-    const featured = searchParams.featured === "true";
-const popular = searchParams.isPopular === "true";
-  const courses = await getCatalogueCourses({
+  const levels = getArray("levels") as CourseLevel[];
+
+  const featured = getString("featured") === "true";
+  const popular = getString("isPopular") === "true";
+
+  const rawPage = Number(getString("page") ?? 1);
+
+  const page = Number.isFinite(rawPage)
+    ? Math.max(1, Math.floor(rawPage))
+    : 1;
+
+  const { courses, pagination } = await getCatalogueCourses({
     q,
     categories,
     audiences,
     levels,
     featured,
     popular,
+    page,
+    limit: 12,
   });
 
-  return <CourseCatalogue courses={courses} sheetCategories={sheetCategories} sheetAudiences={sheetAudiences} />;
+  return (
+    <CourseCatalogue
+      courses={courses}
+      pagination={pagination}
+      sheetCategories={sheetCategories}
+      sheetAudiences={sheetAudiences}
+    />
+  );
 }

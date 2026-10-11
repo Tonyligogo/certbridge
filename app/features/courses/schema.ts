@@ -11,7 +11,7 @@ export type DifficultyLevel = (typeof DIFFICULTY_LEVELS)[number];
 export const COURSE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
-export const DELIVERY_MODES = ["ONLINE", "CLIENT_SITE", "OUR_VENUE"] as const;
+export const DELIVERY_MODES = ["ONLINE", "CLIENT_SITE", "ARRANGED_VENUE"] as const;
 export type DeliveryMode = (typeof DELIVERY_MODES)[number];
 
 export type PricingTier = {
@@ -67,7 +67,7 @@ export const AUDIENCES = [
 export const DELIVERY_MODE_LABELS: Record<DeliveryMode, string> = {
   ONLINE: "Online",
   CLIENT_SITE: "Client Site",
-  OUR_VENUE: "Our Venue",
+  ARRANGED_VENUE: "Our Venue",
 };
 
 export const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {

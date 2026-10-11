@@ -2,20 +2,25 @@ import { Info } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { formatMoney, type PriceEstimate } from "../lib/pricing";
+import { formatMoney } from "../lib/pricing";
 
 // Extend the PriceEstimate type locally to support optional pricing features safely
-export type ExtendedPriceEstimate = PriceEstimate & {
-  surcharge?: number;
-  discountPercent?: number | null;
-  discountAmount?: number;
-};
+interface PriceEstimate{
+  participants:number;
+  currency:string;
+  totalPrice:number;
+  pricePerParticipant:number;
+}
 
-export function PriceEstimateCard({ estimate }: { estimate: ExtendedPriceEstimate }) {
-  const isAvailable = estimate.available && estimate.totalAmount != null;
-  const participantCount = estimate.participantCount ?? 0;
-  const rate = estimate.ratePerParticipant ?? 0;
-  const total = estimate.totalAmount ?? 0;
+export function PriceEstimateCard({ estimate }: { estimate: PriceEstimate | null }) {
+  if (!estimate) {
+    return (
+      <p>Please contact pur team for pricing information!</p>
+    )
+  }
+
+  const isAvailable = estimate.totalPrice > 0;
+  const total = estimate.totalPrice;
 
   return (
     <Card>
@@ -25,27 +30,12 @@ export function PriceEstimateCard({ estimate }: { estimate: ExtendedPriceEstimat
       <CardContent className="space-y-3 text-sm">
         {isAvailable ? (
           <>
-            <Row
-              label={`${participantCount} × ${formatMoney(rate, estimate.currency)}`}
-              value={formatMoney(participantCount * rate, estimate.currency)}
-            />
-
-            {estimate.surcharge != null && estimate.surcharge > 0 && (
+            {total != null && total > 0 && (
               <Row
                 label="Delivery surcharge"
-                value={formatMoney(estimate.surcharge, estimate.currency)}
+                value={formatMoney(total, estimate.currency)}
               />
             )}
-
-            {estimate.discountPercent != null &&
-              estimate.discountAmount != null &&
-              estimate.discountAmount > 0 && (
-                <Row
-                  label={`Group saving (${estimate.discountPercent}%)`}
-                  value={`− ${formatMoney(estimate.discountAmount, estimate.currency)}`}
-                  accent
-                />
-              )}
 
             <Separator />
 

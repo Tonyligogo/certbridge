@@ -30,6 +30,7 @@ import {
   UserCog,
   BriefcaseBusiness,
   BarChart3,
+  Building2,
 } from "lucide-react";
 
 import { User } from "@/lib/auth";
@@ -107,6 +108,11 @@ const adminSidebar = {
       title: "Trainers",
       url: "/admin/trainers",
       icon: <BriefcaseBusiness />,
+    },
+    {
+      title: "Venues",
+      url: "/admin/venues",
+      icon: <Building2 />,
     },
     {
       title: "Clients",

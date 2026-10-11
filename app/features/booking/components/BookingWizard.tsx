@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,12 @@ import {
   bookingRequestSchema,
   contactSchema,
   participantSchema,
-  type BookingConfirmation as Confirmation,
 } from "../lib/booking-schema";
 import { BookingConfirmation } from "./BookingConfirmation";
 import {
   draftToRequest,
   emptyDraft,
+  prefillFirstParticipant,
   type BookingDraft,
   type DraftPatch,
   type FieldErrors,
@@ -26,7 +26,12 @@ import { TrainingDetailsStep } from "./TrainingDetailsStep";
 import { ScheduleLocationStep } from "./ScheduleLocationStep";
 import { ReviewStep } from "./ReviewStep";
 import { PriceEstimateCard } from "./PriceEstimateCard";
-import { Course, estimatePrice } from "../lib/pricing";
+import { useCreateBooking } from "../hooks/use-booking";
+import { ConfirmedBooking } from "../services/booking";
+import type { Course } from "@/app/features/course-catalog/types/catalogue";
+import { useSearchParams } from "next/navigation";
+import { DeliveryMode } from "@/generated/prisma/enums";
+import { calculateBookingPrice } from "@/lib/pricing-config";
 
 interface Prefill {
   firstName?: string | null;
@@ -41,27 +46,26 @@ export function BookingWizard({
   course,
   prefill,
   isSignedIn,
-  onSubmitBooking,
 }: {
   course: Course;
   prefill?: Prefill | null | undefined;
   isSignedIn: boolean;
-  onSubmitBooking?: (draft: BookingDraft) => Promise<Confirmation>;
 }) {
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmation, setConfirmation] = useState<ConfirmedBooking | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const prefilled = useRef(false);
+  const {mutate: submitBooking, isPending:isSubmitting} = useCreateBooking();
+  const paramsDeliveryMode = useSearchParams().get("deliveryMode") as string | null;
 
   const [draft, setDraft] = useState<BookingDraft>(() => {
     const base = emptyDraft();
     // Default delivery mode from course pricing if available
     if (course.pricing) {
-      base.deliveryMode = course.pricing.deliveryMode;
+      base.deliveryMode = course.pricing?.find((price)=>price.deliveryMode === paramsDeliveryMode)?.deliveryMode ?? DeliveryMode.ARRANGED_VENUE;
     }
-    return base;
+    return base
   });
 
   // Prefill contact details for signed-in customers without clobbering manual edits
@@ -91,12 +95,31 @@ export function BookingWizard({
           : p
       ),
     }));
-  }, [prefill]);
+  }, [prefill]); 
 
-  const estimate = useMemo(
-    () => estimatePrice(course, draft.participants.length),
-    [course, draft.participants.length]
+  const participantCount = draft.participants.length;
+  const deliveryMode = draft.deliveryMode;
+  const durationDays = course.durationDays;
+
+  const selectedPricing = course.pricing.find(
+    (price) => price.deliveryMode === deliveryMode
   );
+  const basePrice = selectedPricing
+    ? Number(selectedPricing.amount)
+    : null;
+
+  const estimate =
+    participantCount > 0 &&
+    basePrice !== null &&
+    Number.isFinite(basePrice)
+      ? calculateBookingPrice({
+          basePricePerParticipant: basePrice,
+          participants: participantCount,
+          durationDays: durationDays,
+          deliveryMode,
+          currency: selectedPricing!.currency,
+        })
+      : null;
 
   function patch(next: DraftPatch) {
     setDraft((prev) => ({ ...prev, ...next }));
@@ -140,7 +163,7 @@ export function BookingWizard({
 
     if (index === 3) {
       // Require venue details if training is in-person / client site
-      if (draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "OUR_VENUE") {
+      if (draft.deliveryMode === "CLIENT_SITE" || draft.deliveryMode === "ARRANGED_VENUE") {
         if (!draft.locationCountry.trim()) found["locationCountry"] = "Country is required for this delivery mode";
         if (!draft.locationCity.trim()) found["locationCity"] = "City is required for this delivery mode";
       }
@@ -173,6 +196,9 @@ export function BookingWizard({
       setErrors(found);
       return;
     }
+    if(step === 0){
+      setDraft((prev) => prefillFirstParticipant(prev));
+    }
     goTo(Math.min(step + 1, BOOKING_STEPS.length - 1));
   }
 
@@ -188,7 +214,12 @@ export function BookingWizard({
       }
     }
 
-    const payload = draftToRequest(draft, course.id);
+    const newDraft = {
+      ...draft,
+      quotedAmount: estimate?.totalPrice || 0,
+    }
+
+    const payload = draftToRequest(newDraft, course.id);
     const parsed = bookingRequestSchema.safeParse(payload);
     
     if (!parsed.success) {
@@ -198,18 +229,21 @@ export function BookingWizard({
     }
 
     try {
-      setIsSubmitting(true);
       setErrors({});
-      if (onSubmitBooking) {
-        const result = await onSubmitBooking(draft);
-        setConfirmation(result);
-      }
+      submitBooking(payload, {
+        onSuccess: (result) => {
+          setConfirmation(result ?? null);
+        },
+        onError: (err) => {
+          setErrors({
+            form: err instanceof Error ? err.message : "Something went wrong. Please try again.",
+          });
+        },
+      });
     } catch (err) {
       setErrors({
         form: err instanceof Error ? err.message : "Something went wrong. Please try again.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -218,8 +252,8 @@ export function BookingWizard({
   const progress = ((step + 1) / BOOKING_STEPS.length) * 100;
 
   return (
-    <div ref={topRef} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-      <div className="min-w-0">
+    <div ref={topRef} className="flex flex-col sm:flex-row gap-4">
+      <div className="flex-1">
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
           <div className="space-y-4">
             <Progress value={progress} aria-label="Booking progress" />
@@ -293,7 +327,7 @@ export function BookingWizard({
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
             You&apos;re requesting
           </p>
-          <h2 className="mt-2 font-bold text-xl">{course.title}</h2>
+          <h2 className="mt-2 font-bold text-xl max-w-sm">{course.title}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {course.durationDays} Days · {course.level}
           </p>

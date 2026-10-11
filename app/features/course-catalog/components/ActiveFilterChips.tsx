@@ -88,7 +88,6 @@ export function ActiveFilterChips({
       clear: { certificateProvided: false },
     });
   }
-
   // Array / Multi-select list chips
   const listChips = [
     ...s.categories.map((idOrSlug: string) => {

@@ -5,14 +5,14 @@ import Link from "next/link";
 export function CourseCard({ course }: { course: Course }) {
   return (
     <article className="card-hover group bg-white rounded-xl border border-secondary/50 shadow-sm overflow-hidden flex flex-col">
-      <div className="aspect-16/10 overflow-hidden bg-secondary">
+      {/* <div className="aspect-16/10 overflow-hidden bg-secondary">
         <img
           src={course.image}
           alt={course.title}
           loading="lazy"
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-      </div>
+      </div> */}
       <div className="p-6 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">

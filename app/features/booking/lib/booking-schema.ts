@@ -1,83 +1,160 @@
 import { z } from "zod";
+import { BookingStatus } from "./pricing";
 
-// Delivery mode enum matching Prisma model / database standard
-export const deliveryModeEnum = z.enum(["ONLINE", "CLIENT_SITE", "OUR_VENUE"]);
+export const deliveryModeEnum = z.enum([
+  "ONLINE",
+  "CLIENT_SITE",
+  "ARRANGED_VENUE",
+]);
 
 export const participantSchema = z.object({
-  firstName: z.string().trim().min(1, "First name is required").max(60),
-  lastName: z.string().trim().min(1, "Last name is required").max(60),
-  email: z.string().trim().email("Enter a valid email address").max(255),
-  phone: z.string().trim().min(6, "Enter a valid phone number").max(40),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First name is required")
+    .max(60),
+
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name is required")
+    .max(60),
+
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email address")
+    .max(255),
+
+  phone: z
+    .string()
+    .trim()
+    .min(6, "Enter a valid phone number")
+    .max(40),
 });
 
 export const contactSchema = z.object({
-  contactName: z.string().trim().min(2, "Contact name is required").max(120),
-  contactEmail: z.string().trim().email("Enter a valid email address").max(255),
-  contactPhone: z.string().trim().min(6, "Phone number is required").max(40),
+  contactName: z
+    .string()
+    .trim()
+    .min(2, "Contact name is required")
+    .max(120),
+
+  contactEmail: z
+    .string()
+    .trim()
+    .email("Enter a valid email address")
+    .max(255),
+
+  contactPhone: z
+    .string()
+    .trim()
+    .min(6, "Phone number is required")
+    .max(40),
+
   organizationName: z
-    .union([z.string().trim().max(160), z.literal("")])
+    .union([
+      z.string().trim().max(160),
+      z.literal(""),
+    ])
     .optional()
     .transform((val) => val || undefined),
 });
 
 export const bookingRequestSchema = z
   .object({
-    courseId: z.string().trim().min(1, "Course ID or slug is required"),
+    courseId: z
+      .string()
+      .trim()
+      .min(1, "Course ID is required"),
+
+       quotedAmount: z
+    .number({
+      message: "Quoted amount must be a number",
+    })
+    .positive("Quoted amount must be greater than zero"),
+
     deliveryMode: deliveryModeEnum,
-    
-    // Auto-calculated or length validated from participants array
-    participantCount: z.number().int().min(1, "At least one participant is required"),
+
     participants: z
       .array(participantSchema)
       .min(1, "Add at least one participant")
       .max(200),
 
-    // Preferred training dates provided by customer
     preferredStartDate: z
-      .union([z.string(), z.string().trim().max(20), z.literal("")])
-      .optional()
-      .transform((val) => (val ? new Date(val) : undefined)),
-    preferredEndDate: z
-      .union([z.string(), z.string().trim().max(20), z.literal("")])
-      .optional()
-      .transform((val) => (val ? new Date(val) : undefined)),
+      .string()
+      .min(1, "Preferred start date is required"),
 
-    // Physical training location
+    preferredEndDate: z
+      .string()
+      .min(1, "Preferred end date is required"),
+
     locationCountry: z
-      .union([z.string().trim().max(80), z.literal("")])
+      .union([
+        z.string().trim().max(80),
+        z.literal(""),
+      ])
       .optional()
       .transform((val) => val || undefined),
+
     locationCity: z
-      .union([z.string().trim().max(80), z.literal("")])
+      .union([
+        z.string().trim().max(80),
+        z.literal(""),
+      ])
       .optional()
       .transform((val) => val || undefined),
+
     locationAddress: z
-      .union([z.string().trim().max(240), z.literal("")])
+      .union([
+        z.string().trim().max(240),
+        z.literal(""),
+      ])
       .optional()
       .transform((val) => val || undefined),
+
     locationNotes: z
-      .union([z.string().trim().max(1000), z.literal("")])
+      .union([
+        z.string().trim().max(1000),
+        z.literal(""),
+      ])
       .optional()
       .transform((val) => val || undefined),
 
     specialRequirements: z
-      .union([z.string().trim().max(2000), z.literal("")])
+      .union([
+        z.string().trim().max(2000),
+        z.literal(""),
+      ])
       .optional()
       .transform((val) => val || undefined),
   })
-  .and(contactSchema);
+  .and(contactSchema)
+  .refine(
+    (data) =>
+      new Date(data.preferredEndDate) >=
+      new Date(data.preferredStartDate),
+    {
+      message:
+        "Preferred end date must be on or after the preferred start date",
+      path: ["preferredEndDate"],
+    },
+  );
 
-export type BookingRequestInput = z.infer<typeof bookingRequestSchema>;
+export type BookingRequestInput = z.infer<
+  typeof bookingRequestSchema
+>;
+
+export type CreateBookingPayload = BookingRequestInput;
 
 export interface BookingConfirmation {
   id: string;
   reference: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  status: BookingStatus;
   
   courseId: string;
-  courseTitle: string;
   
-  deliveryMode: "ONLINE" | "CLIENT_SITE" | "OUR_VENUE";
+  deliveryMode: "ONLINE" | "CLIENT_SITE" | "ARRANGED_VENUE";
 
   contactName: string;
   contactEmail: string;
@@ -91,7 +168,7 @@ export interface BookingConfirmation {
     lastName: string;
     email: string;
     phone: string;
-    attended?: boolean;
+    attended: boolean | null;
     certificateIssued?: boolean;
   }[];
 
@@ -107,8 +184,6 @@ export interface BookingConfirmation {
 
   specialRequirements: string | null;
 
-  quotedAmount: number | string | null;
-  finalAmount: number | string | null;
   currency: string;
 
   createdAt: string | Date;

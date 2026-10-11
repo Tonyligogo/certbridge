@@ -7,11 +7,36 @@ export type CreateCoursePayload = CreateCourseInput;
 
 export type UpdateCoursePayload = Partial<CreateCoursePayload>;
 
+export interface AvailableCourse {
+  id: string;
+  title: string;
+  category: {
+    name: string;
+  };
+}
+
 export const courseService = {
   async getCourses() {
-    const response = await api.get<Course[]>("/api/courses");
+    const response = await api.get<Course[]>("/api/admin/trainers/available-courses");
     return response.data;
   },
+
+  // fetch available courses for trainers to link
+async getAvailableCourses(expertise: string[]):Promise<AvailableCourse[]> {
+  const params = new URLSearchParams();
+
+  expertise.forEach((item) => {
+    params.append("expertise", item);
+  });
+
+  const queryString = params.toString();
+
+    const response = await api.get<AvailableCourse[]>(
+    `/api/admin/trainers/available-courses?${queryString}`
+  );
+
+  return response.data || [];
+},
 
   async getCourse(id: string) {
     const response = await api.get<Course>(`/api/courses/${id}`);

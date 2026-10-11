@@ -59,7 +59,7 @@ export function SignInForm() {
     if (error) {
       setError(error.message || "Sign in failed. Please try again.");
     } else {
-      router.push("/portal");
+      router.push("/auth/redirect");
     }
     setLoading(false);
   }
@@ -70,7 +70,7 @@ export function SignInForm() {
 
     const {error} = await signIn.social({
       provider,
-      callbackURL: "/portal"
+      callbackURL: "/auth/redirect"
     });
     
     if (error) {

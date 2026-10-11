@@ -16,7 +16,8 @@ import {
   Star,
   Wand2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,7 +40,6 @@ import {
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { PricingSection } from "./PricingSection";
 import { SyllabusModules } from "./SyllabusModules";
-import { RichTextEditor } from "./Editor";
 import {
   COURSE_STATUSES,
   DIFFICULTY_LABELS,
@@ -61,8 +61,14 @@ import { useCourseAudiences } from "@/hooks/course-audience/use-course-audience"
 import { AudienceMultiSelect } from "./AudienceMultiSelect";
 import { SummaryRow } from "./SummaryRow";
 import { Chip } from "./Chip";
+import dynamic from "next/dynamic";
 
 const MAX_SHORT_WORDS = 250;
+
+const RichTextEditor = dynamic(
+  () => import("@/app/features/courses/RichTextEditor"),
+  { ssr: false}
+);
 
 export type CourseForm = {
   title: string;
@@ -141,6 +147,7 @@ export function CourseForm({
 }: CourseFormProps) {
   const [form, setForm] = useState<CourseForm>(initialData ?? defaultInitialForm);
   const [errors, setErrors] = useState<Errors>({});
+  const [editorKey, setEditorKey] = useState(0);
   const { data: courseCategories } = useCourseCategories();
   const { data: courseAudiences } = useCourseAudiences();
 
@@ -276,6 +283,7 @@ export function CourseForm({
     set("status", nextStatus);
     const payload: CreateCourseInput = buildPayload(nextStatus);
     onSubmit(payload, nextStatus);
+    setEditorKey((prevKey) => prevKey + 1);
   };
 
   const buildPayload = (targetStatus: CreateCourseInput["status"]): CreateCourseInput => ({
@@ -389,11 +397,16 @@ export function CourseForm({
                     Full description
                   </FieldLabel>
                   <RichTextEditor
+                    key={editorKey}
+                    defaultValue={form.description ? JSON.parse(form.description) : []}
+                    onChange={(v) => set("description", v)}
+                  />
+                  {/* <RichTextEditor
                     id="description"
                     value={form.description}
                     onChange={(v) => set("description", v)}
                     invalid={Boolean(errors.description)}
-                  />
+                  /> */}
                   <ErrorText>{errors.description}</ErrorText>
                 </div>
 
@@ -418,7 +431,7 @@ export function CourseForm({
                     />
                     <ErrorText>{errors.durationDays}</ErrorText>
                   </div>
-                  <div>
+                  {/* <div>
                     <FieldLabel>Status</FieldLabel>
                     <div className="flex rounded-lg border border-input bg-surface p-1">
                       {COURSE_STATUSES.map((status) => (
@@ -437,7 +450,7 @@ export function CourseForm({
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div>
@@ -496,7 +509,7 @@ export function CourseForm({
 
               <Separator className="my-6" />
 
-              <FieldLabel>
+              {/* <FieldLabel>
                 <span className="inline-flex items-center gap-2">
                   <ImageIcon className="size-4 text-muted-foreground" />{" "}
                   Thumbnail image
@@ -505,7 +518,7 @@ export function CourseForm({
               <ThumbnailDropzone
                 value={form.thumbnailUrl ?? ""}
                 onChange={(v) => set("thumbnailUrl", v)}
-              />
+              /> */}
             </SectionCard>
 
             <SectionCard
@@ -623,6 +636,7 @@ export function CourseForm({
                 onRemove={removeModule}
                 onReorder={reorderModules}
                 onAdd={addModule}
+                editorKey={editorKey}
               />
               <ErrorText>{errors.modules}</ErrorText>
             </SectionCard>

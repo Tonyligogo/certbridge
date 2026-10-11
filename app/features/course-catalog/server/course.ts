@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { CourseLevel } from "../types/catalogue";
 import { getServerSession } from "@/lib/get-server-session";
 import { CourseStatus } from "@/generated/prisma/enums";
+import { Prisma } from "@/generated/prisma/client";
 
 interface GetCatalogueCoursesOptions {
   q?: string;
@@ -10,6 +11,8 @@ interface GetCatalogueCoursesOptions {
   levels?: CourseLevel[];
   featured?: boolean;
   popular?: boolean;
+  page?: number;
+  limit?: number;
 }
 
 export async function getCatalogueCourses({
@@ -19,12 +22,21 @@ export async function getCatalogueCourses({
   levels = [],
   featured,
   popular,
+  page = 1,
+  limit = 12,
 }: GetCatalogueCoursesOptions = {}) {
   const session = await getServerSession();
   const isAdmin = session?.user?.role === "admin";
+  const safePage = Number.isFinite(page)
+    ? Math.max(1, Math.floor(page))
+    : 1;
+
+  const safeLimit = Number.isFinite(limit)
+    ? Math.min(48, Math.max(1, Math.floor(limit)))
+    : 12;
   const statusFilter = isAdmin ? {} : { status: CourseStatus.PUBLISHED };
-  const courses = await prisma.course.findMany({
-    where: {
+
+  const where: Prisma.CourseWhereInput = {
       ...statusFilter,
 
       ...(q
@@ -75,7 +87,19 @@ export async function getCatalogueCourses({
             isPopular: true,
           }
         : {}),
-    },
+    }
+
+  const total = await prisma.course.count({ where });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / safeLimit)
+  );
+
+  // Handles a page number greater than the last page.
+  const currentPage = Math.min(safePage, totalPages);
+  const courses = await prisma.course.findMany({
+    where,
 
     include: {
       category: true,
@@ -87,16 +111,26 @@ export async function getCatalogueCourses({
     orderBy: {
       createdAt: "desc",
     },
+    skip: (currentPage - 1) * safeLimit,
+    take: safeLimit,
   });
 
-  return courses.map((course) => ({
-    ...course,
+  return {
+    courses: courses.map((course) => ({
+      ...course,
+      pricing: course.pricing.map((p) => ({
+        ...p,
+        amount: p.amount.toNumber(),
+      })),
+    })),
 
-    pricing: course.pricing
-      ? {
-          ...course.pricing,
-          amount: course.pricing.amount.toNumber(),
-        }
-      : null,
-  }));
+    pagination: {
+      page: currentPage,
+      limit: safeLimit,
+      total,
+      totalPages,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+    },
+  };
 }

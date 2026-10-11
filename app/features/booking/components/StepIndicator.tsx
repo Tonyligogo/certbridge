@@ -12,18 +12,18 @@ export const BOOKING_STEPS = [
 
 export function StepIndicator({ current }: { current: number }) {
   return (
-    <ol className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4">
+    <ol className="flex flex-wrap items-center gap-3 mb-5">
       {BOOKING_STEPS.map((label, index) => {
         const done = index < current;
         const active = index === current;
         return (
-          <li key={label} className="flex items-center gap-2">
+          <li key={label} className="flex items-center gap-1">
             <span
               className={cn(
                 "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors",
                 done && "border-primary bg-primary text-primary-foreground",
                 active && "border-primary bg-background text-primary",
-                !done && !active && "border-border bg-muted text-muted-foreground",
+                !done && !active && "bg-slate-100 text-muted-foreground",
               )}
               aria-current={active ? "step" : undefined}
             >

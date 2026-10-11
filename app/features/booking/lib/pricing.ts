@@ -1,26 +1,23 @@
 // Enums matching your exact Prisma schema
 export type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ALL_LEVELS";
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-export type DeliveryMode = "ONLINE" | "CLIENT_SITE" | "OUR_VENUE";
+export type DeliveryMode = "ONLINE" | "CLIENT_SITE" | "ARRANGED_VENUE";
 export type BookingStatus = 
-  | "PENDING"
-  | "QUOTED"
+  | "OPEN"
   | "CONFIRMED"
-  | "TRAINER_ASSIGNED"
-  | "SCHEDULED"
   | "COMPLETED"
   | "CANCELLED";
 
 export const DELIVERY_MODE_LABELS: Record<DeliveryMode, string> = {
   ONLINE: "Online",
   CLIENT_SITE: "Client Site",
-  OUR_VENUE: "Our Venue",
+  ARRANGED_VENUE: "Our Venue",
 };
 
 export const DELIVERY_MODE_DESCRIPTIONS: Record<DeliveryMode, string> = {
   ONLINE: "Live virtual classroom, joined from anywhere.",
   CLIENT_SITE: "Our facilitator delivers the training directly at your premises.",
-  OUR_VENUE: "Delivered at one of our fully equipped training venues.",
+  ARRANGED_VENUE: "Delivered at one of our fully equipped training venues.",
 };
 
 export function deliveryModeLabel(mode: DeliveryMode): string {

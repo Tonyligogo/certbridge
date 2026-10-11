@@ -2,18 +2,10 @@
 'use client';
 
 import Link from "next/link";
-import { Clock, Users, Award, Sparkles, Flame, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock, Users, Award, ChartNoAxesColumnIncreasing, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Course } from "../types/catalogue";
 import { formatStartingPrice } from "./catalogue-data";
-
-const LEVEL_LABELS: Record<string, string> = {
-  ALL_LEVELS: "All Levels",
-  BEGINNER: "Beginner",
-  INTERMEDIATE: "Intermediate",
-  ADVANCED: "Advanced",
-};
 
 export function CourseCard({
   course,
@@ -27,16 +19,15 @@ export function CourseCard({
   onClick?: () => void;
 }) {
   const list = layout === "list";
-  const highlight = course.featured ? "Featured" : course.isPopular ? "Popular" : null;
 
   return (
     <article
       className={cn(
-        "group panel flex overflow-hidden shadow transition-shadow rounded-xl hover:shadow-lg",
+        "group panel bg-white rounded-md flex overflow-hidden shadow transition-shadow hover:shadow-xl hover:shadow-primary/5",
         list ? "flex-col sm:flex-row" : "flex-col"
       )}
     >
-      <div
+      {/* <div
         className={cn(
           "relative shrink-0 bg-linear-to-br",
           course || "from-muted/50 to-muted",
@@ -45,14 +36,7 @@ export function CourseCard({
         role="img"
         aria-label={`${course.category?.name ?? "Course"} thumbnail`}
       >
-        {course.thumbnailUrl && <div className="aspect-16/10 overflow-hidden bg-slate-100">
-        <img
-          src={course.thumbnailUrl}
-          alt={course.title}
-          loading="lazy"
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>}
+        
         {highlight ? (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
             {course.featured ? (
@@ -63,32 +47,32 @@ export function CourseCard({
             {highlight}
           </span>
         ) : null}
-      </div>
+      </div> */}
 
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          {course.category?.name && (
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">
-            {course.category.name}
-          </span>
-          )}
-          {course.level && (
-            <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-              {LEVEL_LABELS[course.level] ?? course.level}
-            </span>
-          )}
-        </div>
-
         <div className="min-w-0">
           <h3 className="font-display line-clamp-2 text-xl font-bold text-text-primary leading-snug mb-2">
           {course.title}
         </h3>
-          <p className="text-sm text-text-secondary leading-relaxed mb-5 line-clamp-2">
-          {course.description}
+          <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">
+          {course.shortDescription}
         </p>
         </div>
 
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs ">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* {course.category?.name && (
+            <span className="text-xs font-semibold uppercase tracking-wide text-primary bg-primary/10 px-2.5 py-1 rounded-md">
+            {course.category.name}
+          </span>
+          )} */}
+        </div>
+
+
+        <ul className="flex flex-col gap-x-4 gap-y-1.5 text-sm">
+          <li className="flex items-center gap-1.5 text-xs">
+                <ChartNoAxesColumnIncreasing className="size-3.5 shrink-0" aria-hidden="true" />
+                {course.level}
+            </li>
           {course.durationDays > 0 && (
             <li className="flex items-center gap-1.5">
               <Clock className="size-3.5 shrink-0" aria-hidden="true" />
@@ -111,26 +95,25 @@ export function CourseCard({
           )}
         </ul>
 
-        <div className="mt-auto flex flex-col gap-3 pt-2">
+        <div className="mt-auto border-t flex justify-between items-center gap-3 pt-2">
+          <p className="font-semibold text-foreground">
+            {formatStartingPrice(course)} 
+            <span className="text-xs block font-normal">/ participant</span>
+          </p>
           {
             isDashboard ? 
-            (<Button size="sm" className="gap-1.5" onClick={onClick}>
-              View Course
-              <ArrowRight className="size-4" aria-hidden="true" />
-              <span className="sr-only">: {course.title}</span>
-          </Button>)
+            (<button className="flex text-sm text-primary gap-1.5 hover:underline" onClick={onClick}>
+              <span>View course</span>
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+          </button>)
              :
-            (<Button size="lg" className="gap-1.5" asChild>
-            <Link href={`/courses/${course.slug}`}>
-              View Course
-              <ArrowRight className="size-4" aria-hidden="true" />
-              <span className="sr-only">: {course.title}</span>
+            (
+            <Link href={`/courses/${course.slug}`} className="flex gap-1.5 text-primary text-sm hover:underline">
+              <span>View course</span>
+              <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>
-          </Button>)
-        }
-          <p className="text-lg border-t border-[#232323] mt-2 pt-3 font-semibold text-foreground">
-            {formatStartingPrice(course)} <span className="text-xs font-normal">/ participant</span>
-          </p>
+          )
+        } 
         </div>
       </div>
       {course.status === 'ARCHIVED' && 
