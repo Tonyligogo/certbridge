@@ -6,9 +6,11 @@ import { createCourseSchema, updateCourseSchema } from "@/lib/validation/course"
 import { requireAdmin } from "@/lib/server/course";
 import z, { ZodError } from "zod";
 
+
 export async function POST(req: NextRequest) {
   try {
-    requireAdmin()
+    await requireAdmin();
+
     const body = await req.json();
 
     const validation = createCourseSchema.safeParse(body);
@@ -19,9 +21,7 @@ export async function POST(req: NextRequest) {
           message: "Validation failed",
           errors: validation.error.issues,
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
       where: {
         slug: data.slug,
       },
+      select: {
+        id: true,
+      },
     });
 
     if (existingCourse) {
@@ -39,9 +42,7 @@ export async function POST(req: NextRequest) {
         {
           message: "A course with this slug already exists.",
         },
-        {
-          status: 409,
-        }
+        { status: 409 }
       );
     }
 
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
       where: {
         id: data.categoryId,
       },
+      select: {
+        id: true,
+      },
     });
 
     if (!category) {
@@ -57,87 +61,89 @@ export async function POST(req: NextRequest) {
         {
           message: "Selected category does not exist.",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
 
     // Check all audiences exist
+    const uniqueAudienceIds = [...new Set(data.audiences)];
+
     const audiences = await prisma.courseAudience.findMany({
       where: {
         id: {
-          in: data.audiences,
+          in: uniqueAudienceIds,
         },
+      },
+      select: {
+        id: true,
       },
     });
 
-    if (audiences.length !== data.audiences.length) {
+    if (audiences.length !== uniqueAudienceIds.length) {
       return NextResponse.json(
         {
           message: "One or more selected audiences are invalid.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const course = await prisma.$transaction(async (tx) => {
-      return tx.course.create({
-        data: {
-          categoryId: data.categoryId,
+    // Create course and its relations
+    const course = await prisma.course.create({
+      data: {
+        categoryId: data.categoryId,
 
-          title: data.title,
-          slug: data.slug,
+        title: data.title,
+        slug: data.slug,
 
-          shortDescription: data.shortDescription,
-          description: data.description,
+        shortDescription: data.shortDescription,
+        description: data.description,
+        learningOutcomes: data.learningOutcomes,
 
-          durationDays: data.durationDays,
+        durationDays: data.durationDays,
 
-          level: data.level,
-          status: data.status,
+        level: data.level,
+        status: data.status,
 
-          thumbnailUrl: data.thumbnailUrl,
+        thumbnailUrl: data.thumbnailUrl,
 
-          featured: data.featured,
-          certificateProvided: data.certificateProvided,
-          isPopular: data.isPopular,
+        featured: data.featured,
+        certificateProvided: data.certificateProvided,
+        isPopular: data.isPopular,
 
-          audiences: {
-            connect: data.audiences.map((id) => ({
-              id,
-            })),
-          },
-
-          modules: {
-            create: data.modules.map((module) => ({
-              title: module.title,
-              description: module.description,
-              estimatedDuration: module.estimatedDuration,
-            })),
-          },
-
-          pricing: {
-            create: {
-              deliveryMode: data.pricing.deliveryMode,
-              amount: new Prisma.Decimal(data.pricing.amount),
-              currency: data.pricing.currency,
-            },
-          },
+        // Audiences
+        audiences: {
+          connect: uniqueAudienceIds.map((id) => ({
+            id,
+          })),
         },
 
-        include: {
-          category: true,
-
-          audiences: true,
-
-          modules: true,
-
-          pricing: true,
+        // Modules
+        modules: {
+          create: data.modules.map((module) => ({
+            title: module.title,
+            topics: module.topics,
+            estimatedDuration:
+              module.estimatedDuration ?? null,
+          })),
         },
-      });
+
+        // Pricing for all delivery modes
+        pricing: {
+          create: data.pricing.map((price) => ({
+            deliveryMode: price.deliveryMode,
+            amount: new Prisma.Decimal(price.amount),
+            currency: price.currency,
+          })),
+        },
+      },
+
+      include: {
+        category: true,
+        audiences: true,
+        modules: true,
+        pricing: true,
+      },
     });
 
     return NextResponse.json(course, {
@@ -150,16 +156,14 @@ export async function POST(req: NextRequest) {
       {
         message: "Internal Server Error",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    requireAdmin();
+    await requireAdmin();
 
     const body = await request.json();
 
@@ -168,6 +172,7 @@ export async function PATCH(request: NextRequest) {
     if (!validated.success) {
       return NextResponse.json(
         {
+          success: false,
           error: "Validation failed",
           issues: validated.error.issues,
         },
@@ -184,70 +189,149 @@ export async function PATCH(request: NextRequest) {
     } = validated.data;
 
     const existing = await prisma.course.findUnique({
-      where: {
-        id,
+      where: { id },
+      include: {
+        modules: {
+          select: { id: true },
+        },
       },
     });
 
     if (!existing) {
       return NextResponse.json(
         {
-          success:false,
+          success: false,
           error: "Course not found",
         },
         { status: 404 }
       );
     }
 
-    const course = await prisma.course.update({
-      where: {
-        id,
-      },
+    // Identify existing modules that belong to this course.
+    const existingModuleIds = new Set(
+      existing.modules.map((module) => module.id)
+    );
 
-      data: {
-        ...courseData,
+    // Split submitted modules into existing and new.
+    const modulesToUpdate = modules.filter(
+      (module) => module.id && existingModuleIds.has(module.id)
+    );
 
-        audiences: {
-          set: [],
+    const modulesToCreate = modules.filter(
+      (module) => !module.id
+    );
 
-          connect: audiences.map((audience) => ({
-            id: audience,
-          })),
+    // Reject module IDs that don't belong to this course.
+    const invalidModule = modules.find(
+      (module) => module.id && !existingModuleIds.has(module.id)
+    );
+
+    if (invalidModule) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "One or more module IDs are invalid.",
         },
+        { status: 400 }
+      );
+    }
 
-        modules: {
-          deleteMany: {},
+    // Delete modules that were removed from the form.
+    const submittedModuleIds = new Set(
+      modulesToUpdate.map((module) => module.id)
+    );
 
-          create: modules.map((module) => ({
-            title: module.title,
-            description: module.description,
-            estimatedDuration: module.estimatedDuration,
-          })),
-        },
+    const modulesToDelete = existing.modules
+      .filter((module) => !submittedModuleIds.has(module.id))
+      .map((module) => module.id);
 
-        pricing: {
-          upsert: {
-            create: {
-              deliveryMode: pricing.deliveryMode,
-              amount: pricing.amount,
-              currency: pricing.currency,
-            },
+    const course = await prisma.$transaction(async (tx) => {
+      // Update course details and audiences.
+      await tx.course.update({
+        where: { id },
+        data: {
+          ...courseData,
 
-            update: {
-              deliveryMode: pricing.deliveryMode,
-              amount: pricing.amount,
-              currency: pricing.currency,
-            },
+          audiences: {
+            set: audiences.map((audienceId) => ({
+              id: audienceId,
+            })),
           },
         },
-      },
+      });
 
-      include: {
-        category: true,
-        audiences: true,
-        modules: true,
-        pricing: true,
-      },
+      // Remove deleted modules.
+      if (modulesToDelete.length > 0) {
+        await tx.courseModule.deleteMany({
+          where: {
+            courseId: id,
+            id: {
+              in: modulesToDelete,
+            },
+          },
+        });
+      }
+
+      // Update existing modules.
+      for (const courseModule of modulesToUpdate) {
+        await tx.courseModule.update({
+          where: {
+            id: courseModule.id!,
+          },
+          data: {
+            title: courseModule.title,
+            topics: courseModule.topics,
+            estimatedDuration:
+              courseModule.estimatedDuration ?? null,
+          },
+        });
+      }
+
+      // Create newly added modules.
+      if (modulesToCreate.length > 0) {
+        await tx.courseModule.createMany({
+          data: modulesToCreate.map((courseModule) => ({
+            courseId: id,
+            title: courseModule.title,
+            topics: courseModule.topics,
+            estimatedDuration:
+              courseModule.estimatedDuration ?? null,
+          })),
+        });
+      }
+
+      // Create or update all three delivery-mode prices.
+      for (const price of pricing) {
+        await tx.coursePricing.upsert({
+          where: {
+            courseId_deliveryMode: {
+              courseId: id,
+              deliveryMode: price.deliveryMode,
+            },
+          },
+          create: {
+            courseId: id,
+            deliveryMode: price.deliveryMode,
+            amount: new Prisma.Decimal(price.amount),
+            currency: price.currency,
+          },
+          update: {
+            amount: new Prisma.Decimal(price.amount),
+            currency: price.currency,
+          },
+        });
+      }
+
+      // Fetch updated course with relations.
+      return tx.course.findUniqueOrThrow({
+        where: { id },
+        include: {
+          category: true,
+          audiences: true,
+          modules: true,
+          pricing: true,
+        },
+      });
     });
 
     return NextResponse.json(
@@ -256,29 +340,28 @@ export async function PATCH(request: NextRequest) {
         message: "Course updated successfully.",
         data: course,
       },
-      { status: 201 },
+      { status: 200 }
     );
   } catch (error) {
     if (error instanceof ZodError) {
-          return NextResponse.json(
-            {
-              success: false,
-              message: "Validation failed.",
-              errors: z.flattenError(error).fieldErrors,
-            },
-            {
-              status: 400,
-            },
-          );
-        }
-        console.error(error);
-    
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Something went wrong.",
-          },
-          { status: 500 },
-        );
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Validation failed.",
+          errors: z.flattenError(error).fieldErrors,
+        },
+        { status: 400 }
+      );
+    }
+
+    console.error("Update course error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Something went wrong.",
+      },
+      { status: 500 }
+    );
   }
 }

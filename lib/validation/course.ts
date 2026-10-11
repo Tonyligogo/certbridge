@@ -6,23 +6,25 @@ import {
 } from "@/generated/prisma/client";
 
 export const courseModuleSchema = z.object({
+  id: z.string().optional(),
+
   title: z
     .string()
     .trim()
     .min(1, "Module title is required")
     .max(200),
 
-  description: z
-    .string()
-    .trim()
-    .optional()
-    .or(z.literal("")),
+  topics: z
+    .array(
+      z.string().trim().min(1, "Topic cannot be empty")
+    )
+    .default([]),
 
   estimatedDuration: z
     .number()
     .int()
-    .positive()
-    .optional(),
+    .positive("Duration must be greater than zero")
+    .nullish(),
 });
 
 export const courseAudienceSchema = z.object({
@@ -40,6 +42,8 @@ export const courseAudienceSchema = z.object({
 });
 
 export const coursePricingSchema = z.object({
+  id: z.string().optional(),
+
   deliveryMode: z.enum(DeliveryMode),
 
   amount: z
@@ -51,12 +55,17 @@ export const coursePricingSchema = z.object({
   currency: z
     .string()
     .trim()
+    .min(1, "Currency is required")
     .default("KES"),
 });
 
+const requiredDeliveryModes = Object.values(DeliveryMode);
+
 export const createCourseSchema = z.object({
   categoryId: z
-    .string(),
+    .string()
+    .trim()
+    .min(1, "Select a course category"),
 
   title: z
     .string()
@@ -67,24 +76,33 @@ export const createCourseSchema = z.object({
   slug: z
     .string()
     .trim()
-    .min(3)
+    .min(3, "Slug must contain at least 3 characters")
     .max(200),
 
   shortDescription: z
     .string()
     .trim()
-    .min(10)
+    .min(10, "Short description must contain at least 10 characters")
     .max(300),
 
   description: z
     .string()
     .trim()
-    .min(20),
+    .min(20, "Course description must contain at least 20 characters"),
+
+  learningOutcomes: z
+    .array(
+      z.string()
+        .trim()
+        .min(3, "Learning outcome must contain at least 3 characters")
+        .max(500, "Learning outcome is too long")
+    )
+    .min(1, "Add at least one learning outcome"),
 
   durationDays: z
     .number()
     .int()
-    .positive(),
+    .positive("Duration must be at least 1 day"),
 
   level: z.enum(CourseLevel),
 
@@ -110,14 +128,43 @@ export const createCourseSchema = z.object({
     .default(false),
 
   audiences: z
-  .array(z.string())
-  .min(1, "Select at least one audience"),
+    .array(z.string().min(1))
+    .min(1, "Select at least one audience"),
 
   modules: z
     .array(courseModuleSchema)
     .min(1, "A course must have at least one module"),
 
-  pricing: coursePricingSchema,
+  pricing: z
+    .array(coursePricingSchema)
+    .length(
+      requiredDeliveryModes.length,
+      "Provide pricing for all three delivery modes"
+    )
+    .superRefine((pricing, ctx) => {
+      const seen = new Set<DeliveryMode>();
+
+      pricing.forEach((price, index) => {
+        if (seen.has(price.deliveryMode)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [index, "deliveryMode"],
+            message: "Duplicate delivery mode",
+          });
+        }
+
+        seen.add(price.deliveryMode);
+      });
+
+      for (const mode of requiredDeliveryModes) {
+        if (!seen.has(mode)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Missing pricing for ${mode}`,
+          });
+        }
+      }
+    }),
 });
 
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;

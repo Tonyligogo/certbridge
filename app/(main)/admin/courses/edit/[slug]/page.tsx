@@ -2,12 +2,11 @@
 
 import { use } from "react";
 import { useGetCourseBySlug, useUpdateCourse } from "@/hooks/course/use-course";
-import { CreateCourseInput, UpdateCourseInput } from "@/lib/validation/course";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { CourseForm, CourseForm as CourseFormType } from "@/app/features/courses/CourseForm";
-import { CourseAudience, CourseModule } from "@/app/features/course-catalog/types/catalogue";
+import { CourseForm, CourseFormType } from "@/app/features/courses/CourseForm";
 import { UpdateCoursePayload } from "@/services/course";
+import { DeliveryMode } from "@/generated/prisma/enums";
 
 interface EditCoursePageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +17,6 @@ export default function EditCoursePage({ params }: EditCoursePageProps) {
   const { data: course, isLoading } = useGetCourseBySlug(slug);
   const { mutate: updateCourse, isPending } = useUpdateCourse();
   const router = useRouter();
-  console.log(course)
 
   if (isLoading) {
     return <div className="p-8 text-center text-sm text-muted-foreground">Loading course data...</div>;
@@ -29,35 +27,48 @@ export default function EditCoursePage({ params }: EditCoursePageProps) {
   }
 
   // Format record into CourseForm structure
-  const initialFormData: CourseFormType = {
-    title: course.title,
-    slug: course.slug,
-    shortDescription: course.shortDescription,
-    description: course.description,
-    durationDays: course.durationDays,
-    level: course.level,
-    status: course.status,
-    featured: course.featured,
-    isPopular: course.isPopular,
-    certificateProvided: course.certificateProvided,
-    thumbnailUrl: course.thumbnailUrl || "",
-    categoryId: course.categoryId,
-    audiences: course.audiences ? course.audiences.map((a: CourseAudience) => a.id) : [],
-    pricing: {
-      id: course.pricing?.id || "",
-      deliveryMode: course.pricing?.deliveryMode || "ONLINE",
-      amount: String(course.pricing?.amount || ""),
-      currency: course.pricing?.currency || "KES",
-    },
-    modules: course.modules
-      ? course.modules.map((m: CourseModule) => ({
-          id: m.id,
-          title: m.title,
-          description: m.description || "",
-          estimatedDuration: m.estimatedDuration || 0,
-        }))
-      : [],
-  };
+  
+
+const initialFormData: CourseFormType = {
+  title: course.title,
+  slug: course.slug,
+  shortDescription: course.shortDescription,
+  description: course.description,
+  learningOutcomes: course.learningOutcomes ?? [],
+  durationDays: course.durationDays,
+  level: course.level,
+  status: course.status,
+  featured: course.featured,
+  isPopular: course.isPopular,
+  certificateProvided: course.certificateProvided,
+  thumbnailUrl: course.thumbnailUrl ?? "",
+  categoryId: course.categoryId,
+
+  audiences: course.audiences.map((audience) => audience.id),
+
+  pricing: Object.values(DeliveryMode).map((mode) => {
+    const existingPrice = course.pricing.find(
+      (price) => price.deliveryMode === mode
+    );
+
+    return {
+      id: existingPrice?.id ?? "",
+      deliveryMode: mode,
+      amount: existingPrice
+        ? String(existingPrice.amount)
+        : "",
+      currency: existingPrice?.currency ?? "KES",
+    };
+  }),
+
+  modules: course.modules.map((module) => ({
+    id: module.id,
+    title: module.title,
+    topics: module.topics,
+    estimatedDuration: module.estimatedDuration ?? null,
+  })),
+};
+
 
   const handleUpdate = (payload: UpdateCoursePayload) => {
     const id = course.id;

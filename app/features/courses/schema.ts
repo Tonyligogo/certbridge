@@ -85,7 +85,6 @@ export const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-export const countWords = (value: string) =>
-  value.trim() ? value.trim().split(/\s+/).length : 0;
+export const countWords = (value: string) => value.trim() ? value.trim().split(/\s+/).length : 0;
 
-export const uid = () => Math.random().toString(36).slice(2, 10);
+export const uid = () => `temp-${crypto.randomUUID()}`;

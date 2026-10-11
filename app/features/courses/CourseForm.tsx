@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Award,
   BadgeCheck,
@@ -7,7 +6,6 @@ import {
   Building2,
   CircleDollarSign,
   Flame,
-  Image as ImageIcon,
   LayoutList,
   Plus,
   Save,
@@ -15,8 +13,11 @@ import {
   Sparkles,
   Star,
   Wand2,
+  ArrowUp,
+  ArrowDown,
+  Trash2,
+  GraduationCap,
 } from "lucide-react";
-
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,21 +38,16 @@ import {
   FieldLabel,
   SectionCard,
 } from "./SectionCard";
-import { ThumbnailDropzone } from "./ThumbnailDropzone";
-import { PricingSection } from "./PricingSection";
-import { SyllabusModules } from "./SyllabusModules";
 import {
-  COURSE_STATUSES,
   DIFFICULTY_LABELS,
   DIFFICULTY_LEVELS,
   DELIVERY_MODE_LABELS,
   countWords,
   slugify,
-  DeliveryMode,
   uid,
 } from "./schema";
 import { toast } from "sonner";
-import { CreateCourseInput } from "@/lib/validation/course";
+import type { CreateCourseInput } from "@/lib/validation/course";
 import { ToggleTile } from "./ToggleTile";
 import { StatusPill } from "./StatusPill";
 import { CreateCategoryDialog } from "./CreateCategoryDialog";
@@ -62,54 +58,54 @@ import { AudienceMultiSelect } from "./AudienceMultiSelect";
 import { SummaryRow } from "./SummaryRow";
 import { Chip } from "./Chip";
 import dynamic from "next/dynamic";
-
-const MAX_SHORT_WORDS = 250;
-
+import { CourseLevel, CourseStatus, DeliveryMode } from "@/generated/prisma/enums";
+const MAX_SHORT_WORDS = 300;
+const DELIVERY_MODES = [DeliveryMode.ARRANGED_VENUE, DeliveryMode.CLIENT_SITE, DeliveryMode.ONLINE] as const;
+const makePricing = (pricing: CoursePricingFormType[] = []): CoursePricingFormType[] =>
+  DELIVERY_MODES.map((deliveryMode) => {
+    const existing = pricing.find((p) => p.deliveryMode === deliveryMode);
+    return existing ?? { deliveryMode, amount: "", currency: "KES" };
+  });
 const RichTextEditor = dynamic(
   () => import("@/app/features/courses/RichTextEditor"),
   { ssr: false}
 );
-
-export type CourseForm = {
+export interface CoursePricingFormType {
+  id?: string;
+  deliveryMode: DeliveryMode;
+  amount: string;
+  currency: string;
+}
+export interface CourseModuleFormType {
+  id?: string;
+  title: string;
+  topics: string[];
+  estimatedDuration: number | null;
+}
+export interface CourseFormType {
   title: string;
   slug: string;
   shortDescription: string;
   description: string;
+  learningOutcomes: string[];
   durationDays: number;
-
-  level: CreateCourseInput["level"];
-  status: CreateCourseInput["status"];
-
+  level: CourseLevel;
+  status: CourseStatus;
   featured: boolean;
   isPopular: boolean;
   certificateProvided: boolean;
-
-  thumbnailUrl: string | null;
-
+  thumbnailUrl: string;
   categoryId: string;
-
   audiences: string[];
-
-  pricing: {
-    id: string;
-    deliveryMode: DeliveryMode;
-    amount: string;
-    currency: string;
-  };
-
-  modules: {
-    id: string;
-    title: string;
-    description: string;
-    estimatedDuration: number;
-  }[];
-};
-
-export const defaultInitialForm: CourseForm = {
+  pricing: CoursePricingFormType[];
+  modules: CourseModuleFormType[];
+}
+export const defaultInitialForm: CourseFormType = {
   title: "",
   slug: "",
   shortDescription: "",
   description: "",
+  learningOutcomes: [],
   durationDays: 0,
   level: "BEGINNER",
   status: "DRAFT",
@@ -119,68 +115,51 @@ export const defaultInitialForm: CourseForm = {
   thumbnailUrl: "",
   categoryId: "",
   audiences: [],
-  pricing: {
-    id: uid(),
-    deliveryMode: "ONLINE",
-    amount: "",
-    currency: "KES",
-  },
+  pricing: makePricing(),
   modules: [],
 };
-
-type Errors = Partial<Record<keyof CourseForm, string>> & {
-  pricingIds?: string[];
+type Errors = Partial<Record<keyof CourseFormType, string>> & {
 };
-
 interface CourseFormProps {
-  initialData?: CourseForm;
+  initialData?: CourseFormType;
   onSubmit: (payload: CreateCourseInput, status: CreateCourseInput["status"]) => void;
   isSubmitting?: boolean;
   submitButtonText?: string;
 }
-
 export function CourseForm({
   initialData,
   onSubmit,
   isSubmitting = false,
   submitButtonText,
 }: CourseFormProps) {
-  const [form, setForm] = useState<CourseForm>(initialData ?? defaultInitialForm);
+  const [form, setForm] = useState<CourseFormType>(() => ({
+    ...(initialData ?? defaultInitialForm),
+    pricing: makePricing(initialData?.pricing),
+  }));
   const [errors, setErrors] = useState<Errors>({});
-  const [editorKey, setEditorKey] = useState(0);
   const { data: courseCategories } = useCourseCategories();
   const { data: courseAudiences } = useCourseAudiences();
-
   const isEditing = Boolean(initialData);
-
-//   useEffect(() => {
-//     if (initialData) {
-//       setForm(initialData);
-//     }
-//   }, [initialData]);
-
-  const set = <K extends keyof CourseForm>(key: K, value: CourseForm[K]) => {
+  const set = <K extends keyof CourseFormType>(key: K, value: CourseFormType[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
-
   const shortWords = countWords(form.shortDescription);
 
-  const patchPricing = (patch: Partial<CourseForm["pricing"]>) =>
-    set("pricing", {
-      ...form.pricing,
-      ...patch,
-    });
+  const patchPricing = (mode: DeliveryMode, patch: Partial<CoursePricingFormType>) =>
+    set("pricing", form.pricing.map((p) =>
+      p.deliveryMode === mode ? { ...p, ...patch, deliveryMode: mode } : p
+    ));
 
   const addModule = () =>
     set("modules", [
       ...form.modules,
-      { id: uid(), title: "", estimatedDuration: 0, description: "" },
+      { id: uid(), title: "", estimatedDuration: null, topics: [] },
     ]);
 
   const patchModule = (
     id: string,
-    patch: Partial<CourseForm["modules"][number]>
+    patch: Partial<CourseFormType["modules"][number]>
   ) =>
     set(
       "modules",
@@ -219,9 +198,11 @@ export function CourseForm({
       Boolean(form.durationDays),
       Boolean(form.categoryId),
       form.audiences.length > 0,
-      Boolean(form.pricing.amount),
-      Boolean(form.pricing.currency.trim()),
-      Boolean(form.pricing.deliveryMode),
+      DELIVERY_MODES.every((mode) => {
+        const p = form.pricing.find((p) => p.deliveryMode === mode);
+        return p && p.amount.trim() !== "" && Number.isFinite(Number(p.amount)) && Number(p.amount) >= 0 && p.currency === "KES";
+      }),
+      form.learningOutcomes.length > 0 && form.learningOutcomes.every((outcome) => outcome.trim().length >= 3),
       form.modules.length > 0,
       Boolean(form.thumbnailUrl),
     ];
@@ -244,30 +225,43 @@ export function CourseForm({
     if (!form.categoryId) next.categoryId = "Select a course category.";
     if (form.audiences.length === 0)
       next.audiences = "Select at least one target audience.";
-    if (
-      !form.pricing.amount ||
-      !form.pricing.currency.trim() ||
-      !form.pricing.deliveryMode
+    if (form.learningOutcomes.length === 0) {
+      next.learningOutcomes = "Add at least one learning outcome.";
+    } else if (
+      form.learningOutcomes.some((outcome) => outcome.trim().length < 3)
     ) {
-      next.pricing = "Please complete the pricing information.";
+      next.learningOutcomes =
+        "Every learning outcome must contain at least 3 characters.";
+    } else if (
+      form.learningOutcomes.some((outcome) => outcome.trim().length > 500)
+    ) {
+      next.learningOutcomes =
+        "Learning outcomes cannot exceed 500 characters each.";
+    }
+    if (form.pricing.length !== DELIVERY_MODES.length ||
+      new Set(form.pricing.map((p) => p.deliveryMode)).size !== DELIVERY_MODES.length ||
+      DELIVERY_MODES.some((mode) => {
+        const p = form.pricing.find((p) => p.deliveryMode === mode);
+        return !p || p.amount.trim() === "" || !Number.isFinite(Number(p.amount)) ||
+          Number(p.amount) < 0 || p.currency !== "KES";
+      })) {
+      next.pricing = "Enter a valid KES price for all three delivery modes.";
     }
     if (form.modules.length === 0)
       next.modules = "Add at least one syllabus module.";
-    else if (form.modules.some((m) => !m.title.trim()))
-      next.modules = "Every module needs a title.";
+    else if (form.modules.some((m) => !m.title.trim() || m.topics.some((t) => !t.trim())))
+      next.modules = "Every module needs a title and valid topics.";
     setErrors(next);
     return (
       Object.keys(next).filter((k) => next[k as keyof Errors]).length === 0
     );
   };
-
   const handleSaveDraft = () => {
     const nextStatus = "DRAFT";
     set("status", nextStatus);
     const payload: CreateCourseInput = buildPayload(nextStatus);
     onSubmit(payload, nextStatus);
   };
-
   const handlePublishOrUpdate = () => {
     if (!validate()) {
       toast.error("Validation failed", {
@@ -278,31 +272,32 @@ export function CourseForm({
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-
     const nextStatus = isEditing ? form.status : "PUBLISHED";
     set("status", nextStatus);
     const payload: CreateCourseInput = buildPayload(nextStatus);
     onSubmit(payload, nextStatus);
-    setEditorKey((prevKey) => prevKey + 1);
   };
-
   const buildPayload = (targetStatus: CreateCourseInput["status"]): CreateCourseInput => ({
     ...form,
     status: targetStatus,
     durationDays: Number(form.durationDays),
-    pricing: {
-      ...form.pricing,
-      amount: Number(form.pricing.amount),
-    },
+    learningOutcomes: form.learningOutcomes.map((outcome) =>
+    outcome.trim()
+  ),
+    pricing: form.pricing.map((p) => ({
+      deliveryMode: p.deliveryMode,
+      amount: p.amount.trim() === "" ? 0 : Number(p.amount),
+      currency: p.currency,
+    })),
     modules: form.modules.map((m) => ({
-      title: m.title,
-      description: m.description,
-      estimatedDuration: m.estimatedDuration
-        ? Number(m.estimatedDuration)
-        : undefined,
+      ...(module.id && !module.id.startsWith("temp-")
+        ? { id: m.id }
+        : {}),
+      title: m.title.trim(),
+      topics: m.topics.map((t) => t.trim()).filter(Boolean),
+      estimatedDuration: m.estimatedDuration || null,
     })),
   });
-
   return (
     <div className="min-h-screen pb-16">
       <div className="mx-auto max-w-7xl">
@@ -312,7 +307,6 @@ export function CourseForm({
           </h1>
           <StatusPill status={form.status} />
         </div>
-
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* Left column: form */}
           <div className="space-y-6">
@@ -363,7 +357,6 @@ export function CourseForm({
                     <ErrorText>{errors.slug}</ErrorText>
                   </div>
                 </div>
-
                 <div>
                   <FieldLabel
                     htmlFor="shortDescription"
@@ -391,25 +384,17 @@ export function CourseForm({
                   />
                   <ErrorText>{errors.shortDescription}</ErrorText>
                 </div>
-
                 <div>
                   <FieldLabel htmlFor="description" required>
                     Full description
                   </FieldLabel>
                   <RichTextEditor
-                    key={editorKey}
+                    
                     defaultValue={form.description ? JSON.parse(form.description) : []}
                     onChange={(v) => set("description", v)}
                   />
-                  {/* <RichTextEditor
-                    id="description"
-                    value={form.description}
-                    onChange={(v) => set("description", v)}
-                    invalid={Boolean(errors.description)}
-                  /> */}
                   <ErrorText>{errors.description}</ErrorText>
                 </div>
-
                 <div className="grid gap-5 md:grid-cols-2">
                   <div>
                     <FieldLabel htmlFor="duration" required>
@@ -452,14 +437,13 @@ export function CourseForm({
                     </div>
                   </div> */}
                 </div>
-
                 <div>
                   <FieldLabel>Difficulty level</FieldLabel>
                   <ToggleGroup
                     type="single"
                     value={form.level}
                     onValueChange={(v) =>
-                      v && set("level", v as CourseForm["level"])
+                      v && set("level", v as CourseFormType["level"])
                     }
                     className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
                   >
@@ -476,6 +460,62 @@ export function CourseForm({
                 </div>
               </div>
             </SectionCard>
+
+<SectionCard
+  icon={GraduationCap}
+  step="Section 02"
+  title="Learning outcomes"
+  description="Describe the skills and knowledge participants will gain."
+>
+  <div className="space-y-3">
+    {form.learningOutcomes.map((outcome, index) => (
+      <div key={index} className="flex items-center gap-2">
+        <span className="w-6 shrink-0 text-sm text-muted-foreground">
+          {index + 1}.
+        </span>
+
+        <Input
+          value={outcome}
+          placeholder="e.g. Apply effective project planning techniques"
+          onChange={(e) => {
+            const next = [...form.learningOutcomes];
+            next[index] = e.target.value;
+            set("learningOutcomes", next);
+          }}
+        />
+
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label={`Remove outcome ${index + 1}`}
+          onClick={() =>
+            set(
+              "learningOutcomes",
+              form.learningOutcomes.filter((_, i) => i !== index)
+            )
+          }
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+    ))}
+
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() =>
+        set("learningOutcomes", [...form.learningOutcomes, ""])
+      }
+    >
+      <Plus className="size-4" />
+      Add learning outcome
+    </Button>
+
+    <ErrorText>{errors.learningOutcomes}</ErrorText>
+  </div>
+</SectionCard>
 
             <SectionCard
               icon={Sparkles}
@@ -506,9 +546,7 @@ export function CourseForm({
                   onCheckedChange={(v) => set("certificateProvided", v)}
                 />
               </div>
-
               <Separator className="my-6" />
-
               {/* <FieldLabel>
                 <span className="inline-flex items-center gap-2">
                   <ImageIcon className="size-4 text-muted-foreground" />{" "}
@@ -520,7 +558,6 @@ export function CourseForm({
                 onChange={(v) => set("thumbnailUrl", v)}
               /> */}
             </SectionCard>
-
             <SectionCard
               icon={Building2}
               step="Section 03"
@@ -601,22 +638,47 @@ export function CourseForm({
                 </div>
               </div>
             </SectionCard>
-
             <SectionCard
               icon={CircleDollarSign}
               step="Section 04"
               title="Pricing"
               description="Configure the pricing for this course."
             >
-              <PricingSection pricing={form.pricing} onChange={patchPricing} />
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Enter the complete course price for <strong>one participant</strong>,
+                  inclusive of costs for the selected delivery mode and entire course duration.
+                </p>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {DELIVERY_MODES.map((mode) => {
+                    const price = form.pricing.find((p) => p.deliveryMode === mode);
+                    return (
+                      <div key={mode} className="rounded-xl border border-border p-4">
+                        <FieldLabel htmlFor={`price-${mode}`} required>
+                          {DELIVERY_MODE_LABELS[mode]}
+                        </FieldLabel>
+                        <p className="mb-3 text-xs text-muted-foreground">
+                          KES · total for 1 participant
+                        </p>
+                        <Input
+                          id={`price-${mode}`} type="number" min="0" step="0.01"
+                          value={price?.amount ?? ""}
+                          onChange={(e) => patchPricing(mode, { amount: e.target.value })}
+                          className={cn("tabular-nums", errors.pricing && "field-error")}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
               <ErrorText>{errors.pricing}</ErrorText>
             </SectionCard>
-
             <SectionCard
               icon={LayoutList}
               step="Section 05"
               title="Syllabus modules"
-              description="Drag to reorder the learner journey."
+              description="Use the arrows to reorder the learner journey."
               action={
                 form.modules.length > 0 ? (
                   <Button
@@ -630,18 +692,62 @@ export function CourseForm({
                 ) : undefined
               }
             >
-              <SyllabusModules
-                modules={form.modules}
-                onPatch={patchModule}
-                onRemove={removeModule}
-                onReorder={reorderModules}
-                onAdd={addModule}
-                editorKey={editorKey}
-              />
+              <div className="space-y-4">
+                {form.modules.length === 0 ? (
+                  <div className="rounded-xl border border-dashed p-6 text-center">
+                    <p className="mb-3 text-sm text-muted-foreground">No syllabus modules yet.</p>
+                    <Button type="button" variant="outline" onClick={addModule}>
+                      <Plus className="size-4" /> Add first module
+                    </Button>
+                  </div>
+                ) : form.modules.map((module, index) => (
+                  <div key={module.id} className="rounded-xl border border-border p-4 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold">Module {index + 1}</p>
+                      <div className="flex items-center gap-1">
+                        <Button type="button" variant="ghost" size="icon"
+                          aria-label="Move module up" disabled={index === 0}
+                          onClick={() => reorderModules(index, index - 1)}>
+                          <ArrowUp className="size-4" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon"
+                          aria-label="Move module down" disabled={index === form.modules.length - 1}
+                          onClick={() => reorderModules(index, index + 1)}>
+                          <ArrowDown className="size-4" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon"
+                          aria-label="Remove module" onClick={() => removeModule(module.id!)}>
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor={`module-title-${module.id}`} required>Module title</FieldLabel>
+                      <Input id={`module-title-${module.id}`} value={module.title}
+                        onChange={(e) => patchModule(module.id!, { title: e.target.value })}
+                        placeholder="Introduction to the subject" />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor={`module-topics-${module.id}`}>Topics (one per line)</FieldLabel>
+                      <Textarea id={`module-topics-${module.id}`} rows={4}
+                        value={module.topics.join("\n")}
+                        onChange={(e) => patchModule(module.id!, { topics: e.target.value.split("\n") })}
+                        placeholder={"Topic one\nTopic two\nTopic three"} />
+                    </div>
+                    <div className="max-w-xs">
+                      <FieldLabel htmlFor={`module-minutes-${module.id}`}>Estimated duration (minutes)</FieldLabel>
+                      <Input id={`module-minutes-${module.id}`} type="number" min="0"
+                        value={module.estimatedDuration ?? ""}
+                        onChange={(e) => patchModule(module.id!, {
+                          estimatedDuration: e.target.value === "" ? null : Number(e.target.value),
+                        })} />
+                    </div>
+                  </div>
+                ))}
+              </div>
               <ErrorText>{errors.modules}</ErrorText>
             </SectionCard>
           </div>
-
           {/* Right column: summary */}
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <div className="panel overflow-hidden">
@@ -670,7 +776,6 @@ export function CourseForm({
                     />
                   </div>
                 </div>
-
                 <div className="rounded-lg border border-border bg-surface p-3">
                   <p className="truncate text-sm font-semibold text-foreground">
                     {form.title || "Untitled course"}
@@ -679,7 +784,6 @@ export function CourseForm({
                     /{form.slug || "course-slug"}
                   </p>
                 </div>
-
                 <SummaryRow
                   label="Category"
                   value={
@@ -712,28 +816,25 @@ export function CourseForm({
                   label="Modules"
                   value={`${form.modules.length} · ${totalMinutes} min`}
                 />
-
                 <Separator />
-
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Pricing
                   </p>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {form.pricing.deliveryMode
-                        ? DELIVERY_MODE_LABELS[form.pricing.deliveryMode]
-                        : "No delivery mode"}
-                    </span>
-
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {form.pricing.currency || "KES"}{" "}
-                      {form.pricing.amount || "0.00"}
-                    </span>
-                  </div>
+                  {DELIVERY_MODES.map((mode) => {
+                    const price = form.pricing.find((p) => p.deliveryMode === mode);
+                    return (
+                      <div key={mode} className="flex items-center justify-between gap-3 py-1 text-xs">
+                        <span className="text-muted-foreground">{DELIVERY_MODE_LABELS[mode]}</span>
+                        <span className="font-semibold tabular-nums text-foreground">
+                          {price?.amount?.trim()
+                            ? `KES ${Number(price.amount).toLocaleString("en-KE")}`
+                            : "Not set"}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-
                 <div className="flex flex-wrap gap-1.5">
                   {form.featured ? <Chip icon={Star}>Featured</Chip> : null}
                   {form.isPopular ? <Chip icon={Flame}>Popular</Chip> : null}
@@ -743,20 +844,18 @@ export function CourseForm({
                 </div>
               </div>
             </div>
-
             {form.modules.length === 0 ? (
               <div className="mt-4">
                 <EmptyState
                   icon={Sparkles}
                   title="Nothing configured yet"
-                  description="Add pricing tiers and syllabus modules to complete the course record."
+                  description="Add the three delivery prices and syllabus modules to complete the course record."
                 />
               </div>
             ) : null}
           </aside>
         </div>
       </div>
-
       {/* Sticky action bar */}
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
