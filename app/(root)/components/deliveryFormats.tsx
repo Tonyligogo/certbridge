@@ -30,14 +30,14 @@ const DeliveryFormats = () => {
       <div className="max-w-7xl mx-auto px-4">
         
         {/* Header Section */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-            Choose Your Experience
-          </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Empowering your team with flexible training delivery options that meet your unique needs and environment.
-          </p>
-        </div>
+        <div className="max-w-3xl mb-12">
+              <span className="text-sm font-semibold uppercase tracking-wider">
+                Choose Your Experience
+              </span>
+              <h2 className="mt-3 text-5xl font-semibold ">
+                 Flexible training delivery options for you.
+              </h2>
+            </div>
 
         {/* Hero Background Container */}
         <div className="relative md:rounded-[40px] overflow-hidden min-h-[600px] flex flex-col md:flex-row md:items-end gap-6 md:gap-0 p-2 md:p-12">

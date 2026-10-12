@@ -287,7 +287,7 @@ export function BookingWizard({
             </Alert>
           )}
 
-          <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          <div className="mt-8 flex gap-3 justify-between">
             <Button
               type="button"
               variant="ghost"
@@ -299,12 +299,12 @@ export function BookingWizard({
             </Button>
 
             {step < BOOKING_STEPS.length - 1 ? (
-              <Button type="button" onClick={next}>
+              <Button type="button" size='lg' onClick={next}>
                 Continue
                 <ArrowRight className="size-4" />
               </Button>
             ) : (
-              <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+              <Button type="button" size='lg' onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
@@ -323,15 +323,6 @@ export function BookingWizard({
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-24">
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            You&apos;re requesting
-          </p>
-          <h2 className="mt-2 font-bold text-xl max-w-sm">{course.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {course.durationDays} Days · {course.level}
-          </p>
-        </div>
         <PriceEstimateCard estimate={estimate} />
         <p className="text-xs text-muted-foreground">
           Submitting sends a request only. No payment is taken and nothing is confirmed until our team replies.

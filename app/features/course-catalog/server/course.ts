@@ -50,8 +50,10 @@ export async function getCatalogueCourses({
 
       ...(categories.length
         ? {
-            categoryId: {
-              in: categories,
+            category: {
+              slug: {
+                in: categories,
+              },
             },
           }
         : {}),
@@ -60,7 +62,7 @@ export async function getCatalogueCourses({
         ? {
             audiences: {
               some: {
-                id: {
+                slug: {
                   in: audiences,
                 },
               },

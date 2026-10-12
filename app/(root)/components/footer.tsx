@@ -1,4 +1,4 @@
-import React from 'react';
+import Link from "next/link";
 
 const Footer = () => {
   const footerSections = [
@@ -43,7 +43,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full bg-white rounded-t-4xl">
+    <footer className="w-full bg-white rounded-t-[50px]">
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
         
         {/* Top Section: Branding and CTAs */}
@@ -64,9 +64,9 @@ const Footer = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <button className="flex-1 sm:flex-none px-6 py-3 bg-primary text-white font-semibold text-sm rounded-xl transition-colors whitespace-nowrap">
+            <Link href='/contact' className="flex-1 sm:flex-none text-center px-6 py-3 bg-primary text-white font-semibold text-sm rounded-xl transition-colors whitespace-nowrap">
               Get in touch
-            </button>
+            </Link>
           </div>
         </div>
 

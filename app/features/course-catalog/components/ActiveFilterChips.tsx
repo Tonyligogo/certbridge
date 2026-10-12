@@ -90,35 +90,26 @@ export function ActiveFilterChips({
   }
   // Array / Multi-select list chips
   const listChips = [
-    ...s.categories.map((idOrSlug: string) => {
-      const match = categories.find(
-        (c) => c.id === idOrSlug || c.slug === idOrSlug
-      );
-      return {
-        group: "categories" as const,
-        value: idOrSlug,
-        label: match?.name ?? idOrSlug,
-      };
-    }),
-    ...s.audiences.map((idOrSlug: string) => {
-      const match = audiences.find(
-        (a) => a.id === idOrSlug || a.slug === idOrSlug
-      );
-      return {
-        group: "audiences" as const,
-        value: idOrSlug,
-        label: match?.name ?? idOrSlug,
-      };
-    }),
+    ...s.categories.map((slug) => ({
+    group: "categories" as const,
+    value: slug,
+    label: categories.find((c) => c.slug === slug)?.name ?? slug,
+  })),
+
+  ...s.audiences.map((slug) => ({
+    group: "audiences" as const,
+    value: slug,
+    label: audiences.find((a) => a.slug === slug)?.name ?? slug,
+  })),
     ...s.durations.map((v: string) => ({
       group: "durations" as const,
       value: v,
       label: DURATION_BUCKETS.find((b) => b.id === v)?.label ?? v,
     })),
-    ...s.levels.map((v: string) => ({
+    ...s.levels.map((level: string) => ({
       group: "levels" as const,
-      value: v,
-      label: LEVEL_OPTIONS.find((l) => l.id === v)?.label ?? v,
+      value: level,
+      label: LEVEL_OPTIONS.find((l) => l.label === level)?.label ?? level,
     })),
     ...s.deliveryModes.map((v: string) => ({
       group: "deliveryModes" as const,

@@ -47,7 +47,7 @@ export default function PopularCategories({
               Our Course Portfolio
             </span>
 
-            <h2 className="mt-3 text-4xl font-bold lg:text-5xl">
+            <h2 className="mt-3 text-4xl font-semibold lg:text-5xl">
               Explore our expert-led professional training categories
             </h2>
           </div>
@@ -120,9 +120,7 @@ export default function PopularCategories({
             </p>
 
             <Link
-              href={`/courses?category=${encodeURIComponent(
-                selectedCategory.slug
-              )}`}
+              href={`/courses?categories=${encodeURIComponent(selectedCategory.slug)}`}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white hover:text-slate-900"
             >
               Explore courses
@@ -136,7 +134,7 @@ export default function PopularCategories({
           {otherCategories.map((category) => (
             <div
               key={category.id}
-              className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md md:p-8"
+              className="flex h-full flex-col rounded-md bg-white p-6 shadow transition-shadow hover:shadow-md md:p-8"
             >
               <h4 className="mb-3 text-xl font-bold leading-tight text-slate-900">
                 {category.name}
@@ -153,7 +151,7 @@ export default function PopularCategories({
               </p>
 
               <Link
-                href={`/courses?category=${encodeURIComponent(category.slug)}`}
+                href={`/courses?categories=${encodeURIComponent(category.slug)}`}
                 className="group/link flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
               >
                 Explore the courses

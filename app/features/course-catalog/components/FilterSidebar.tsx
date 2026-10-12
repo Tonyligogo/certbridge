@@ -97,8 +97,8 @@ export function FilterPanel({
                 key={c.id}
                 id={`${idPrefix}-cat-${c.id}`}
                 label={c.name}
-                checked={s.categories.includes(c.id) || s.categories.includes(c.slug)}
-                onChange={() => toggleIn("categories", c.id)}
+                checked={s.categories.includes(c.slug)}
+                onChange={() => toggleIn("categories", c.slug)}
               />
             ))}
           </Group>
@@ -115,8 +115,8 @@ export function FilterPanel({
                 key={a.id}
                 id={`${idPrefix}-aud-${a.id}`}
                 label={a.name}
-                checked={s.audiences.includes(a.id) || s.audiences.includes(a.slug)}
-                onChange={() => toggleIn("audiences", a.id)}
+                checked={s.audiences.includes(a.slug)}
+                onChange={() => toggleIn("audiences", a.slug)}
               />
             ))}
           </Group>

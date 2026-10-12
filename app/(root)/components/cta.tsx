@@ -1,16 +1,19 @@
+import Link from "next/link";
+
 const ActionCTA = () => {
   return (
-    <section className="w-full px-4 bg-[#f8fafd]">
+    <section className="w-full px-4 pb-16">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="mb-12">
-          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-600 mb-3">
-            Get Started
-          </p>
-          <h2 className="text-4xl md:text-5xl font-semibold text-[#1a1a1a] tracking-tight">
-            Take the next step with CertBridge
-          </h2>
-        </div>
+          <div className="max-w-3xl mb-12">
+            <span className="text-sm font-semibold uppercase tracking-wider">
+              Get Started
+            </span>
+
+            <h2 className="mt-3 text-4xl font-semibold lg:text-5xl">
+              Take the next step with CertBridge Global
+            </h2>
+          </div>
 
         {/* CTA Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -32,9 +35,9 @@ const ActionCTA = () => {
                 Discuss your training needs, explore custom solutions for groups, and get a tailored consultation from our specialists.
               </p>
               <div>
-                <button className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
+                <Link href='/contact' className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
                   Get in touch
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -64,9 +67,9 @@ const ActionCTA = () => {
                 Join our training community to instantly unlock exclusive discounts, early course access, and manage your learning journey.
               </p>
               <div>
-                <button className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
+                <Link href='/sign-up' className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
                   Create an account
-                </button>
+                </Link>
               </div>
             </div>
           </div>

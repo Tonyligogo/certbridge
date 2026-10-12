@@ -12,8 +12,8 @@ const FeaturedCourses = ({courses}:{courses: LandingCourse[]}) => {
               <span className="text-sm font-semibold uppercase tracking-wider">
                 Featured Courses
               </span>
-              <h2 className="mt-3 text-4xl lg:text-5xl font-bold ">
-                Training that transforms your team
+              <h2 className="mt-3 text-4xl lg:text-5xl font-semibold ">
+                Selected courses for you
               </h2>
             </div>
             <Link

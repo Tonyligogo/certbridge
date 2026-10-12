@@ -101,7 +101,7 @@ export function CoursePagination({
         className="gap-1.5"
       >
         <ChevronLeft className="size-4" />
-        Previous
+        <span className="hidden sm:inline-flex">Previous</span>
       </Button>
 
       {getVisiblePages().map((item, index) =>
@@ -134,7 +134,7 @@ export function CoursePagination({
         onClick={() => changePage(page + 1)}
         className="gap-1.5"
       >
-        Next
+        <span className="hidden sm:inline-flex">Next</span>
         <ChevronRight className="size-4" />
       </Button>
     </nav>

@@ -1,6 +1,5 @@
 'use client';
 
-import { CertBridgeIcon } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Menu, X } from "lucide-react";
@@ -28,7 +27,6 @@ function Navbar() {
      const drawerRef  = useRef<HTMLDivElement>(null);
   return (
     <nav className="flex items-center justify-between gap-5 h-20 px-4 md:px-6">
-      <CertBridgeIcon/>
         <Link href='/'>
        <div className="flex items-center gap-3 group cursor-pointer">
             {/* Corporate Logo Icon */}

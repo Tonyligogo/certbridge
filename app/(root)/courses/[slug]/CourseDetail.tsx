@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-'use client';
+"use client";
 import { ShareCourseButton } from "@/app/features/course-catalog/components/ShareCourseButton";
 import type { Course } from "@/app/features/course-catalog/types/catalogue";
 import {
@@ -30,9 +30,8 @@ import { useState } from "react";
 
 const MarkdownRenderer = dynamic(
   () => import("@/app/features/courses/MarkdownRenderer"),
-  { ssr: false }
+  { ssr: false },
 );
-
 
 const formats = [
   {
@@ -52,15 +51,12 @@ const formats = [
   },
 ];
 
-export default function CourseDetail({course}:{course:Course}) {
-
-   const selectedPricing = course.pricing.find(
-    (pricing) => pricing.deliveryMode === DeliveryMode.ARRANGED_VENUE
+export default function CourseDetail({ course }: { course: Course }) {
+  const selectedPricing = course.pricing.find(
+    (pricing) => pricing.deliveryMode === DeliveryMode.ARRANGED_VENUE,
   );
 
-  const price = selectedPricing
-    ? Number(selectedPricing.amount)
-    : null;
+  const price = selectedPricing ? Number(selectedPricing.amount) : null;
 
   const currency = selectedPricing?.currency ?? "KES";
 
@@ -69,31 +65,37 @@ export default function CourseDetail({course}:{course:Course}) {
       {/* Hero */}
       <section className="bg-primary text-white">
         <div className="mx-auto max-w-350 px-4 pt-12 pb-16 lg:px-10">
-          <nav className="flex items-center gap-2 text-sm mb-6">
-            <Link href="/" className="hover:text-white">Home</Link>
+          <nav className="flex flex-wrap items-center gap-2 text-sm mb-6">
+            <Link href="/" className="hover:text-white">
+              Home
+            </Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href="/courses" className="hover:text-white">Courses</Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-white">{course.title}</span>
+            <Link href="/courses" className="hover:text-white">
+              Courses
+            </Link>
           </nav>
 
           <span className="text-sm font-semibold uppercase tracking-wider text-white">
             {course.category.name}
           </span>
-          <h1 className="mt-3 font-display text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight max-w-3xl">
+          <h1 className="mt-3 text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight max-w-3xl">
             {course.title}
           </h1>
-          <p className="mt-5 text-lg text-text-on-dark-muted max-w-2xl leading-relaxed">
+          <p className="mt-5 text-lg text-white/90 max-w-2xl leading-relaxed">
             {course.shortDescription}
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["Online", "On-Site", "At our Venue"].map((f) => (
-              <span key={f} className="px-3 py-1.5 rounded-full bg-white/10 text-xs font-semibold border border-white/15">
+              <span
+                key={f}
+                className="px-3 py-1.5 rounded-full bg-white/10 text-xs font-semibold border border-white/15"
+              >
                 {f}
               </span>
             ))}
             <span className="px-3 py-1.5 rounded-full bg-white/10 text-xs font-semibold border border-white/15 inline-flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" /> {course.durationDays} day{course.durationDays > 1 ? "s" : ""}
+              <Clock className="h-3.5 w-3.5" /> {course.durationDays} day
+              {course.durationDays > 1 ? "s" : ""}
             </span>
           </div>
         </div>
@@ -104,28 +106,36 @@ export default function CourseDetail({course}:{course:Course}) {
         <div className="mx-auto max-w-7xl px-4 py-16 grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-12">
           {/* Main */}
           <div className="min-w-0 space-y-14">
-
             {/* Description */}
-              <div className="bg-white border border-blue-100 rounded-2xl p-8">
-                <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">Course Description</h2>
-                 <MarkdownRenderer value={course.description} />
-              </div>
-              {/* what you'll learn */}
             <div className="bg-white border border-blue-100 rounded-2xl p-8">
-              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-6">What You&apos;ll Learn</h2>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">
+                Course Description
+              </h2>
+              <MarkdownRenderer value={course.description} />
+            </div>
+            {/* what you'll learn */}
+            <div className="bg-white border border-blue-100 rounded-2xl p-8">
+              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-6">
+                What You&apos;ll Learn
+              </h2>
               <ul className="space-y-2">
                 {course.learningOutcomes.map((outcome, index) => (
-                  <li key={index} className="flex gap-3 text-text-secondary leading-relaxed">
+                  <li
+                    key={index}
+                    className="flex gap-3 text-text-secondary leading-relaxed"
+                  >
                     <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                     <span>{outcome}</span>
                   </li>
                 ))}
               </ul>
             </div>
-              {/* audience */}
+            {/* audience */}
             <div className="bg-white border border-blue-100 rounded-2xl p-8">
-              <h3 className="font-display text-2xl lg:text-3xl font-bold mb-5">Who this course is for</h3>
-             <ul className="space-y-2 text-text-secondary">
+              <h3 className="font-display text-2xl lg:text-3xl font-bold mb-5">
+                Who this course is for
+              </h3>
+              <ul className="space-y-2 text-text-secondary">
                 {course.audiences.map((audience) => (
                   <li key={audience.id} className="flex gap-3">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
@@ -137,20 +147,29 @@ export default function CourseDetail({course}:{course:Course}) {
 
             {/* Outline */}
             <div className="bg-white border border-blue-100 rounded-2xl px-6 pt-6">
-              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">Course Outline</h2>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">
+                Course Outline
+              </h2>
               <Accordion type="single" collapsible defaultValue="item-0">
                 {course.modules.map((m, i) => (
-                  <AccordionItem key={m.title} value={`item-${i}`} className="border-blue-100">
+                  <AccordionItem
+                    key={m.title}
+                    value={`item-${i}`}
+                    className="border-blue-100"
+                  >
                     <AccordionTrigger className="text-left font-display text-lg font-semibold text-text-primary py-5">
                       {`Module ${i + 1}: ${m.title}`}
                     </AccordionTrigger>
                     <AccordionContent className="text-text-secondary text-base leading-relaxed pb-5">
-                  {m.topics.map((topic) => (
-                  <li key={topic} className="flex gap-3 text-text-secondary leading-relaxed">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                    <span>{topic}</span>
-                  </li>
-                ))}
+                      {m.topics.map((topic) => (
+                        <li
+                          key={topic}
+                          className="flex gap-3 text-text-secondary leading-relaxed"
+                        >
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                          <span>{topic}</span>
+                        </li>
+                      ))}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -159,113 +178,111 @@ export default function CourseDetail({course}:{course:Course}) {
 
             {/* Delivery formats */}
             <div className="rounded-2xl border border-blue-100 bg-white p-6 lg:p-8">
-  {/* Header */}
-  <div className="mb-7 max-w-3xl">
-    <h2 className="font-display text-2xl font-bold lg:text-3xl">
-      Choose How You Want to Train
-    </h2>
+              {/* Header */}
+              <div className="mb-7 max-w-3xl">
+                <h2 className="font-display text-2xl font-bold lg:text-3xl">
+                  Choose How You Want to Train
+                </h2>
 
-    <p className="mt-2 leading-relaxed text-text-secondary">
-      Choose the delivery format that works best for your team. Pricing
-      varies by format, and you can select your preferred training dates
-      and location when making your booking.
-    </p>
-  </div>
+                <p className="mt-2 leading-relaxed text-text-secondary">
+                  Choose the delivery format that works best for your team.
+                  Pricing varies by format, and you can select your preferred
+                  training dates and location when making your booking.
+                </p>
+              </div>
 
-  {/* Formats */}
-  <div className="grid gap-5 md:grid-cols-3">
-    {formats.map((f) => (
-      <div
-        key={f.name}
-        className="flex flex-col border-blue-100 bg-white p-6 rounded-xl border"
-      >
-        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-primary">
-          <f.icon className="h-5 w-5" />
-        </div>
+              {/* Formats */}
+              <div className="grid gap-5 md:grid-cols-3">
+                {formats.map((f) => (
+                  <div
+                    key={f.name}
+                    className="flex flex-col border-blue-100 bg-white p-6 rounded-xl border"
+                  >
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-primary">
+                      <f.icon className="h-5 w-5" />
+                    </div>
 
-        <h3 className="font-display text-lg font-bold">
-          {f.name}
-        </h3>
+                    <h3 className="font-display text-lg font-bold">{f.name}</h3>
 
-        <p className="mt-2 flex-1 text-base leading-relaxed text-text-secondary">
-          {f.desc}
-        </p>
-      </div>
-    ))}
-  </div>
+                    <p className="mt-2 flex-1 text-base leading-relaxed text-text-secondary">
+                      {f.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
 
-  {/* Flexible scheduling */}
-  <div className="mt-6 flex items-start gap-3 rounded-xl bg-blue-50/60 p-4">
-    <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              {/* Flexible scheduling */}
+              <div className="mt-6 flex items-start gap-3 rounded-xl bg-blue-50/60 p-4">
+                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
 
-    <div>
-      <p className="font-semibold text-text-primary">
-        Flexible scheduling
-      </p>
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    Flexible scheduling
+                  </p>
 
-      <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-        You choose your preferred training dates when booking. For
-        in-person training, you can also specify where you would like the
-        training delivered, whether at your premises or at an arranged
-        venue.
-      </p>
-    </div>
-  </div>
-</div>
+                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+                    You choose your preferred training dates when booking. For
+                    in-person training, you can also specify where you would
+                    like the training delivered, whether at your premises or at
+                    an arranged venue.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Trainer */}
             <div className="rounded-2xl border border-blue-100 bg-white p-8">
-  <h2 className="mb-6 font-display text-2xl font-bold lg:text-3xl">
-    Your Trainer
-  </h2>
+              <h2 className="mb-6 font-display text-2xl font-bold lg:text-3xl">
+                Your Trainer
+              </h2>
 
-  <div>
+              <div>
+                <div>
+                  <h3 className="font-display text-lg font-bold">
+                    Matched to your training needs
+                  </h3>
 
-    <div>
-      <h3 className="font-display text-lg font-bold">
-        Matched to your training needs
-      </h3>
+                  <p className="mt-2 leading-relaxed text-text-secondary">
+                    Your trainer is selected after booking based on the course
+                    requirements, your industry, team profile, location, and
+                    learning objectives.
+                  </p>
 
-      <p className="mt-2 leading-relaxed text-text-secondary">
-        Your trainer is selected after booking based on the course
-        requirements, your industry, team profile, location, and learning
-        objectives.
-      </p>
+                  <p className="mt-3 leading-relaxed text-text-secondary">
+                    CertBridge Global works with vetted trainers and
+                    subject-matter experts, allowing us to match each engagement
+                    with a facilitator whose experience is relevant to the
+                    training being delivered.
+                  </p>
 
-      <p className="mt-3 leading-relaxed text-text-secondary">
-        CertBridge Global works with vetted trainers and subject-matter
-        experts, allowing us to match each engagement with a facilitator
-        whose experience is relevant to the training being delivered.
-      </p>
+                  <p className="mt-3 text-sm font-medium text-primary">
+                    Your assigned trainer will be confirmed as part of the
+                    training arrangements.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <p className="mt-3 text-sm font-medium text-primary">
-        Your assigned trainer will be confirmed as part of the training
-        arrangements.
-      </p>
-    </div>
-  </div>
-</div>
+            {/* certification */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-8">
+              <div>
+                <div>
+                  <h2 className="font-display text-2xl mb-6 font-bold lg:text-3xl">
+                    Certificate of Participation
+                  </h2>
 
-{/* certification */}
-<div className="rounded-2xl border border-blue-100 bg-white p-8">
-  <div>
-    <div>
-      <h2 className="font-display text-2xl mb-6 font-bold lg:text-3xl">
-        Certificate of Participation
-      </h2>
+                  <h3 className="font-display text-lg font-bold">
+                    Recognition for completing your training
+                  </h3>
 
-      <h3 className="font-display text-lg font-bold">
-        Recognition for completing your training
-      </h3>
-
-      <p className="mt-3 leading-relaxed text-text-secondary">
-        Participants who attend the training receive a CertBridge Global
-        Certificate of Participation, recognising their involvement in the
-        programme and the learning undertaken.
-      </p>
-    </div>
-  </div>
-</div>
+                  <p className="mt-3 leading-relaxed text-text-secondary">
+                    Participants who attend the training receive a CertBridge
+                    Global Certificate of Participation, recognising their
+                    involvement in the programme and the learning undertaken.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Sticky booking card */}
@@ -274,7 +291,6 @@ export default function CourseDetail({course}:{course:Course}) {
               <BookingCard course={course} />
             </div>
           </aside>
-
         </div>
       </section>
 
@@ -298,7 +314,7 @@ export default function CourseDetail({course}:{course:Course}) {
 
 function BookingCard({ course }: { course: Course }) {
   const [selectedMode, setSelectedMode] = useState<DeliveryMode>(
-    DeliveryMode.ARRANGED_VENUE
+    DeliveryMode.ARRANGED_VENUE,
   );
 
   const deliveryOptions = [
@@ -323,12 +339,10 @@ function BookingCard({ course }: { course: Course }) {
   ];
 
   const selectedPricing = course.pricing.find(
-    (pricing) => pricing.deliveryMode === selectedMode
+    (pricing) => pricing.deliveryMode === selectedMode,
   );
 
-  const price = selectedPricing
-    ? Number(selectedPricing.amount)
-    : null;
+  const price = selectedPricing ? Number(selectedPricing.amount) : null;
 
   const currency = selectedPricing?.currency ?? "KES";
 
@@ -385,8 +399,7 @@ function BookingCard({ course }: { course: Course }) {
               const isSelected = selectedMode === option.value;
 
               const optionPricing = course.pricing.find(
-                (pricing) =>
-                  pricing.deliveryMode === option.value
+                (pricing) => pricing.deliveryMode === option.value,
               );
 
               const optionPrice = optionPricing
@@ -418,9 +431,7 @@ function BookingCard({ course }: { course: Course }) {
                   <div className="min-w-0 flex-1">
                     <p
                       className={`text-sm font-semibold ${
-                        isSelected
-                          ? "text-primary"
-                          : "text-text-secondary"
+                        isSelected ? "text-primary" : "text-text-secondary"
                       }`}
                     >
                       {option.label}
@@ -433,14 +444,11 @@ function BookingCard({ course }: { course: Course }) {
 
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-bold text-primary">
-                      {optionPrice !== null &&
-                      Number.isFinite(optionPrice)
+                      {optionPrice !== null && Number.isFinite(optionPrice)
                         ? optionPrice.toLocaleString("en-KE")
                         : "—"}
                     </p>
-                    <p className="text-[10px] text-text-muted">
-                      per person
-                    </p>
+                    <p className="text-[10px] text-text-muted">per person</p>
                   </div>
                 </button>
               );
@@ -457,9 +465,10 @@ function BookingCard({ course }: { course: Course }) {
 
           <li className="flex items-center gap-3">
             <MapPin className="h-4 w-4 text-primary" />
-            {deliveryOptions.find(
-              (option) => option.value === selectedMode
-            )?.label}
+            {
+              deliveryOptions.find((option) => option.value === selectedMode)
+                ?.label
+            }
           </li>
         </ul>
 

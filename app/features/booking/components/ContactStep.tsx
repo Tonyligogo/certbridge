@@ -1,5 +1,3 @@
-import { Info } from "lucide-react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { StepProps } from "../types";
@@ -80,11 +78,6 @@ export function ContactStep({
           <FieldError message={errors["organizationName"]} />
         </div>
       </div>
-
-      <p className="flex gap-2 rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-        <Info className="mt-0.5 size-4 shrink-0" />
-        We use these details to confirm the schedule and pricing for your request.
-      </p>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function PriceEstimateCard({ estimate }: { estimate: PriceEstimate | null
           <>
             {total != null && total > 0 && (
               <Row
-                label="Delivery surcharge"
+                label="Training surcharge"
                 value={formatMoney(total, estimate.currency)}
               />
             )}
@@ -47,7 +47,7 @@ export function PriceEstimateCard({ estimate }: { estimate: PriceEstimate | null
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Indicative only. Our team confirms the final price with you.
+              This price is exclusive of tax. This will be indicated in you quotation.
             </p>
           </>
         ) : (

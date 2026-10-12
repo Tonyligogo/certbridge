@@ -4,11 +4,9 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 type Slide = {
-  eyebrow: string;
   title: string;
   subtext: string;
   cta: { label: string; to: string };
-  secondaryCta?: { label: string; to: string };
   bg:
     | { type: "video"; src: string }
     | { type: "image"; src: string };
@@ -16,19 +14,16 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    eyebrow: "Kenya's Leading Training Platform",
     title: "Professional Training, Arranged For You",
     subtext:
       "We source expert trainers, arrange the logistics, and deliver results — so you can focus on growing your team.",
-    cta: { label: "Book a Training", to: "/contact" },
-    secondaryCta: { label: "Browse Courses", to: "/courses" },
+    cta: { label: "Book a Training", to: "/courses" },
     bg: {
       type: "video",
       src: "https://www.pexels.com/download/video/8716579/",
     },
   },
   {
-    eyebrow: "Online, On-Site, or At a Venue",
     title: "Training That Comes To You",
     subtext: "Choose the format that works for your team — we handle the rest.",
     cta: { label: "Explore Courses", to: "/courses" },
@@ -38,7 +33,6 @@ const slides: Slide[] = [
     },
   },
   {
-    eyebrow: "For Teams of All Sizes",
     title: "From One Person to a Full Department",
     subtext:
       "Individual coaching or group workshops — we scale training to your exact needs.",
@@ -93,9 +87,6 @@ export function HeroSlider() {
 
           <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10 h-full flex items-center">
             <div className="max-w-2xl text-white">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-primary text-xs font-semibold tracking-wider text-white mb-6">
-                {s.eyebrow}
-              </span>
               <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-6">
                 {s.title}
               </h1>
@@ -110,14 +101,6 @@ export function HeroSlider() {
                   {s.cta.label}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                {s.secondaryCta && (
-                  <Link
-                    href={s.secondaryCta.to}
-                    className="inline-flex items-center gap-2 px-7 py-4 bg-primary text-white rounded-xl font-semibold "
-                  >
-                    {s.secondaryCta.label}
-                  </Link>
-                )}
               </div>
             </div>
           </div>

@@ -12,29 +12,29 @@ const steps = [
   {
     Icon: Search,
     title: "Browse our catalogue",
-    desc: "Explore 200+ courses across leadership, sales, technology, HR and more. Or tell us what you need and we'll design a custom programme.",
+    desc: "Explore 150+ courses across leadership, sales, technology, HR and more. Or tell us what you need and we'll design a custom programme.",
   },
   {
     Icon: CalendarCheck,
     title: "Submit a booking request",
-    desc: "Choose your preferred format (online, on-site, or at a venue we arrange), group size, and ideal dates.",
+    desc: "Choose your preferred format (online, your premises, or at our venue), group size, and ideal dates.",
   },
   {
     Icon: UserCheck,
     title: "We assign a vetted trainer",
-    desc: "Within 24 hours, we match you with a qualified expert from our network and send you a tailored proposal.",
+    desc: "We match you with a qualified expert from our team and send you a tailored quotation.",
   },
   {
     Icon: Award,
     title: "Training is delivered",
-    desc: "We coordinate logistics, materials and venue. Your team learns, gets certified, and you get a post-training report.",
+    desc: "We coordinate logistics, training materials and venue. Your team learns, gets certified, and you get a post-training report.",
   },
 ];
 
 const benefits = [
   { Icon: ShieldCheck, title: "Vetted Trainers", desc: "Every trainer is interviewed, credentialed, and rated after each engagement." },
   { Icon: Clock, title: "24-Hour Response", desc: "We send a tailored proposal within one business day of your request." },
-  { Icon: Users, title: "Any Group Size", desc: "From 1-on-1 executive coaching to 100+ person workshops." },
+  { Icon: Users, title: "Any Group Size", desc: "From 1-on-1 executive coaching to 30+ person workshops." },
 ];
 
 export default function HowItWorksPage() {
