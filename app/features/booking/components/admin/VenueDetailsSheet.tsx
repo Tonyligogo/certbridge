@@ -154,7 +154,7 @@ export function VenueDetailsSheet({
               <InfoBlock
                 label="Agreed amount"
                 value={formatMoney(
-                  assignment.agreedAmount,
+                  Number(assignment.agreedAmount),
                   assignment.currency
                 )}
               />

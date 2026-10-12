@@ -7,29 +7,13 @@ export function formatEnum(value: string) {
     );
 }
 
-// export function formatMoney(
-//   amount: string | null,
-//   currency: string
-// ) {
-//   if (!amount) return "Not provided";
-
-//   const number = Number(amount);
-
-//   if (!Number.isFinite(number)) {
-//     return `${currency} ${amount}`;
-//   }
-
-//   return new Intl.NumberFormat("en-KE", {
-//     style: "currency",
-//     currency,
-//     maximumFractionDigits: 2,
-//   }).format(number);
-// }
-
 export function formatMoney(
   amount: number,
   currency: string | null
 ) {
+  if(amount === null || amount === undefined) {
+    return "Not provided";
+  }
   if (!currency) {
     return amount.toLocaleString();
   }
@@ -48,10 +32,30 @@ export function formatMoney(
   }
 }
 
-export function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+type DateStyle = "short" | "medium" | "long" | "full";
+
+interface FormatDateOptions {
+  dateStyle?: DateStyle;
+  timeStyle?: "short" | "medium" | "long" | "full";
+  fallback?: string;
+}
+
+export function formatDate(
+  value: string | Date | null | undefined,
+  {
+    dateStyle = "medium",
+    timeStyle,
+    fallback = "Not scheduled",
+  }: FormatDateOptions = {}
+): string {
+  if (value == null || value === "") return fallback;
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return new Intl.DateTimeFormat("en-KE", {
+    dateStyle,
+    ...(timeStyle ? { timeStyle } : {}),
+  }).format(date);
 }

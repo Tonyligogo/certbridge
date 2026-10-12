@@ -13,13 +13,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AdminBookingDetailsResponse } from "../../types/admin-booking";
-import { useCreateQuote, useUpdateQuote } from "@/app/features/quotes/hooks/use-quote";
+import {
+  useCreateQuote,
+  useUpdateQuote,
+} from "@/app/features/quotes/hooks/use-quote";
 import { Quote } from "@/app/features/quotes/types/quote";
 import BookingStatusToggler from "./BookingStatusToggler";
 import { QuoteStatusBadge } from "@/app/features/quotes/components/quoteStatusBadge";
-
+import { formatDate, formatMoney } from "../../utils/utils";
+import { TaxType } from "@/generated/prisma/enums";
 
 interface QuoteLineItem {
   id: string;
@@ -30,13 +42,11 @@ interface QuoteLineItem {
 
 interface PrepareQuoteProps {
   booking: AdminBookingDetailsResponse;
-  onSaved?: (
-    quote?: Quote
-  ) => void;
-  action:string;
+  onSaved?: (quote?: Quote) => void;
+  action: string;
 }
 
-function createItem( name = "", quantity = "1", unitPrice = ""): QuoteLineItem {
+function createItem(name = "", quantity = "1", unitPrice = ""): QuoteLineItem {
   return {
     id: crypto.randomUUID(),
     name,
@@ -45,100 +55,74 @@ function createItem( name = "", quantity = "1", unitPrice = ""): QuoteLineItem {
   };
 }
 
-function calculateAmount( quantity: string, unitPrice: string) {
+function calculateAmount(quantity: string, unitPrice: string) {
   const qty = Number(quantity);
   const price = Number(unitPrice);
-  if ( !Number.isFinite(qty) || !Number.isFinite(price)) {
+  if (!Number.isFinite(qty) || !Number.isFinite(price)) {
     return 0;
   }
 
   return qty * price;
 }
 
-function formatMoney( amount: number, currency: string) {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatDate(
-  value: string | null | undefined
-) {
-  if (!value) return "Not scheduled";
-
-  return new Intl.DateTimeFormat("en-KE", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-export function PrepareQuote({
-  booking,
-  onSaved,
-  action
-}: PrepareQuoteProps) {
+export function PrepareQuote({ booking, onSaved, action }: PrepareQuoteProps) {
   /*
    * Populate the form from an existing draft,
    * otherwise create a sensible initial item.
-   */ 
-  const [expiresAt, setExpiresAt] =
-  useState(() =>
+   */
+  const [expiresAt, setExpiresAt] = useState(() =>
     booking.quote?.expiresAt
       ? booking.quote.expiresAt.toString().slice(0, 10)
-      : ""
+      : "",
   );
+  const [taxType, setTaxType] = useState<TaxType>(
+  booking.quote?.taxType ?? TaxType.STANDARD
+);
+
+const [responseNotes, setResponseNotes] = useState(
+  booking.quote?.responseNotes ?? ""
+);
   const [isQuoteResponseOpen, setIsQuoteResponseOpen] = useState(false);
-  const {mutate:createQuote, isPending:isCreatingQuote} = useCreateQuote();
+  const { mutate: createQuote, isPending: isCreatingQuote } = useCreateQuote();
   const { mutate: updateQuote, isPending: isUpdatingQuote } = useUpdateQuote();
   const isSavingQuote = isCreatingQuote || isUpdatingQuote;
 
-const [items, setItems] = useState<QuoteLineItem[]>(() => {
-    if (
-      booking.quote &&
-      booking.quote.items.length > 0
-    ) {
-      return booking.quote.items.map(
-        (item) => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity.toString(),
-          unitPrice: item.unitPrice.toString(),
-        })
-      );
+  const [items, setItems] = useState<QuoteLineItem[]>(() => {
+    if (booking.quote && booking.quote.items.length > 0) {
+      return booking.quote.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity.toString(),
+        unitPrice: item.unitPrice.toString(),
+      }));
     }
 
-    return [
-      createItem(
-        booking.course.title,
-        "1",
-        ""
-      ),
-    ];
+    return [createItem(booking.course.title, "1", "")];
   });
 
-  const currency =
-    booking.currency || "KES";
+  const currency = booking.currency || "KES";
 
   const subtotal = useMemo(() => {
     return items.reduce(
-      (total, item) =>
-        total +
-        calculateAmount(
-          item.quantity,
-          item.unitPrice
-        ),
-      0
+      (total, item) => total + calculateAmount(item.quantity, item.unitPrice),
+      0,
     );
   }, [items]);
+
+  const taxRate = taxType === TaxType.STANDARD ? 0.16 : 0;
+
+const taxAmount = useMemo(
+  () => Math.round(subtotal * taxRate * 100) / 100,
+  [subtotal, taxRate]
+);
+
+const totalAmount = subtotal + taxAmount;
 
   const canSave =
     items.length > 0 &&
     items.every((item) => {
-      const quantity =
-        Number(item.quantity);
-      const unitPrice =
-        Number(item.unitPrice);
+      const quantity = Number(item.quantity);
+      const unitPrice = Number(item.unitPrice);
 
       return (
         item.name.trim().length > 0 &&
@@ -151,11 +135,8 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
 
   function updateItem(
     id: string,
-    field:
-      | "name"
-      | "quantity"
-      | "unitPrice",
-    value: string
+    field: "name" | "quantity" | "unitPrice",
+    value: string,
   ) {
     setItems((current) =>
       current.map((item) =>
@@ -164,82 +145,75 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
               ...item,
               [field]: value,
             }
-          : item
-      )
+          : item,
+      ),
     );
   }
 
   function addItem() {
-    setItems((current) => [
-      ...current,
-      createItem(),
-    ]);
+    setItems((current) => [...current, createItem()]);
   }
 
   function removeItem(id: string) {
-    setItems((current) =>
-      current.filter(
-        (item) => item.id !== id
-      )
-    );
+    setItems((current) => current.filter((item) => item.id !== id));
   }
 
   function handleSubmit() {
     if (!canSave) return;
 
-       const payload = {
-      expiresAt: expiresAt
-        ? new Date(expiresAt)
-        : null,
+    const payload = {
+  expiresAt: expiresAt ? new Date(expiresAt) : null,
 
-      items: items.map((item) => ({
-        name: item.name.trim(),
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        amount: calculateAmount(
-          item.quantity,
-          item.unitPrice
-        ).toFixed(2),
-      })),
-    }
+  taxType,
+
+  responseNotes: responseNotes.trim() || null,
+
+  items: items.map((item) => ({
+    name: item.name.trim(),
+    quantity: item.quantity,
+    unitPrice: item.unitPrice,
+    amount: calculateAmount(
+      item.quantity,
+      item.unitPrice
+    ).toFixed(2),
+  })),
+};
     if (booking.quote) {
-        updateQuote({
-            bookingId: booking.id,
-            data: payload,
-        },{
-        onSuccess: (response) => {
-            onSaved?.(response.data);
+      updateQuote(
+        {
+          bookingId: booking.id,
+          data: payload,
         },
-      }
-    );
+        {
+          onSuccess: (response) => {
+            onSaved?.(response.data);
+          },
+        },
+      );
 
-        return;
+      return;
     }
-    createQuote({
-        bookingId:booking.id,
+    createQuote(
+      {
+        bookingId: booking.id,
         data: payload,
-      },{
+      },
+      {
         onSuccess: (response) => {
-            onSaved?.(response.data);
+          onSaved?.(response.data);
         },
-      }
+      },
     );
   }
   return (
     <div className="flex min-h-full flex-col">
       <div className="flex-1 space-y-6 p-6">
         {/* Booking context */}
-        {booking.quote && (
-  <QuoteStatusBadge
-    status={booking.quote.status}
-  />
-)}
+        {booking.quote && <QuoteStatusBadge status={booking.quote.status} />}
         <div className="rounded-lg border bg-muted/30 p-4">
           <div className="mb-3 flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="truncate font-medium">
-                {booking.course.title}
-              </p>
+              <p className="truncate font-medium">{booking.course.title}</p>
 
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Booking {booking.reference}
@@ -268,8 +242,7 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
 
               <span>
                 {formatDate(
-                  booking.scheduledStartDate ??
-                    booking.preferredStartDate
+                  booking.scheduledStartDate ?? booking.preferredStartDate,
                 )}
               </span>
             </div>
@@ -278,41 +251,93 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
 
         {/* Quote validity */}
         <div className="space-y-2">
-          <Label htmlFor="quote-expiry">
-            Quote valid until
-          </Label>
+          <Label htmlFor="quote-expiry">Quote valid until</Label>
 
           <Input
             id="quote-expiry"
             type="date"
             value={expiresAt}
-            onChange={(event) =>
-              setExpiresAt(
-                event.target.value
-              )
-            }
+            onChange={(event) => setExpiresAt(event.target.value)}
           />
 
           <p className="text-xs text-muted-foreground">
-            Optional. The client should
-            accept the quotation before
-            this date.
+            Optional. The client should accept the quotation before this date.
           </p>
         </div>
 
         <Separator />
 
+        <div className="space-y-5">
+            {/* Tax Type */}
+            <div className="space-y-2">
+              <Label htmlFor="quote-tax-type">Tax treatment</Label>
+
+              <Select
+                value={taxType}
+                onValueChange={(value) => setTaxType(value as TaxType)}
+              >
+                <SelectTrigger id="quote-tax-type" className="w-full">
+                  <SelectValue placeholder="Select tax treatment" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value={TaxType.STANDARD}>
+                    Standard VAT (16%)
+                  </SelectItem>
+
+                  <SelectItem value={TaxType.ZERO_RATED}>
+                    Zero-rated (0%)
+                  </SelectItem>
+
+                  <SelectItem value={TaxType.EXEMPT}>
+                    VAT Exempt
+                  </SelectItem>
+
+                  <SelectItem value={TaxType.NONE}>
+                    No Tax
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <p className="text-xs text-muted-foreground">
+                Tax is calculated automatically based on the selected treatment.
+              </p>
+            </div>
+
+            {/* Response Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="quote-response-notes">
+                Response notes{" "}
+                <span className="font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </Label>
+
+              <Textarea
+                id="quote-response-notes"
+                value={responseNotes}
+                onChange={(event) => setResponseNotes(event.target.value)}
+                placeholder="Add any notes, clarifications, or special terms for this quotation..."
+                rows={4}
+                className="resize-none"
+              />
+
+              <p className="text-xs text-muted-foreground">
+                Additional information or terms relating to this quotation.
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
         {/* Line items */}
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold">
-                Quote items
-              </h3>
+              <h3 className="text-sm font-semibold">Quote items</h3>
 
               <p className="text-xs text-muted-foreground">
-                Add the services and costs
-                included in this quotation.
+                Add the services and costs included in this quotation.
               </p>
             </div>
 
@@ -329,192 +354,176 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
           </div>
 
           <div className="space-y-3">
-            {items.map(
-              (item, index) => {
-                const amount =
-                  calculateAmount(
-                    item.quantity,
-                    item.unitPrice
-                  );
+            {items.map((item, index) => {
+              const amount = calculateAmount(item.quantity, item.unitPrice);
 
-                return (
-                  <div
-                    key={item.id}
-                    className="rounded-lg border p-4"
-                  >
-                    <div className="mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ReceiptText className="size-4 text-muted-foreground" />
+              return (
+                <div key={item.id} className="rounded-lg border p-4">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ReceiptText className="size-4 text-muted-foreground" />
 
-                        <span className="text-sm font-medium">
-                          Item {index + 1}
-                        </span>
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-muted-foreground hover:text-destructive"
-                        disabled={
-                          items.length === 1
-                        }
-                        onClick={() =>
-                          removeItem(item.id)
-                        }
-                      >
-                        <Trash2 className="size-4" />
-
-                        <span className="sr-only">
-                          Remove item
-                        </span>
-                      </Button>
+                      <span className="text-sm font-medium">
+                        Item {index + 1}
+                      </span>
                     </div>
 
-                    <div className="space-y-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-destructive"
+                      disabled={items.length === 1}
+                      onClick={() => removeItem(item.id)}
+                    >
+                      <Trash2 className="size-4" />
+
+                      <span className="sr-only">Remove item</span>
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`item-${item.id}-name`}>
+                        Description
+                      </Label>
+
+                      <Input
+                        id={`item-${item.id}-name`}
+                        placeholder="e.g. Training fee"
+                        value={item.name}
+                        onChange={(event) =>
+                          updateItem(item.id, "name", event.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label
-                          htmlFor={`item-${item.id}-name`}
-                        >
-                          Description
+                        <Label htmlFor={`item-${item.id}-quantity`}>
+                          Quantity
                         </Label>
 
                         <Input
-                          id={`item-${item.id}-name`}
-                          placeholder="e.g. Training fee"
-                          value={item.name}
+                          id={`item-${item.id}-quantity`}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={item.quantity}
                           onChange={(event) =>
-                            updateItem(
-                              item.id,
-                              "name",
-                              event.target.value
-                            )
+                            updateItem(item.id, "quantity", event.target.value)
                           }
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor={`item-${item.id}-quantity`}
-                          >
-                            Quantity
-                          </Label>
+                      <div className="space-y-2">
+                        <Label htmlFor={`item-${item.id}-price`}>
+                          Unit price
+                        </Label>
+
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                            {currency}
+                          </span>
 
                           <Input
-                            id={`item-${item.id}-quantity`}
+                            id={`item-${item.id}-price`}
                             type="number"
-                            min="0.01"
+                            min="0"
                             step="0.01"
-                            value={
-                              item.quantity
-                            }
-                            onChange={(
-                              event
-                            ) =>
+                            className="pl-12"
+                            placeholder="0.00"
+                            value={item.unitPrice}
+                            onChange={(event) =>
                               updateItem(
                                 item.id,
-                                "quantity",
-                                event.target
-                                  .value
+                                "unitPrice",
+                                event.target.value,
                               )
                             }
                           />
                         </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor={`item-${item.id}-price`}
-                          >
-                            Unit price
-                          </Label>
-
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                              {currency}
-                            </span>
-
-                            <Input
-                              id={`item-${item.id}-price`}
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              className="pl-12"
-                              placeholder="0.00"
-                              value={
-                                item.unitPrice
-                              }
-                              onChange={(
-                                event
-                              ) =>
-                                updateItem(
-                                  item.id,
-                                  "unitPrice",
-                                  event.target
-                                    .value
-                                )
-                              }
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between border-t pt-3">
-                        <span className="text-xs text-muted-foreground">
-                          Amount
-                        </span>
-
-                        <span className="text-sm font-medium tabular-nums">
-                          {formatMoney(
-                            amount,
-                            currency
-                          )}
-                        </span>
                       </div>
                     </div>
+
+                    <div className="flex items-center justify-between border-t pt-3">
+                      <span className="text-xs text-muted-foreground">
+                        Amount
+                      </span>
+
+                      <span className="text-sm font-medium tabular-nums">
+                        {formatMoney(amount, currency)}
+                      </span>
+                    </div>
                   </div>
-                );
-              }
-            )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Total */}
         <div className="rounded-lg border bg-muted/30 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">
-              Quote total
-            </span>
+  <h3 className="mb-4 text-sm font-semibold">
+    Quote summary
+  </h3>
 
-            <span className="text-lg font-semibold tabular-nums">
-              {formatMoney(
-                subtotal,
-                currency
-              )}
-            </span>
-          </div>
+  <div className="space-y-3">
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">Subtotal</span>
+      <span className="font-medium tabular-nums">
+        {formatMoney(subtotal, currency)}
+      </span>
+    </div>
 
-          <p className="mt-1 text-xs text-muted-foreground">
-            {items.length}{" "}
-            {items.length === 1
-              ? "line item"
-              : "line items"}
-          </p>
-        </div>
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">
+        {taxType === TaxType.STANDARD
+          ? "VAT (16%)"
+          : taxType === TaxType.ZERO_RATED
+            ? "VAT (Zero-rated)"
+            : taxType === TaxType.EXEMPT
+              ? "VAT (Exempt)"
+              : "No tax"}
+      </span>
+
+      <span className="font-medium tabular-nums">
+        {formatMoney(taxAmount, currency)}
+      </span>
+    </div>
+
+    <Separator />
+
+    <div className="flex items-center justify-between">
+      <span className="font-semibold">Quote total</span>
+
+      <span className="text-xl font-bold tabular-nums">
+        {formatMoney(totalAmount, currency)}
+      </span>
+    </div>
+  </div>
+
+  <p className="mt-3 text-xs text-muted-foreground">
+    {items.length} {items.length === 1 ? "line item" : "line items"}
+  </p>
+</div>
       </div>
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 border-t bg-background p-4">
         <div className="flex items-center justify-end gap-2">
-          { action === 'UPDATE_QUOTE_STATUS' &&
-            <Button variant="outline" onClick={()=>setIsQuoteResponseOpen(true)}>Update Quote Status</Button>
-          }
+          {action === "UPDATE_QUOTE_STATUS" && (
+            <Button
+              variant="outline"
+              onClick={() => setIsQuoteResponseOpen(true)}
+            >
+              Update Quote Status
+            </Button>
+          )}
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={
-              !canSave || isSavingQuote
-            }
+            disabled={!canSave || isSavingQuote}
             className="min-w-32"
           >
             {isSavingQuote ? (
@@ -530,9 +539,15 @@ const [items, setItems] = useState<QuoteLineItem[]>(() => {
           </Button>
         </div>
       </div>
-      { action === 'UPDATE_QUOTE_STATUS' && isQuoteResponseOpen && booking.quote &&
-        <BookingStatusToggler bookingId={booking.id} open={isQuoteResponseOpen} onOpenChange={setIsQuoteResponseOpen} />
-      }
+      {action === "UPDATE_QUOTE_STATUS" &&
+        isQuoteResponseOpen &&
+        booking.quote && (
+          <BookingStatusToggler
+            bookingId={booking.id}
+            open={isQuoteResponseOpen}
+            onOpenChange={setIsQuoteResponseOpen}
+          />
+        )}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { calculateInvoice } from "@/app/features/invoices/lib/amount-calculations";
 import { invoiceSelect } from "@/app/features/invoices/lib/invoice-select";
 import { serializeInvoice } from "@/app/features/invoices/lib/invoice-serializer";
 import { updateInvoiceSchema } from "@/app/features/invoices/schema/schemas";
@@ -106,18 +105,16 @@ export async function PATCH(
       );
     }
 
-    const existing =
-      await prisma.invoice.findFirst({
-        where: {
-          id: invoiceId,
-          bookingId,
-        },
-
-        select: {
-          id: true,
-          status: true,
-        },
-      });
+    const existing = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        bookingId,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
 
     if (!existing) {
       return NextResponse.json(
@@ -133,90 +130,59 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Only draft invoices can be edited.",
+          message: "Only draft invoices can be edited.",
         },
         { status: 409 }
       );
     }
 
-    const {
-      currency,
-      dueAt,
-      notes,
-      items,
-    } = parsed.data;
+    const { dueAt, notes } = parsed.data;
 
-    const calculated = calculateInvoice(items);
+    const invoice = await prisma.$transaction(async (tx) => {
+      const updated = await tx.invoice.update({
+        where: {
+          id: invoiceId,
+          bookingId,
+          status: "DRAFT",
+        },
+        data: {
+          ...(dueAt !== undefined && {
+            dueAt: dueAt ? new Date(dueAt) : null,
+          }),
+          ...(notes !== undefined && {
+            notes: notes?.trim() || null,
+          }),
+        },
+        select: invoiceSelect,
+      });
 
-    const invoice =
-      await prisma.$transaction(
-        async (tx) => {
-          await tx.invoiceItem.deleteMany({
-            where: {
-              invoiceId,
-            },
-          });
+      await tx.bookingActivity.create({
+        data: {
+          bookingId,
+          type: "INVOICE_UPDATED",
+          description: `Invoice ${updated.reference} updated.`,
+          createdBy: admin.user.id,
+          metadata: {
+            invoiceId: updated.id,
+            invoiceReference: updated.reference,
+          },
+        },
+      });
 
-          const updated =
-            await tx.invoice.update({
-              where: {
-                id: invoiceId,
-              },
-
-              data: {
-                currency,
-                subtotal: calculated.subtotal,
-                taxAmount: calculated.taxAmount,
-                totalAmount: calculated.totalAmount,
-                dueAt: dueAt ? new Date(dueAt) : null,
-                notes: notes || null,
-                items: {
-                  create:
-                    calculated.items.map(
-                      (item) => ({
-                        name: item.name,
-                        quantity: item.quantity,
-                        unitPrice: item.unitPrice,
-                        amount: item.amount,
-                      })
-                    ),
-                },
-              },
-              select: invoiceSelect,
-            });
-
-          await tx.bookingActivity.create({
-            data: {
-              bookingId,
-              type: "INVOICE_UPDATED",
-              description:`Invoice ${updated.reference} updated.`,
-              createdBy: admin.user.id,
-              metadata: {
-                invoiceId: updated.id,
-                invoiceReference: updated.reference,
-              },
-            },
-          });
-          return updated;
-        }
-      );
+      return updated;
+    });
 
     return NextResponse.json({
       success: true,
       data: serializeInvoice(invoice),
     });
   } catch (error) {
-    console.error(
-      "Update invoice error:",
-      error
-    );
+    console.error("Update invoice error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Failed to update invoice.",
+        message: "Failed to update invoice.",
       },
       { status: 500 }
     );

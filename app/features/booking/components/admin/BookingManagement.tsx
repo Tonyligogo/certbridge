@@ -1,28 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { AdminBookingListItem, GetAdminBookingsParams } from "@/app/features/booking/types/admin-booking";
+import { GetAdminBookingsParams } from "@/app/features/booking/types/admin-booking";
 import { BookingFilters } from "./BookingFilters";
 import { BookingTable } from "./BookingTable";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { useAdminBookings } from "../../hooks/use-booking";
-import { BookingDetailsSheet } from "../BookingDetailsSheet";
 
 export function BookingsManagement() {
   const [params, setParams] = useState<GetAdminBookingsParams>({
     page: 1,
     limit: 20,
   });
-  const [selectedBooking, setSelectedBooking] = useState<AdminBookingListItem | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  
-  const handleViewBooking = (booking: AdminBookingListItem) => {
-  setSelectedBooking(booking);
-  setIsSheetOpen(true);
-};
-
   const { data: response, isLoading,isFetching, isError, isPlaceholderData, refetch } = useAdminBookings(params);
 
   const bookings = response?.data?.bookings ?? [];
@@ -87,7 +78,7 @@ export function BookingsManagement() {
       {/* Data Table */}
       {!isLoading && !isError && bookings.length > 0 && (
         <>
-          <BookingTable bookings={bookings} isPlaceholderData={isPlaceholderData} onViewBooking={handleViewBooking} />
+          <BookingTable bookings={bookings} isPlaceholderData={isPlaceholderData} />
 
           {/* Pagination */}
           {pagination && (
@@ -120,15 +111,6 @@ export function BookingsManagement() {
             </div>
           )}
         </>
-      )}
-
-      {/* Booking Details Sheet */}
-      {selectedBooking && (
-        <BookingDetailsSheet
-          booking={selectedBooking}
-          isOpen={isSheetOpen}
-          onClose={() => setIsSheetOpen(false)}
-        />
       )}
     </div>
   );
