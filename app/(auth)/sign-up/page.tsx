@@ -26,7 +26,7 @@ const RegisterPage = () => {
           </span>
         </div>
       </Link>
-      <div className="w-lg">
+      <div className="md:w-lg">
         <SignUpForm />
       </div>
     </div>
