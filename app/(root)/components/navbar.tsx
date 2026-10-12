@@ -137,7 +137,7 @@ function Navbar() {
         {/* Drawer CTAs */}
         <div className="px-4 pb-8 pt-4 border-t space-y-3">
           <Link
-            href="/login"
+            href="/sign-in"
             className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-medium bg-primary text-white transition-all duration-200 hover:scale-105"
           >
             Log In
