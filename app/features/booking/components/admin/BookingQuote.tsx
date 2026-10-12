@@ -100,6 +100,8 @@ const [responseNotes, setResponseNotes] = useState(
     return [createItem(booking.course.title, "1", "")];
   });
 
+  console.log(booking.course)
+
   const currency = booking.currency || "KES";
 
   const subtotal = useMemo(() => {

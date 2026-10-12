@@ -26,7 +26,7 @@ const LoginPage = () => {
           </span>
         </div>
       </Link>
-      <div className="md:w-lg">
+      <div className="w-[90vw] sm:w-md md:w-lg">
         <SignInForm />
       </div>
     </div>

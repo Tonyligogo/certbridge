@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: PageProps) {
     <div className="min-h-dvh">
       {/* Header */}
       <section className="bg-primary text-white py-16 lg:py-20">
-        <div className="mx-auto max-w-[1400px] px-4 lg:px-10">
+        <div className="mx-auto max-w-350 px-4 lg:px-10">
           <span className="text-sm font-semibold uppercase tracking-wider text-white">
             Course Catalogue
           </span>
@@ -48,7 +48,7 @@ export default async function Page({ searchParams }: PageProps) {
       </section>
 
       {/* Main Content */}
-      <main className="flex gap-8 px-8 py-16">
+      <main className="flex gap-8 px-4 md:px-8 py-16">
         <FilterSidebar categories={categories} audiences={audiences} />
         <Suspense
           key={JSON.stringify(params)}

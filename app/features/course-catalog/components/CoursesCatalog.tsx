@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { LayoutGrid, List, SearchX, SlidersHorizontal } from "lucide-react";
+import { SearchX, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +12,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { activeFilterCount, useCatalogueSearch } from "../hooks/use-catalogue-search";
 import { FilterPanel } from "./FilterSidebar";
@@ -37,7 +36,7 @@ export function CourseCatalogue({
   sheetCategories = [],
   sheetAudiences = [],
 }: CourseCatalogueProps) {
-  const { search, setSearch, clearAll } = useCatalogueSearch();
+  const { search, clearAll } = useCatalogueSearch();
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -49,7 +48,6 @@ export function CourseCatalogue({
   return (
         <div id="course-results" className="min-w-0 flex-1 scroll-mt-24">
           <div className="mb-5 space-y-4">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
               <p
                 className="min-w-0 truncate text-sm font-medium text-foreground"
                 aria-live="polite"
@@ -63,7 +61,7 @@ export function CourseCatalogue({
                       pagination.total
                     )} of ${pagination.total} courses`}
               </p>
-
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
               <div className="flex items-center gap-2">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                   <SheetTrigger asChild>
@@ -89,23 +87,7 @@ export function CourseCatalogue({
                     </div>
                   </SheetContent>
                 </Sheet>
-
                 <CourseSortSelect />
-
-                <ToggleGroup
-                  type="single"
-                  value={search.view}
-                  onValueChange={(v) => v && setSearch({ view: v as "grid" | "list" })}
-                  aria-label="View layout"
-                  className="hidden sm:flex"
-                >
-                  <ToggleGroupItem value="grid" aria-label="Grid view">
-                    <LayoutGrid className="size-4" aria-hidden="true" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="list" aria-label="List view">
-                    <List className="size-4" aria-hidden="true" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
               </div>
             </div>
 

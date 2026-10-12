@@ -10,12 +10,13 @@ import EmailVerificationEmail from "@/app/features/emails/email-verification-ema
 import EmailChangeConfirmationEmail from "@/app/features/emails/email-change-confirmation-email";
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  baseURL: process.env.BETTER_AUTH_URL, 
   socialProviders: {
     google: {
+      prompt: "select_account",
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
