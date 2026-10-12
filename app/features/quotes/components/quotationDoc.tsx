@@ -1,4 +1,4 @@
-import { cn, TAX_RATE } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Building2,
   CalendarDays,

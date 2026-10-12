@@ -45,6 +45,8 @@ import {
   countWords,
   slugify,
   uid,
+  CourseFormType,
+  CoursePricingFormType,
 } from "./schema";
 import { toast } from "sonner";
 import type { CreateCourseInput } from "@/lib/validation/course";
@@ -58,7 +60,7 @@ import { AudienceMultiSelect } from "./AudienceMultiSelect";
 import { SummaryRow } from "./SummaryRow";
 import { Chip } from "./Chip";
 import dynamic from "next/dynamic";
-import { CourseLevel, CourseStatus, DeliveryMode } from "@/generated/prisma/enums";
+import { DeliveryMode } from "@/generated/prisma/enums";
 const MAX_SHORT_WORDS = 300;
 const DELIVERY_MODES = [DeliveryMode.ARRANGED_VENUE, DeliveryMode.CLIENT_SITE, DeliveryMode.ONLINE] as const;
 const makePricing = (pricing: CoursePricingFormType[] = []): CoursePricingFormType[] =>
@@ -70,36 +72,7 @@ const RichTextEditor = dynamic(
   () => import("@/app/features/courses/RichTextEditor"),
   { ssr: false}
 );
-export interface CoursePricingFormType {
-  id?: string;
-  deliveryMode: DeliveryMode;
-  amount: string;
-  currency: string;
-}
-export interface CourseModuleFormType {
-  id?: string;
-  title: string;
-  topics: string[];
-  estimatedDuration: number | null;
-}
-export interface CourseFormType {
-  title: string;
-  slug: string;
-  shortDescription: string;
-  description: string;
-  learningOutcomes: string[];
-  durationDays: number;
-  level: CourseLevel;
-  status: CourseStatus;
-  featured: boolean;
-  isPopular: boolean;
-  certificateProvided: boolean;
-  thumbnailUrl: string;
-  categoryId: string;
-  audiences: string[];
-  pricing: CoursePricingFormType[];
-  modules: CourseModuleFormType[];
-}
+
 export const defaultInitialForm: CourseFormType = {
   title: "",
   slug: "",

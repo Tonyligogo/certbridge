@@ -53,8 +53,6 @@ const formats = [
 ];
 
 export default function CourseDetail({course}:{course:Course}) {
-  // const price = Number(course.pricing?.amount ?? 0);
-  // const currency = course.pricing?.currency;
 
    const selectedPricing = course.pricing.find(
     (pricing) => pricing.deliveryMode === DeliveryMode.ARRANGED_VENUE

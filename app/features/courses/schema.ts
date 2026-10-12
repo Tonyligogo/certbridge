@@ -1,5 +1,7 @@
 // Mirrors the Prisma schema for the CertBridge Global course model.
 
+import { CourseLevel } from "@/generated/prisma/enums";
+
 export const DIFFICULTY_LEVELS = [
   "BEGINNER",
   "INTERMEDIATE",
@@ -45,6 +47,37 @@ export type CourseForm = {
   pricing: PricingTier[];
   modules: SyllabusModule[];
 };
+
+export interface CoursePricingFormType {
+  id?: string;
+  deliveryMode: DeliveryMode;
+  amount: string;
+  currency: string;
+}
+export interface CourseModuleFormType {
+  id?: string;
+  title: string;
+  topics: string[];
+  estimatedDuration: number | null;
+}
+export interface CourseFormType {
+  title: string;
+  slug: string;
+  shortDescription: string;
+  description: string;
+  learningOutcomes: string[];
+  durationDays: number;
+  level: CourseLevel;
+  status: CourseStatus;
+  featured: boolean;
+  isPopular: boolean;
+  certificateProvided: boolean;
+  thumbnailUrl: string;
+  categoryId: string;
+  audiences: string[];
+  pricing: CoursePricingFormType[];
+  modules: CourseModuleFormType[];
+}
 
 export const CATEGORIES = [
   { id: "cat_business", name: "Business & Leadership" },

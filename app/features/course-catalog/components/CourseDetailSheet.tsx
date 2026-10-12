@@ -11,13 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Clock,
   Award,
-  BookOpen,
   BarChart,
   MapPin,
   ArrowRight,
   CalendarCheck,
   ShieldCheck,
   BadgeCheck,
+  Check,
 } from "lucide-react";
 import type { Course } from "../types/catalogue";
 import { ShareCourseButton } from "./ShareCourseButton";
@@ -28,6 +28,7 @@ import { useDeleteCourse, useUpdateCourseStatus } from "@/hooks/course/use-cours
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import dynamic from "next/dynamic";
+import { DeliveryMode } from "@/generated/prisma/enums";
 
 const MarkdownRenderer = dynamic(
   () => import("@/app/features/courses/MarkdownRenderer"),
@@ -58,9 +59,15 @@ export function CourseDetailsSheet({
   if (!course) return null;
 
   const isAdminRoute = pathname.startsWith("/admin/courses");
+const selectedPricing = course.pricing.find(
+    (pricing) => pricing.deliveryMode === DeliveryMode.ARRANGED_VENUE
+  );
 
-  const price = Number(course.pricing?.amount ?? 0);
-  const currency = course.pricing?.currency;
+  const price = selectedPricing
+    ? Number(selectedPricing.amount)
+    : null;
+
+  const currency = selectedPricing?.currency ?? "KES";
 
   const imgUrl = course.thumbnailUrl || "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg";
 
@@ -105,7 +112,7 @@ export function CourseDetailsSheet({
                     <img src={imgUrl} alt={course.title} className="h-full w-full object-cover" />
                 </div>
                 <div className="border-b border-primary/20 pb-6">
-                    <p className="font-display text-2xl font-bold">{`From ${currency} ${price.toLocaleString()}`}</p>
+                    <p className="font-display text-2xl font-bold">{`From ${currency} ${price}`}</p>
                     <p className="text-sm text-muted-foreground">per participant</p>
                 </div>
                     <ul className="space-y-3 text-sm text-text-secondary border-b border-primary/20 pb-6">
@@ -240,6 +247,18 @@ export function CourseDetailsSheet({
                     <h2 className="font-display text-xl font-bold mb-3">Course Description</h2>
                     <MarkdownRenderer value={course.description} />
                   </div>
+                  {/* what you'll learn */}
+            <div className="bg-white border border-blue-100 rounded-2xl p-8">
+              <h2 className="font-display text-2xl lg:text-3xl font-bold mb-6">What You&apos;ll Learn</h2>
+              <ul className="space-y-2">
+                {course.learningOutcomes.map((outcome, index) => (
+                  <li key={index} className="flex gap-3 text-text-secondary leading-relaxed">
+                    <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span>{outcome}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
                   {/* Audience */}
                   <h3 className="font-display text-xl font-bold mt-4 mb-4">Who this course is for</h3>
@@ -281,19 +300,20 @@ export function CourseDetailsSheet({
 
                 {/* SYLLABUS TAB */}
                 <TabsContent value="syllabus" className="m-0 space-y-4">
-                  <h3 className="font-display text-xl font-bold mt-4 mb-4">Course Outline</h3>
-                    <Accordion type="single" collapsible defaultValue="item-0" className="bg-white border border-blue-100 rounded-2xl px-6">
+                  <h2 className="font-display text-2xl lg:text-3xl font-bold mb-5">Course Outline</h2>
+              <Accordion type="single" collapsible defaultValue="item-0">
                 {course.modules.map((m, i) => (
                   <AccordionItem key={m.title} value={`item-${i}`} className="border-blue-100">
-                    <AccordionTrigger className="text-left text-base flex items-center gap-3 py-5">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                        <span className="flex flex-col">
+                    <AccordionTrigger className="text-left font-display text-lg font-semibold text-text-primary py-5">
                       {`Module ${i + 1}: ${m.title}`}
-                        <span className="text-[13px] tracking-wide font-normal text-muted-foreground">Estimated duration • {m.estimatedDuration} Mins</span> 
-                        </span>
                     </AccordionTrigger>
-                    <AccordionContent className="leading-relaxed pb-5 pl-4">
-                      <MarkdownRenderer value={m.description || ''} />
+                    <AccordionContent className="text-text-secondary text-base leading-relaxed pb-5">
+                  {m.topics.map((topic) => (
+                  <li key={topic} className="flex gap-3 text-text-secondary leading-relaxed">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                    <span>{topic}</span>
+                  </li>
+                ))}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
