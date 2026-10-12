@@ -79,24 +79,6 @@ export interface CourseFormType {
   modules: CourseModuleFormType[];
 }
 
-export const CATEGORIES = [
-  { id: "cat_business", name: "Business & Leadership" },
-  { id: "cat_compliance", name: "Compliance & Safety" },
-  { id: "cat_tech", name: "Tech & Digital Skills" },
-  { id: "cat_finance", name: "Finance & Procurement" },
-  { id: "cat_health", name: "Healthcare & Wellbeing" },
-  { id: "cat_projects", name: "Project & Risk Management" },
-];
-
-export const AUDIENCES = [
-  { id: "aud_corporate", name: "Corporate Teams" },
-  { id: "aud_individual", name: "Individual Learners" },
-  { id: "aud_exec", name: "Executive Managers" },
-  { id: "aud_public", name: "Public Sector Officers" },
-  { id: "aud_ngo", name: "NGO & Development Staff" },
-  { id: "aud_grads", name: "Graduate Trainees" },
-];
-
 export const DELIVERY_MODE_LABELS: Record<DeliveryMode, string> = {
   ONLINE: "Online",
   CLIENT_SITE: "Client Site",

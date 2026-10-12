@@ -4,9 +4,10 @@ import { use } from "react";
 import { useGetCourseBySlug, useUpdateCourse } from "@/hooks/course/use-course";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { CourseForm, CourseFormType } from "@/app/features/courses/CourseForm";
+import { CourseForm } from "@/app/features/courses/CourseForm";
 import { UpdateCoursePayload } from "@/services/course";
 import { DeliveryMode } from "@/generated/prisma/enums";
+import { CourseFormType } from "@/app/features/courses/schema";
 
 interface EditCoursePageProps {
   params: Promise<{ slug: string }>;
