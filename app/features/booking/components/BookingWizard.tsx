@@ -96,6 +96,16 @@ export function BookingWizard({
       ),
     }));
   }, [prefill]); 
+  
+  useEffect(() => {
+    if (Object.keys(errors).length === 0) return;
+  
+    const timeout = setTimeout(() => {
+      setErrors({});
+    }, 4000);
+  
+    return () => clearTimeout(timeout);
+  }, [errors]);
 
   const participantCount = draft.participants.length;
   const deliveryMode = draft.deliveryMode;
@@ -247,7 +257,7 @@ export function BookingWizard({
     }
   }
 
-  if (confirmation) return <BookingConfirmation confirmation={confirmation} />;
+  if (confirmation) return <BookingConfirmation confirmation={confirmation} estimate={estimate} />;
 
   const progress = ((step + 1) / BOOKING_STEPS.length) * 100;
 
@@ -274,7 +284,7 @@ export function BookingWizard({
               <TrainingDetailsStep draft={draft} errors={errors} onChange={patch} course={course} />
             )}
             {step === 3 && (
-              <ScheduleLocationStep draft={draft} errors={errors} onChange={patch} course={course} />
+              <ScheduleLocationStep draft={draft} errors={errors} onChange={patch} />
             )}
             {step === 4 && <ReviewStep draft={draft} course={course} onEditStep={goTo} />}
           </div>

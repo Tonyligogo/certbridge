@@ -298,6 +298,13 @@ export async function PATCH(
               },
             });
 
+          await prisma.booking.update({
+            where: { id: bookingId },
+            data: {
+              status: "CONFIRMED",
+            },
+          })
+
           /*
            * Use the more specific activity
            * type when actually sending.

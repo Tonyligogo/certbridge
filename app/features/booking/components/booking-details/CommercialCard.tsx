@@ -121,7 +121,7 @@ export function CommercialCard({
     <Card>
       <CardHeader className="pb-4">
         <CardTitle className="text-base">
-          Commercial
+          Quotes, Invoices & Payments
         </CardTitle>
       </CardHeader>
 
@@ -203,8 +203,7 @@ function QuoteSection({
     );
   }
 
-  const total =
-    getQuoteTotal(quote);
+  const total = getQuoteTotal(quote);
 
   return (
     <CommercialSection
@@ -257,7 +256,7 @@ function QuoteSection({
           <Check className="size-3.5" />
 
           <span>
-            Commercial terms accepted
+            Quote accepted by client
           </span>
         </div>
       )}

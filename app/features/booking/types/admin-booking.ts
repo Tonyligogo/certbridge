@@ -110,6 +110,7 @@ export const AdminBookingDetailsResponseSelect = {
   adminNotes: true,
 
   currency: true,
+  amount:true,
 
   createdAt: true,
   updatedAt: true,
@@ -123,6 +124,7 @@ export const AdminBookingDetailsResponseSelect = {
       id: true,
       title: true,
       slug: true,
+      durationDays:true,
     },
   },
 
@@ -453,6 +455,7 @@ export interface AdminBookingDetailsResponse {
   adminNotes: string | null;
 
   currency: string;
+  amount:string;
 
   createdAt: string;
   updatedAt: string;
@@ -461,6 +464,7 @@ export interface AdminBookingDetailsResponse {
     id: string;
     title: string;
     slug: string;
+    durationDays:number;
   };
 
   participants: {

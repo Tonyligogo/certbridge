@@ -28,7 +28,6 @@ import {
   useUpdateQuote,
 } from "@/app/features/quotes/hooks/use-quote";
 import { Quote } from "@/app/features/quotes/types/quote";
-import BookingStatusToggler from "./BookingStatusToggler";
 import { QuoteStatusBadge } from "@/app/features/quotes/components/quoteStatusBadge";
 import { formatDate, formatMoney } from "../../utils/utils";
 import { TaxType } from "@/generated/prisma/enums";
@@ -43,7 +42,6 @@ interface QuoteLineItem {
 interface PrepareQuoteProps {
   booking: AdminBookingDetailsResponse;
   onSaved?: (quote?: Quote) => void;
-  action: string;
 }
 
 function createItem(name = "", quantity = "1", unitPrice = ""): QuoteLineItem {
@@ -65,7 +63,7 @@ function calculateAmount(quantity: string, unitPrice: string) {
   return qty * price;
 }
 
-export function PrepareQuote({ booking, onSaved, action }: PrepareQuoteProps) {
+export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
   /*
    * Populate the form from an existing draft,
    * otherwise create a sensible initial item.
@@ -76,13 +74,12 @@ export function PrepareQuote({ booking, onSaved, action }: PrepareQuoteProps) {
       : "",
   );
   const [taxType, setTaxType] = useState<TaxType>(
-  booking.quote?.taxType ?? TaxType.STANDARD
-);
+    booking.quote?.taxType ?? TaxType.STANDARD,
+  );
 
-const [responseNotes, setResponseNotes] = useState(
-  booking.quote?.responseNotes ?? ""
-);
-  const [isQuoteResponseOpen, setIsQuoteResponseOpen] = useState(false);
+  const [responseNotes, setResponseNotes] = useState(
+    booking.quote?.responseNotes ?? "",
+  );
   const { mutate: createQuote, isPending: isCreatingQuote } = useCreateQuote();
   const { mutate: updateQuote, isPending: isUpdatingQuote } = useUpdateQuote();
   const isSavingQuote = isCreatingQuote || isUpdatingQuote;
@@ -97,10 +94,8 @@ const [responseNotes, setResponseNotes] = useState(
       }));
     }
 
-    return [createItem(booking.course.title, "1", "")];
+    return [createItem(booking.course.title, "1", booking.amount)];
   });
-
-  console.log(booking.course)
 
   const currency = booking.currency || "KES";
 
@@ -113,12 +108,12 @@ const [responseNotes, setResponseNotes] = useState(
 
   const taxRate = taxType === TaxType.STANDARD ? 0.16 : 0;
 
-const taxAmount = useMemo(
-  () => Math.round(subtotal * taxRate * 100) / 100,
-  [subtotal, taxRate]
-);
+  const taxAmount = useMemo(
+    () => Math.round(subtotal * taxRate * 100) / 100,
+    [subtotal, taxRate],
+  );
 
-const totalAmount = subtotal + taxAmount;
+  const totalAmount = subtotal + taxAmount;
 
   const canSave =
     items.length > 0 &&
@@ -160,26 +155,25 @@ const totalAmount = subtotal + taxAmount;
     setItems((current) => current.filter((item) => item.id !== id));
   }
 
-  function handleSubmit() {
+  function handleSubmit(status: "DRAFT" | "SENT") {
     if (!canSave) return;
 
     const payload = {
-  expiresAt: expiresAt ? new Date(expiresAt) : null,
+      status,
 
-  taxType,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
 
-  responseNotes: responseNotes.trim() || null,
+      taxType,
 
-  items: items.map((item) => ({
-    name: item.name.trim(),
-    quantity: item.quantity,
-    unitPrice: item.unitPrice,
-    amount: calculateAmount(
-      item.quantity,
-      item.unitPrice
-    ).toFixed(2),
-  })),
-};
+      responseNotes: responseNotes.trim() || null,
+
+      items: items.map((item) => ({
+        name: item.name.trim(),
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        amount: calculateAmount(item.quantity, item.unitPrice).toFixed(2),
+      })),
+    };
     if (booking.quote) {
       updateQuote(
         {
@@ -251,86 +245,78 @@ const totalAmount = subtotal + taxAmount;
           </div>
         </div>
 
-        {/* Quote validity */}
-        <div className="space-y-2">
-          <Label htmlFor="quote-expiry">Quote valid until</Label>
+        <div className="flex gap-5">
+          {/* Quote validity */}
+          <div className="space-y-2">
+            <Label htmlFor="quote-expiry">Quote valid until</Label>
 
-          <Input
-            id="quote-expiry"
-            type="date"
-            value={expiresAt}
-            onChange={(event) => setExpiresAt(event.target.value)}
-          />
+            <Input
+              id="quote-expiry"
+              type="date"
+              value={expiresAt}
+              onChange={(event) => setExpiresAt(event.target.value)}
+            />
 
-          <p className="text-xs text-muted-foreground">
-            Optional. The client should accept the quotation before this date.
-          </p>
+            <p className="text-xs text-muted-foreground">
+              Optional. The client should accept the quotation before this date.
+            </p>
+          </div>
+
+          {/* Tax Type */}
+          <div className="space-y-2">
+            <Label htmlFor="quote-tax-type">Tax treatment</Label>
+
+            <Select
+              value={taxType}
+              onValueChange={(value) => setTaxType(value as TaxType)}
+            >
+              <SelectTrigger id="quote-tax-type" className="w-full">
+                <SelectValue placeholder="Select tax treatment" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value={TaxType.STANDARD}>
+                  Standard VAT (16%)
+                </SelectItem>
+
+                <SelectItem value={TaxType.ZERO_RATED}>
+                  Zero-rated (0%)
+                </SelectItem>
+
+                <SelectItem value={TaxType.EXEMPT}>VAT Exempt</SelectItem>
+
+                <SelectItem value={TaxType.NONE}>No Tax</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <p className="text-xs text-muted-foreground">
+              Tax is calculated automatically based on the selected treatment.
+            </p>
+          </div>
         </div>
 
         <Separator />
+        <div className="space-y-2">
+          <Label htmlFor="quote-response-notes">
+            Response notes{" "}
+            <span className="font-normal text-muted-foreground">
+              (optional)
+            </span>
+          </Label>
 
-        <div className="space-y-5">
-            {/* Tax Type */}
-            <div className="space-y-2">
-              <Label htmlFor="quote-tax-type">Tax treatment</Label>
+          <Textarea
+            id="quote-response-notes"
+            value={responseNotes}
+            onChange={(event) => setResponseNotes(event.target.value)}
+            placeholder="Add any notes, clarifications, or special terms for this quotation..."
+            rows={4}
+            className="resize-none"
+          />
 
-              <Select
-                value={taxType}
-                onValueChange={(value) => setTaxType(value as TaxType)}
-              >
-                <SelectTrigger id="quote-tax-type" className="w-full">
-                  <SelectValue placeholder="Select tax treatment" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value={TaxType.STANDARD}>
-                    Standard VAT (16%)
-                  </SelectItem>
-
-                  <SelectItem value={TaxType.ZERO_RATED}>
-                    Zero-rated (0%)
-                  </SelectItem>
-
-                  <SelectItem value={TaxType.EXEMPT}>
-                    VAT Exempt
-                  </SelectItem>
-
-                  <SelectItem value={TaxType.NONE}>
-                    No Tax
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <p className="text-xs text-muted-foreground">
-                Tax is calculated automatically based on the selected treatment.
-              </p>
-            </div>
-
-            {/* Response Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="quote-response-notes">
-                Response notes{" "}
-                <span className="font-normal text-muted-foreground">
-                  (optional)
-                </span>
-              </Label>
-
-              <Textarea
-                id="quote-response-notes"
-                value={responseNotes}
-                onChange={(event) => setResponseNotes(event.target.value)}
-                placeholder="Add any notes, clarifications, or special terms for this quotation..."
-                rows={4}
-                className="resize-none"
-              />
-
-              <p className="text-xs text-muted-foreground">
-                Additional information or terms relating to this quotation.
-              </p>
-            </div>
-          </div>
-
-          <Separator />
+          <p className="text-xs text-muted-foreground">
+            Additional information or terms relating to this quotation.
+          </p>
+        </div>
 
         {/* Line items */}
         <div className="space-y-4">
@@ -466,90 +452,93 @@ const totalAmount = subtotal + taxAmount;
 
         {/* Total */}
         <div className="rounded-lg border bg-muted/30 p-4">
-  <h3 className="mb-4 text-sm font-semibold">
-    Quote summary
-  </h3>
+          <h3 className="mb-4 text-sm font-semibold">Quote summary</h3>
 
-  <div className="space-y-3">
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">Subtotal</span>
-      <span className="font-medium tabular-nums">
-        {formatMoney(subtotal, currency)}
-      </span>
-    </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="font-medium tabular-nums">
+                {formatMoney(subtotal, currency)}
+              </span>
+            </div>
 
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">
-        {taxType === TaxType.STANDARD
-          ? "VAT (16%)"
-          : taxType === TaxType.ZERO_RATED
-            ? "VAT (Zero-rated)"
-            : taxType === TaxType.EXEMPT
-              ? "VAT (Exempt)"
-              : "No tax"}
-      </span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {taxType === TaxType.STANDARD
+                  ? "VAT (16%)"
+                  : taxType === TaxType.ZERO_RATED
+                    ? "VAT (Zero-rated)"
+                    : taxType === TaxType.EXEMPT
+                      ? "VAT (Exempt)"
+                      : "No tax"}
+              </span>
 
-      <span className="font-medium tabular-nums">
-        {formatMoney(taxAmount, currency)}
-      </span>
-    </div>
+              <span className="font-medium tabular-nums">
+                {formatMoney(taxAmount, currency)}
+              </span>
+            </div>
 
-    <Separator />
+            <Separator />
 
-    <div className="flex items-center justify-between">
-      <span className="font-semibold">Quote total</span>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">Quote total</span>
 
-      <span className="text-xl font-bold tabular-nums">
-        {formatMoney(totalAmount, currency)}
-      </span>
-    </div>
-  </div>
+              <span className="text-xl font-bold tabular-nums">
+                {formatMoney(totalAmount, currency)}
+              </span>
+            </div>
+          </div>
 
-  <p className="mt-3 text-xs text-muted-foreground">
-    {items.length} {items.length === 1 ? "line item" : "line items"}
-  </p>
-</div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {items.length} {items.length === 1 ? "line item" : "line items"}
+          </p>
+        </div>
       </div>
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 border-t bg-background p-4">
-        <div className="flex items-center justify-end gap-2">
-          {action === "UPDATE_QUOTE_STATUS" && (
-            <Button
-              variant="outline"
-              onClick={() => setIsQuoteResponseOpen(true)}
-            >
-              Update Quote Status
-            </Button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {booking.quote?.status === "DRAFT" && (
+            <div className="flex justify-end gap-3">
+              {(!booking.quote || booking.quote.status === "DRAFT") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleSubmit("DRAFT")}
+                  disabled={!canSave || isSavingQuote}
+                  className="min-w-32"
+                >
+                  {isSavingQuote ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : booking.quote ? (
+                    "Update Draft"
+                  ) : (
+                    "Save as Draft"
+                  )}
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                onClick={() => handleSubmit("SENT")}
+                disabled={!canSave || isSavingQuote}
+                className="min-w-32"
+              >
+                {isSavingQuote ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : !booking.quote ? (
+                  "Send Quote"
+                ) : booking.quote.status === "DRAFT" && (
+                  "Update & Send"
+                )}
+              </Button>
+            </div>
           )}
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSave || isSavingQuote}
-            className="min-w-32"
-          >
-            {isSavingQuote ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </>
-            ) : booking.quote ? (
-              "Update Draft"
-            ) : (
-              "Save Draft"
-            )}
-          </Button>
         </div>
       </div>
-      {action === "UPDATE_QUOTE_STATUS" &&
-        isQuoteResponseOpen &&
-        booking.quote && (
-          <BookingStatusToggler
-            bookingId={booking.id}
-            open={isQuoteResponseOpen}
-            onOpenChange={setIsQuoteResponseOpen}
-          />
-        )}
     </div>
   );
 }

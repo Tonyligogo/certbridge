@@ -129,8 +129,7 @@ export async function POST(
 
     const body = await request.json();
 
-    const parsed =
-      createQuoteSchema.safeParse(body);
+    const parsed = createQuoteSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -149,6 +148,7 @@ export async function POST(
       items,
       expiresAt,
       taxType,
+      status,
       responseNotes,
     } = parsed.data;
 
@@ -191,8 +191,7 @@ export async function POST(
       );
     }
 
-    const reference =
-      `QT-${booking.reference}`;
+    const reference = `QT-${booking.reference}`;
 
     /*
      * Calculate all financial values
@@ -246,8 +245,9 @@ export async function POST(
               data: {
                 bookingId,
                 reference,
-                status: "DRAFT",
+                status,
                 currency:booking.currency,
+                issuedAt: status === 'SENT' ? new Date() : null,
 
                 expiresAt: expiresAt
                   ? new Date(expiresAt)
@@ -483,6 +483,11 @@ export async function PATCH(
       updateData.expiresAt = data.expiresAt
         ? new Date(data.expiresAt)
         : null;
+    }
+
+    if(data.status === 'SENT'){
+      updateData.status = data.status
+      updateData.issuedAt = new Date()
     }
 
     if (data.responseNotes !== undefined) {

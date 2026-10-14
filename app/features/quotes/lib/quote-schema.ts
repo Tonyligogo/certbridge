@@ -45,6 +45,15 @@ export const createQuoteSchema = z.object({
     "NONE",
   ]),
 
+  status: z.enum([
+    "DRAFT",
+    "SENT",
+    "ACCEPTED",
+    "DECLINED",
+    "EXPIRED",
+    "CANCELLED",
+  ]),
+
   items: z
     .array(quoteItemSchema)
     .min(1, "At least one quote item is required"),
@@ -55,6 +64,15 @@ export const updateQuoteSchema = z.object({
     .string()
     .nullable()
     .optional(),
+
+  status: z.enum([
+    "DRAFT",
+    "SENT",
+    "ACCEPTED",
+    "DECLINED",
+    "EXPIRED",
+    "CANCELLED",
+  ]),
 
   responseNotes: z
     .string()

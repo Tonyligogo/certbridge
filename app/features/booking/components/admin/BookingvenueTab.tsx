@@ -14,6 +14,8 @@ import type {
   Venue,
 } from "@/app/features/venues/types/venue";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 import { Button } from "@/components/ui/button";
 
 import {
@@ -29,6 +31,7 @@ import { ResourceSourcingStatus } from "@/generated/prisma/enums";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatMoney } from "../../utils/utils";
 
 interface BookingVenueTabProps {
   booking: AdminBookingDetailsResponse;
@@ -111,10 +114,7 @@ const isEditingAssignment = editingBookingVenueId !== null;
     data: candidatesResponse,
     isLoading: isLoadingCandidates,
     isFetching: isFetchingCandidates,
-  } = useVenueCandidates(
-    booking.id,
-    candidateParams
-  );
+  } = useVenueCandidates(booking.id, candidateParams);
 
   const candidateVenues: Venue[] = candidatesResponse?.data ?? [];
 
@@ -146,23 +146,6 @@ const isEditingAssignment = editingBookingVenueId !== null;
     setIsAssignmentDetailsOpen(true);
   }
 
-  const handleAssign = (venueId: string) => {
-    addBookingVenueMutation.mutate(
-      {
-        bookingId: booking.id,
-        data: {
-          venueId,
-        },
-      },
-      {
-        onSuccess: () => {
-          setIsAssigning(false);
-          onComplete()
-        },
-      }
-    );
-  };
-
   function handleOpenEditAssignment(
   bookingVenue: AssignedVenue
 ) {
@@ -181,6 +164,13 @@ const isEditingAssignment = editingBookingVenueId !== null;
 
   setIsAssignmentDetailsOpen(true);
 }
+
+const dailyRatePerPerson = Number(agreedAmount) || 0;
+
+const totalAgreedAmount = Math.round(
+  dailyRatePerPerson * booking.participantCount * booking.course.durationDays * 100
+) / 100;
+
   const handleRemove = (venueId: string) => {
     alert('To delete')
   };
@@ -190,7 +180,7 @@ const isEditingAssignment = editingBookingVenueId !== null;
     return;
   }
 
-  const amount = Number(agreedAmount);
+  const amount = Number(totalAgreedAmount);
 
   if (!Number.isFinite(amount) || amount <= 0) {
     return;
@@ -202,7 +192,7 @@ const isEditingAssignment = editingBookingVenueId !== null;
         bookingId: booking.id,
         venueId:selectedVenueId,
         data:{
-          agreedAmount,
+          agreedAmount:String(amount),
           currency,
           status: venueAssignmentStatus,
         }
@@ -223,7 +213,7 @@ const isEditingAssignment = editingBookingVenueId !== null;
       bookingId: booking.id,
       data:{
         venueId: selectedVenueId,
-      agreedAmount,
+      agreedAmount:String(amount),
       currency,
       status: venueAssignmentStatus
     }
@@ -245,48 +235,43 @@ const isEditingAssignment = editingBookingVenueId !== null;
   return (
     <>
     <div className="space-y-5 p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b pb-4">
-        <div>
-          <h4 className="flex items-center gap-2 text-sm font-semibold">
-            <Building2 className="size-4" />
-
-            {isAssigning
-              ? "Find a venue"
-              : "Assigned venues"}
-          </h4>
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            {isAssigning
-              ? `Find a suitable venue for ${booking.course.title}.`
-              : "Manage venues assigned to this booking."}
-          </p>
-        </div>
-
-        {isAssigning ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setIsAssigning(false)}
-          >
-            <ArrowLeft className="mr-2 size-4" />
-            Back
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setIsAssigning(true)}
-          >
-            <Plus className="mr-2 size-4" />
-            Assign venue
-          </Button>
-        )}
-      </div>
-
-      {isAssigning ? (
-        <VenueFinder
+      <Tabs defaultValue="assigned">
+        <TabsList className="bg-primary">
+          <TabsTrigger value="assigned" className="text-white">Assigned venues</TabsTrigger>
+          <TabsTrigger value="venues" className="text-white">Find a venue</TabsTrigger>
+        </TabsList>
+        <TabsContent value="assigned">
+           <div className="flex items-center justify-between my-5">
+            <div className="space-y-0.5">
+              <h4 className="font-medium tracking-wide">
+                Assigned Training Venue
+              </h4>
+              <p className="text-sm tracking-wide text-muted-foreground">
+                Manage the venue assigned to this training.
+              </p>
+            </div>
+          </div>
+          <AssignedVenues
+          venues={assignedVenues}
+          isLoading={isLoadingAssignedVenues}
+          isRemoving={isRemovingVenue}
+          onEdit={handleOpenEditAssignment}
+          onRemove={handleRemove}
+          onFindVenue={() => setIsAssigning(true)}
+        />
+        </TabsContent>
+        <TabsContent value="venues">
+          <div className="flex items-center justify-between my-5">
+            <div className="space-y-0.5">
+              <h4 className="font-medium tracking-wide">
+                Find a Training Venue
+              </h4>
+              <p className="text-sm tracking-wide text-muted-foreground">
+                Find a suitable venue for {booking.participantCount} {booking.participantCount > 1 ? 'participants' : 'participant'}
+              </p>
+            </div>
+          </div>
+          <VenueFinder
           candidateVenues={candidateVenues}
           isLoading={isLoadingCandidates}
           isFetching={isFetchingCandidates}
@@ -303,16 +288,8 @@ const isEditingAssignment = editingBookingVenueId !== null;
           clearFilters={clearFilters}
           onAssign={handleOpenAssignment}
         />
-      ) : (
-        <AssignedVenues
-          venues={assignedVenues}
-          isLoading={isLoadingAssignedVenues}
-          isRemoving={isRemovingVenue}
-          onEdit={handleOpenEditAssignment}
-          onRemove={handleRemove}
-          onFindVenue={() => setIsAssigning(true)}
-        />
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
     <Dialog
   open={isAssignmentDetailsOpen}
@@ -340,7 +317,7 @@ const isEditingAssignment = editingBookingVenueId !== null;
           htmlFor="venue-agreed-amount"
           className="text-sm font-medium"
         >
-          Agreed Amount
+          Venue rate per person per day
         </label>
 
         <Input
@@ -348,12 +325,16 @@ const isEditingAssignment = editingBookingVenueId !== null;
           type="number"
           min="0"
           step="0.01"
-          placeholder="e.g. 50000"
+          placeholder="e.g. 3500"
           value={agreedAmount}
           onChange={(event) =>
             setAgreedAmount(event.target.value)
           }
         />
+
+        <p className="text-xs text-muted-foreground">
+          Enter the agreed daily venue cost for one participant.
+        </p>
       </div>
 
       {/* Currency */}
@@ -392,6 +373,57 @@ const isEditingAssignment = editingBookingVenueId !== null;
           </SelectContent>
         </Select>
       </div>
+
+      {/* venue cost breakdown */}
+
+<div className="rounded-xl border bg-muted/40 p-4">
+  <div className="space-y-3">
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">
+        Rate per person / day
+      </span>
+
+      <span className="font-medium">
+        {formatMoney(dailyRatePerPerson,booking.currency)}
+      </span>
+    </div>
+
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">
+        Participants
+      </span>
+
+      <span className="font-medium">
+        {booking.participantCount}{" "}
+        {booking.participantCount === 1 ? "person" : "people"}
+      </span>
+    </div>
+
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">
+        Training duration
+      </span>
+
+      <span className="font-medium">
+        {booking.course.durationDays}{" "}
+        {booking.course.durationDays === 1 ? "day" : "days"}
+      </span>
+    </div>
+
+    <div className="border-t pt-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold">
+          Total agreed amount
+        </span>
+
+        <span className="text-lg font-semibold tracking-tight">
+          {formatMoney(totalAgreedAmount, booking.currency)}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
 
       {/* Status */}
       <div className="space-y-2">

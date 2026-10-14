@@ -781,7 +781,7 @@ export function QuotationDocument({
           not to this quotation document.
       ═══════════════════════════════════════════════════════ */}
 
-      {!isInvoice && (
+      {!isInvoice && booking.quote?.status === 'DRAFT' && (
         <div className="flex items-center justify-end gap-2">
           <Button
             size="lg"

@@ -287,7 +287,7 @@ export default function CourseDetail({ course }: { course: Course }) {
 
           {/* Sticky booking card */}
           <aside className="">
-            <div className="lg:sticky top-24">
+            <div className="lg:sticky top-4">
               <BookingCard course={course} />
             </div>
           </aside>
@@ -382,7 +382,7 @@ function BookingCard({ course }: { course: Course }) {
 
           {price !== null && (
             <p className="mt-1 text-sm text-text-muted">
-              Per participant · Based on 10 participants
+              Per participant
             </p>
           )}
         </div>
