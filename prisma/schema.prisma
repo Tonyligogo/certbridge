@@ -196,6 +196,7 @@ model Booking {
   contactPhone        String
   participantCount    Int
   specialRequirements String?
+  amount              Decimal @db.Decimal(12, 2)
   currency            String               @default("KES")
   status              BookingStatus        @default(OPEN)
   adminNotes          String?

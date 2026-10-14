@@ -44,23 +44,11 @@ const BookingInvoice = ({
   return (
     <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-8rem)] gap-6 lg:overflow-hidden">
       <aside className="w-full shrink-0 lg:w-85">
-  <div className="rounded-xl bg-background">
-    {/* Header */}
-    <div className="border-b px-5 py-4">
-      <h4 className="font-semibold text-foreground">
-        Invoice details
-      </h4>
-
-      <p className="mt-1 text-sm leading-5 text-muted-foreground">
-        Review the invoice preview and complete the details below before
-        creating the invoice.
-      </p>
-    </div>
-
+  <div className="">
     {/* Form */}
     <div className="space-y-6 px-5 py-5">
       {/* Quote source */}
-      <div className="rounded-lg border bg-muted/30 p-3">
+      <div className="rounded-lg bg-white border border-blue-100 p-3">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Based on accepted quote
         </p>
@@ -83,10 +71,6 @@ const BookingInvoice = ({
           <Label htmlFor="due_date">
             Due date
           </Label>
-
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            When payment for this invoice is expected.
-          </p>
         </div>
 
         <Input

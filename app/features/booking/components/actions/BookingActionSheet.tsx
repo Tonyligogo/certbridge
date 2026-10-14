@@ -67,60 +67,104 @@ export function BookingActionSheet({
     case "SEND_QUOTE":
     case "REVISE_QUOTE":
     case "UPDATE_QUOTE_STATUS":
-      return (
-        <ActionSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) {
-              onClose();
-            }
-          }}
-          title="Prepare quote"
-          description={`Prepare a quote for ${booking.reference}.`}
-          className="sm:max-w-2xl"
-        >
-          <div>
-            <QuotationWorkspace
-              booking={booking}
-              action={action}
-              onClose={onClose}
-            />
-          </div>
-        </ActionSheet>
-      );
+      {
+        const sheetConfig = {
+    CREATE_QUOTE: {
+      title: "Prepare Quote",
+      description: `Prepare a quotation for booking ${booking.reference}.`,
+    },
+    SEND_QUOTE: {
+      title: "Send Quote",
+      description: `Review and send the quotation for booking ${booking.reference}.`,
+    },
+    REVISE_QUOTE: {
+      title: "Revise Quote",
+      description: `Review and update the quotation for booking ${booking.reference}.`,
+    },
+    UPDATE_QUOTE_STATUS: {
+      title: "Record Client Response",
+      description: `Record whether the client accepted or declined the quotation for booking ${booking.reference}.`,
+    },
+  }[action];
+        return (
+          <ActionSheet
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                onClose();
+              }
+            }}
+            title={sheetConfig.title}
+            description={sheetConfig.description}
+            className="sm:max-w-2xl"
+          >
+            <div>
+              <QuotationWorkspace
+                booking={booking}
+                action={action}
+                onClose={onClose}
+              />
+            </div>
+          </ActionSheet>
+        );
+      }
 
     case "SCHEDULE_TRAINING":
-    case "RESCHEDULE_TRAINING":
+    case "RESCHEDULE_TRAINING": {
+      const sheetConfig = {
+        SCHEDULE_TRAINING: {
+          title: "Schedule Training",
+          description: `Set the confirmed training dates for booking ${booking.reference}.`,
+        },
+        RESCHEDULE_TRAINING: {
+          title: "Reschedule Training",
+          description: `Update the confirmed training dates for booking ${booking.reference}.`,
+        },
+      }[action];
+
       return (
         <ActionSheet
           open
           onOpenChange={(open) => {
-            if (!open) {
-              onClose();
-            }
+            if (!open) onClose();
           }}
-          title="Schedule training"
-          description="Set the confirmed training dates."
+          title={sheetConfig.title}
+          description={sheetConfig.description}
         >
-          <div>
-            <ScheduleTraining booking={booking} onClose={onClose} />
-          </div>
+          <ScheduleTraining
+            booking={booking}
+            onClose={onClose}
+          />
         </ActionSheet>
       );
+    }
 
     case "CREATE_INVOICE":
     case "ISSUE_INVOICE":
-    case "RECORD_PAYMENT":
+    case "RECORD_PAYMENT": {
+      const sheetConfig = {
+        CREATE_INVOICE: {
+          title: "Prepare Invoice",
+          description: `Create an invoice for booking ${booking.reference}.`,
+        },
+        ISSUE_INVOICE: {
+          title: "Issue Invoice",
+          description: `Review and issue the invoice for booking ${booking.reference}.`,
+        },
+        RECORD_PAYMENT: {
+          title: "Record Payment",
+          description: `Record a payment received for booking ${booking.reference}.`,
+        },
+      }[action];
+
       return (
         <ActionSheet
           open
           onOpenChange={(open) => {
-            if (!open) {
-              onClose();
-            }
+            if (!open) onClose();
           }}
-          title="Finance"
-          description={`Manage invoices and payments for ${booking.reference}.`}
+          title={sheetConfig.title}
+          description={sheetConfig.description}
           className="sm:max-w-2xl"
         >
           <BookingFinanceWorkspace
@@ -130,6 +174,7 @@ export function BookingActionSheet({
           />
         </ActionSheet>
       );
+    }
 
     case "PREPARE_FOR_TRAINING":
       return (

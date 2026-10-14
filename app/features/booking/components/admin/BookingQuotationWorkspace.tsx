@@ -7,6 +7,7 @@ import type { BookingWorkflowAction } from "../../types";
 import { PrepareQuote } from "./BookingQuote";
 import { Quote } from "@/app/features/quotes/types/quote";
 import QuotationDocument from "@/app/features/quotes/components/quotationDoc";
+import BookingQuoteResponse from "./BookingQuoteResponse";
 
 interface QuotationWorkspaceProps {
   booking: AdminBookingDetailsResponse;
@@ -19,7 +20,8 @@ interface QuotationWorkspaceProps {
 
 type QuoteView =
   | "EDIT"
-  | "PREVIEW";
+  | "PREVIEW"
+  | "RECORD_RESPONSE";
 
 function getInitialView(
   action: BookingWorkflowAction["type"],
@@ -28,12 +30,16 @@ function getInitialView(
   switch (action) {
     case "CREATE_QUOTE":
     case "REVISE_QUOTE":
-      case "UPDATE_QUOTE_STATUS":
       return "EDIT";
 
     case "SEND_QUOTE":
       return hasQuote
         ? "PREVIEW"
+        : "EDIT";
+
+    case "UPDATE_QUOTE_STATUS":
+      return hasQuote
+        ? "RECORD_RESPONSE"
         : "EDIT";
 
     default:
@@ -48,8 +54,7 @@ export function QuotationWorkspace({
   action,
   onClose,
 }: QuotationWorkspaceProps) {
-  const [view, setView] =
-    useState<QuoteView>(() =>
+  const [view, setView] = useState<QuoteView>(() =>
       getInitialView(
         action,
         Boolean(booking.quote)
@@ -66,8 +71,15 @@ export function QuotationWorkspace({
              setCurrentQuote(quote);
             setView("PREVIEW");
         }}
-        action={action as string}
         />
+    );
+  }
+  if (view === "RECORD_RESPONSE") {
+    return (
+      <BookingQuoteResponse
+        bookingId={booking.id}
+        onSuccess={onClose}
+      />
     );
   }
 
@@ -79,7 +91,6 @@ export function QuotationWorkspace({
             setCurrentQuote(quote);
             setView("PREVIEW");
         }}
-        action={action as string}
         />
     );
   }

@@ -4,6 +4,7 @@ import { Building, Loader2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { VenueAssignmentStatus } from "./venue-assignment-status";
 import { LoadingState } from "./loading-state";
 import { ResourceSourcingStatus } from "@/generated/prisma/enums";
+import { formatMoney } from "../../../utils/utils";
 
 export interface AssignedVenue {
   id: string;
@@ -55,24 +56,13 @@ export default function AssignedVenues({
       <div className="rounded-lg border border-dashed px-4 py-10 text-center">
         <Building className="mx-auto size-8 text-muted-foreground/60" />
 
-        <p className="mt-3 text-sm font-medium">
-          No venue assigned
+        <p className="mt-3 text-lg font-medium">
+          No venue assigned yet
         </p>
 
-        <p className="mt-1 text-xs text-muted-foreground">
-          Find a suitable venue for this booking.
+        <p className="mt-1 text-muted-foreground">
+          The assigned venue for this training will be shown here once it is available.
         </p>
-
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="mt-4"
-          onClick={onFindVenue}
-        >
-          <Plus className="mr-2 size-4" />
-          Find venue
-        </Button>
       </div>
     );
   }
@@ -136,9 +126,7 @@ export default function AssignedVenues({
 
                 {/* Amount */}
                 <TableCell className="mt-2 block p-0 text-xs md:mt-0 md:table-cell md:p-4">
-                  {bookingVenue.agreedAmount != null
-                    ? `${bookingVenue.currency} ${bookingVenue.agreedAmount}`
-                    : "—"}
+                    {formatMoney(Number(bookingVenue.agreedAmount),bookingVenue.currency)}
                 </TableCell>
 
                 {/* actions */}

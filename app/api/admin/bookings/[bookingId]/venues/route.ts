@@ -180,9 +180,13 @@ export async function POST(
             bookingId,
             venueId,
             status,
-          agreedAmount,
-          currency,
+            agreedAmount,
+            currency,
             notes: notes || undefined,
+            ...(status === "CONFIRMED" &&
+                {
+                  confirmedAt: new Date(),
+                }),
           },
           include: {
             venue: true,

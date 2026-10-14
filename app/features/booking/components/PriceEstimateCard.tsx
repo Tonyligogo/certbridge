@@ -15,7 +15,7 @@ interface PriceEstimate{
 export function PriceEstimateCard({ estimate }: { estimate: PriceEstimate | null }) {
   if (!estimate) {
     return (
-      <p>Please contact pur team for pricing information!</p>
+      <p>Please contact our team for pricing information!</p>
     )
   }
 

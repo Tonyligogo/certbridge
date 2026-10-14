@@ -842,14 +842,22 @@ function addFinancialActions({
     return;
   }
 
-  actions.push({
-    type: "AWAIT_PAYMENT",
-    kind: "WAITING",
-    priority: "LOW",
-    label: "Awaiting payment",
-    description:
-      "There is an outstanding invoice balance awaiting payment.",
-  });
+ const hasOutstandingIssuedInvoices =
+    issuedInvoices.some(
+      (invoice) =>
+        getInvoicePaymentState(invoice).balance > 0
+    );
+
+  if (hasOutstandingIssuedInvoices) {
+    actions.push({
+      type: "AWAIT_PAYMENT",
+      kind: "WAITING",
+      priority: "LOW",
+      label: "Awaiting payment",
+      description:
+        "Issued invoices have outstanding balances.",
+    });
+  }
 }
 
 function addResourceActions({
@@ -899,13 +907,14 @@ function addResourceActions({
   }
 }
 
+
 function addQuoteActions({
   quote,
   actions,
 }: {
   quote: ReturnType<typeof getQuoteState>;
   actions: BookingWorkflowAction[];
-}) {
+}): boolean {
   if (!quote.exists) {
     actions.push({
       type: "CREATE_QUOTE",
@@ -916,7 +925,7 @@ function addQuoteActions({
         "All required resources have been secured. Prepare a quote for the client.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
   if (quote.status === "DRAFT") {
@@ -929,7 +938,7 @@ function addQuoteActions({
         "The quote is still in draft. Review the pricing and send it to the client when ready.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
   if (quote.status === "SENT") {
@@ -942,7 +951,7 @@ function addQuoteActions({
         "The quote has been sent and is awaiting the client's response.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
   if (
@@ -963,19 +972,18 @@ function addQuoteActions({
             : "The quote was cancelled. Prepare a revision if this booking is still proceeding.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
-  /*
-   * At this point the quote should be ACCEPTED.
-   *
-   * Quote acceptance should normally also cause
-   * Booking.status to become CONFIRMED transactionally.
-   */
-  if (!quote.accepted) {
-    return sortBookingActions(actions);
+  // Accepted quotations allow the workflow to continue.
+  if (quote.accepted) {
+    return true;
   }
+
+  // Unknown or inconsistent quotation state.
+  return false;
 }
+
 
 function addSchedulingActions({
   scheduling,
@@ -986,37 +994,32 @@ function addSchedulingActions({
   delivery: ReturnType<typeof getDeliveryTimingState>;
   actions: BookingWorkflowAction[];
 }) {
-  const hasSchedule = scheduling.startDate !== null && scheduling.endDate !== null;
-  if (hasSchedule) {
-  actions.push({
-    type: "RESCHEDULE_TRAINING",
-    kind: "ACTION",
-    priority: "HIGH",
-    label: "Reschedule training",
-      description:
-        "The booking is confirmed. You can reschedule if needed.",
-  });
-} else {
-  actions.push({
-    type: "SCHEDULE_TRAINING",
-    kind: "ACTION",
-    priority: "HIGH",
-      label: "Schedule training",
-      description:
-        "The booking is confirmed. Set the final training start and end dates.",
-  });
-}
-  if (scheduling.scheduled && delivery.upcoming) {
+  if (!scheduling.scheduled) {
     actions.push({
-      type: "PREPARE_FOR_TRAINING",
+      type: scheduling.partiallyScheduled
+        ? "RESCHEDULE_TRAINING"
+        : "SCHEDULE_TRAINING",
       kind: "ACTION",
-      priority: "NORMAL",
-      label: "Prepare for training",
+      priority: "HIGH",
+      label: scheduling.partiallyScheduled
+        ? "Complete training schedule"
+        : "Schedule training",
       description:
-        "The training is scheduled. Review participants, trainer, venue or delivery arrangements before the training date.",
+        "Set the final training start and end dates.",
     });
 
-    return sortBookingActions(actions);
+    return;
+  }
+
+  if (delivery.upcoming) {
+    actions.push({
+      type: "PREPARE_FOR_TRAINING",
+      kind: "INFO",
+      priority: "LOW",
+      label: "Prepare for training",
+      description:
+        "Review participants, trainer, venue and delivery arrangements before the training date.",
+    });
   }
 }
 

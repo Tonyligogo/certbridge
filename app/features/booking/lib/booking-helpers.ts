@@ -24,6 +24,8 @@ export function serializeAdminBookingDetailsResponse(
   return {
     ...booking,
 
+    amount: booking.amount.toString(),
+
     preferredStartDate:
       booking.preferredStartDate?.toISOString() ?? null,
 

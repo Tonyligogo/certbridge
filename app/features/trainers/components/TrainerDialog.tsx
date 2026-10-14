@@ -809,6 +809,7 @@ useEffect(() => {
                 type="button"
                 size="sm"
                 onClick={onClose}
+                disabled={Boolean(certFile)}
                 className="h-8 text-xs"
               >
                 Finish & Close
