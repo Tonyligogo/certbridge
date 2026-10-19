@@ -99,7 +99,7 @@ export interface CompanyConfig {
 export const COMPANY_CONFIG: CompanyConfig = {
   name:         "CertBridge Global",
   email:        "info@certbridgeglobal.com",
-  phone:        "+254 700 000 000",
+  phone:        "+254 710 507 872",
   website:      "certbridgeglobal.com",
   paybill:      "123456",
   bankName:     "Equity Bank Kenya",

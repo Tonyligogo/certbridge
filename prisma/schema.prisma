@@ -475,8 +475,8 @@ model Invoice {
   bookingId String
   booking   Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
 
-  quoteId String?
-  quote   Quote? @relation(fields: [quoteId],references: [id])
+  quoteId String
+  quote   Quote @relation(fields: [quoteId],references: [id])
 
   reference String @unique
 
@@ -495,6 +495,11 @@ model Invoice {
 
   issuedAt DateTime?
   dueAt    DateTime?
+  issueToken String? @unique
+  pdfPath     String?
+  sentAt      DateTime?
+  sentTo      String?
+  emailStatus InvoiceEmailStatus @default(NOT_SENT)
 
   notes String?
 
@@ -650,13 +655,13 @@ enum BookingActivityType {
   COMPLETED
 
   INVOICE_CREATED
-INVOICE_UPDATED
-INVOICE_ISSUED
-INVOICE_VOIDED
+  INVOICE_UPDATED
+  INVOICE_ISSUED
+  INVOICE_VOIDED
 
-PAYMENT_RECEIVED
-PAYMENT_UPDATED
-PAYMENT_REFUNDED
+  PAYMENT_RECEIVED
+  PAYMENT_UPDATED
+  PAYMENT_REFUNDED
 }
 enum QuoteStatus {
   DRAFT
@@ -672,6 +677,12 @@ enum InvoiceStatus {
   ISSUED
   PAID
   VOID
+}
+enum InvoiceEmailStatus {
+  NOT_SENT
+  PENDING
+  SENT
+  FAILED
 }
 enum PaymentMethod {
   BANK_TRANSFER
