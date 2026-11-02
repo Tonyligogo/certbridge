@@ -16,7 +16,6 @@ export type InvoicePdfRecord = Prisma.InvoiceGetPayload<{
 }>;
 
 type InvoicePdfOverrides = {
-  status?: InvoicePdfData["status"];
   issuedAt?: Date | null;
 };
 
@@ -31,7 +30,6 @@ export function mapInvoiceToPdfData(
 
   return {
     reference: invoice.reference,
-    status: overrides.status ?? invoice.status,
 
     bookingReference: invoice.booking.reference,
 

@@ -19,11 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button";
 
 import {
-  ArrowLeft,
-  Building2,
   CheckCircle2,
   Loader2,
-  Plus,
 } from "lucide-react";
 import AssignedVenues, { AssignedVenue } from "../actions/venue/assigned-venues";
 import { VenueFinder } from "../actions/venue/venue-finder";
@@ -42,8 +39,6 @@ export function BookingVenueTab({
   booking,
   onComplete
 }: BookingVenueTabProps) {
-  const [isAssigning, setIsAssigning] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterCity, setFilterCity] = useState("");
@@ -152,9 +147,14 @@ const isEditingAssignment = editingBookingVenueId !== null;
   setSelectedVenueId(bookingVenue.venueId);
   setEditingBookingVenueId(bookingVenue.id);
 
-  setAgreedAmount(
-    bookingVenue.agreedAmount?.toString() ?? ""
-  );
+    const durationDays = Number(booking.course.durationDays);
+
+  const totalAmount = Number(bookingVenue.agreedAmount ?? 0);
+
+  const dailyRate =
+    durationDays > 0 ? totalAmount / durationDays : 0;
+
+  setAgreedAmount(String(dailyRate || ""));
 
   setCurrency(bookingVenue.currency);
 
@@ -172,7 +172,7 @@ const totalAgreedAmount = Math.round(
 ) / 100;
 
   const handleRemove = (venueId: string) => {
-    alert('To delete')
+    alert(`To delete ${venueId}`)
   };
 
   function handleSaveAssignment() {
@@ -221,7 +221,6 @@ const totalAgreedAmount = Math.round(
     {
       onSuccess: () => {
         setIsAssignmentDetailsOpen(false);
-        setIsAssigning(false);
         onComplete()
       },
     }
@@ -257,7 +256,6 @@ const totalAgreedAmount = Math.round(
           isRemoving={isRemovingVenue}
           onEdit={handleOpenEditAssignment}
           onRemove={handleRemove}
-          onFindVenue={() => setIsAssigning(true)}
         />
         </TabsContent>
         <TabsContent value="venues">

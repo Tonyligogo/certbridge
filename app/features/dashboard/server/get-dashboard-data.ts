@@ -116,6 +116,10 @@ export async function getDashboardData(
     createdAt: range,
   };
 
+  const enquiryDateFilter = {
+  createdAt: range,
+};
+
   const paymentDateFilter = {
     paidAt: range,
   };
@@ -139,6 +143,13 @@ export async function getDashboardData(
     revenuePayments,
     financialInvoices,
     topCourseGroups,
+
+    // Enquiries
+  totalEnquiries,
+  newEnquiries,
+  convertedEnquiries,
+  pendingEnquiries,
+  recentEnquiriesRaw,
   ] = await Promise.all([
     // Total bookings in selected period
     prisma.booking.count({
@@ -301,6 +312,63 @@ export async function getDashboardData(
       },
       take: 5,
     }),
+
+    // Total enquiries submitted in the selected period
+  prisma.enquiry.count({
+    where: enquiryDateFilter,
+  }),
+
+  // New enquiries submitted in the selected period
+  prisma.enquiry.count({
+    where: {
+      ...enquiryDateFilter,
+      status: "NEW",
+    },
+  }),
+
+  // Enquiries submitted in the selected period
+  // that have since been converted into bookings
+  prisma.enquiry.count({
+    where: {
+      ...enquiryDateFilter,
+      status: "CONVERTED",
+    },
+  }),
+
+  // All unresolved enquiries, regardless of submission date
+  prisma.enquiry.count({
+    where: {
+      status: {
+        in: ["NEW", "CONTACTED", "IN_PROGRESS"],
+      },
+    },
+  }),
+
+  // Recent enquiries from the selected period
+  prisma.enquiry.findMany({
+    where: enquiryDateFilter,
+    orderBy: [
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
+    take: RECENT_LIMIT,
+    select: {
+      id: true,
+      reference: true,
+      type: true,
+      status: true,
+
+      fullName: true,
+      organization: true,
+      courseName: true,
+
+      participantCount: true,
+      deliveryMode: true,
+      preferredDate: true,
+
+      createdAt: true,
+    },
+  }),
   ]);
 
   // ------------------------------------
@@ -514,30 +582,63 @@ export async function getDashboardData(
     })
   );
 
+  // ------------------------------------
+// Recent enquiries
+// ------------------------------------
+
+const recentEnquiries = recentEnquiriesRaw.map(
+  (enquiry) => ({
+    id: enquiry.id,
+    reference: enquiry.reference,
+    type: enquiry.type,
+    status: enquiry.status,
+
+    fullName: enquiry.fullName,
+    organization: enquiry.organization,
+    courseName: enquiry.courseName,
+
+    participantCount: enquiry.participantCount,
+    deliveryMode: enquiry.deliveryMode,
+
+    preferredDate:
+      enquiry.preferredDate?.toISOString() ?? null,
+
+    createdAt: enquiry.createdAt.toISOString(),
+  })
+);
+
+
   return {
-    stats: {
-      totalBookings,
-      activeBookings,
-      completedBookings,
-      revenueCollected,
-      outstandingBalance,
-      currency: CURRENCY,
-    },
+  stats: {
+    totalBookings,
+    activeBookings,
+    completedBookings,
+    revenueCollected,
+    outstandingBalance,
+    currency: CURRENCY,
 
-    attentionCount: attention.length,
-    awaitingResponseCount: awaitingResponse.length,
+    // Enquiry statistics
+    totalEnquiries,
+    newEnquiries,
+    convertedEnquiries,
+    pendingEnquiries,
+  },
 
-    attention: attention.slice(0, ATTENTION_LIMIT),
-    awaitingResponse: awaitingResponse.slice(0, ATTENTION_LIMIT),   
+  attentionCount: attention.length,
+  awaitingResponseCount: awaitingResponse.length,
 
-    recentBookings,
-    upcomingTrainings,
+  attention: attention.slice(0, ATTENTION_LIMIT),
+  awaitingResponse: awaitingResponse.slice(0, ATTENTION_LIMIT),
 
-    revenue: revenue.map(({ month, amount }) => ({
-      month,
-      amount,
-    })),
+  recentBookings,
+  recentEnquiries,
+  upcomingTrainings,
 
-    topCourses,
-  };
+  revenue: revenue.map(({ month, amount }) => ({
+    month,
+    amount,
+  })),
+
+  topCourses,
+};
 }

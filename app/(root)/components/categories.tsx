@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { LandingCategory } from "@/app/features/landing-page/types";
@@ -16,15 +16,9 @@ const FEATURED_IMAGE =
 export default function PopularCategories({
   categories,
 }: PopularCategoriesProps) {
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   // The first category is featured by default.
-  const selectedCategory = useMemo(() => {
-    return (
-      categories.find((category) => category.slug === selectedSlug) ??
-      categories[0]
-    );
-  }, [categories, selectedSlug]);
+  const selectedCategory = categories[0]
 
   // Display the remaining categories in the smaller cards.
   const otherCategories = useMemo(() => {
@@ -47,7 +41,7 @@ export default function PopularCategories({
               Our Course Portfolio
             </span>
 
-            <h2 className="mt-3 text-4xl font-semibold lg:text-5xl">
+            <h2 className="mt-3 text-3xl font-semibold lg:text-4xl">
               Explore our expert-led professional training categories
             </h2>
           </div>
@@ -59,29 +53,6 @@ export default function PopularCategories({
             View all categories
             <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex flex-wrap gap-3">
-          {categories.map((category) => {
-            const isSelected = selectedCategory?.id === category.id;
-
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setSelectedSlug(category.slug)}
-                aria-pressed={isSelected}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-                  isSelected
-                    ? "bg-primary text-white ring-2 ring-blue-200 ring-offset-2"
-                    : "bg-primary/10 text-slate-700 hover:bg-slate-300"
-                }`}
-              >
-                {category.name}
-              </button>
-            );
-          })}
         </div>
       </div>
 

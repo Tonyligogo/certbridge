@@ -5,9 +5,10 @@ import { CompanyConfig } from "../../quotes/types/quote";
 
 export async function renderInvoicePdf(
   invoice: InvoicePdfData,
-  company: CompanyConfig
+  company: CompanyConfig,
+  documentType: string,
 ): Promise<Buffer> {
   return renderToBuffer(
-    <InvoiceDocument invoice={invoice} company={company} />
+    <InvoiceDocument invoice={invoice} company={company} documentType={documentType}/>
   );
 }

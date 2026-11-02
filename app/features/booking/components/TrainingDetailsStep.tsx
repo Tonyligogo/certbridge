@@ -19,7 +19,6 @@ export function TrainingDetailsStep({
   onChange,
   course,
 }: StepProps & { course: Course }) {
-  console.log(draft)
   return (
     <div className="space-y-6">
       <div>

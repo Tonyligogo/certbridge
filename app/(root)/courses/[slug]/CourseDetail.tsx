@@ -298,7 +298,7 @@ export default function CourseDetail({ course }: { course: Course }) {
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-blue-100 shadow-[0_-8px_24px_-12px_rgba(45,27,105,0.2)] px-4 py-3 flex items-center justify-between gap-4">
         <div>
           <div className="font-display text-lg font-bold leading-none">{`From ${currency} ${price?.toLocaleString()}`}</div>
-          <div className="text-xs text-text-muted mt-1">per participant</div>
+          <div className="text-xs text-text-muted mt-1">per participant / day</div>
         </div>
         <Link
           href={`/courses/${course.slug}/course-booking`}
@@ -314,7 +314,7 @@ export default function CourseDetail({ course }: { course: Course }) {
 
 function BookingCard({ course }: { course: Course }) {
   const [selectedMode, setSelectedMode] = useState<DeliveryMode>(
-    DeliveryMode.ARRANGED_VENUE,
+    DeliveryMode.ONLINE,
   );
 
   const deliveryOptions = [
@@ -382,7 +382,7 @@ function BookingCard({ course }: { course: Course }) {
 
           {price !== null && (
             <p className="mt-1 text-sm text-text-muted">
-              Per participant
+              Per participant / day
             </p>
           )}
         </div>
@@ -493,7 +493,7 @@ function BookingCard({ course }: { course: Course }) {
         </div>
 
         <Link
-          href="/contact"
+          href={`/contact?courseId=${encodeURIComponent(course.id)}&courseName=${encodeURIComponent(course.slug)}`}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 px-5 py-3 font-semibold text-primary transition hover:bg-blue-50"
         >
           Request a Quote

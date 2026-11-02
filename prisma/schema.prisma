@@ -139,6 +139,7 @@ model Course {
   pricing             CoursePricing[]
   audiences           CourseAudience[] @relation("CourseToCourseAudience")
   trainers TrainerCourse[]
+  enquiries Enquiry[]
 }
 
 model CoursePricing {
@@ -215,6 +216,7 @@ model Booking {
   quote Quote?
   invoices Invoice[]
   activities BookingActivity[]
+  enquiry Enquiry?
 
   @@index([profileId])
   @@index([courseId])
@@ -226,7 +228,9 @@ model BookingParticipant {
   id                String       @id @default(cuid())
   bookingId         String
   participantId     String?
-  attended          Boolean?      
+  attended          Boolean @default(false)
+  attendanceMarkedAt DateTime?
+  attendanceMarkedBy String?     
   certificateIssued Boolean      @default(false)
   feedbackSubmitted Boolean      @default(false)
   email             String
@@ -438,6 +442,12 @@ model Quote {
   issuedAt DateTime?
   expiresAt DateTime?
 
+  issueToken String? @unique
+  pdfPath     String?
+  sentAt      DateTime?
+  sentTo      String?
+  emailStatus InvoiceEmailStatus @default(NOT_SENT)
+
   acceptedAt DateTime?
   declinedAt DateTime?
 
@@ -495,6 +505,7 @@ model Invoice {
 
   issuedAt DateTime?
   dueAt    DateTime?
+
   issueToken String? @unique
   pdfPath     String?
   sentAt      DateTime?
@@ -562,6 +573,58 @@ model Payment {
   @@index([invoiceId])
   @@index([status])
   @@index([paidAt])
+}
+
+model Enquiry {
+  id               String        @id @default(cuid())
+  reference        String        @unique
+  type             EnquiryType
+  status           EnquiryStatus @default(NEW)
+
+  fullName         String
+  email            String
+  phone            String?
+  organization     String?
+
+  courseId         String?
+  course           Course?       @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseName       String?
+  participantCount Int?
+  deliveryMode     DeliveryMode?
+  preferredDate    DateTime?
+
+  message          String?       @db.Text
+  adminNotes       String?       @db.Text
+
+  contactedAt      DateTime?
+  closedAt         DateTime?
+
+  bookingId        String?       @unique
+  booking          Booking?      @relation(fields: [bookingId], references: [id])
+
+  activities       EnquiryActivity[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@index([courseId])
+  @@index([email])
+}
+
+model EnquiryActivity {
+  id          String              @id @default(cuid())
+  enquiryId   String
+  enquiry     Enquiry             @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+
+  type        EnquiryActivityType
+  description String
+  metadata    Json?
+  createdBy   String?
+  createdAt   DateTime            @default(now())
+
+  @@index([enquiryId, createdAt])
 }
 
 enum ProfileType {
@@ -705,4 +768,25 @@ enum TaxType {
   ZERO_RATED
   EXEMPT
   NONE
+}
+
+enum EnquiryType {
+  QUOTE
+  GENERAL
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  CONVERTED
+  CLOSED
+}
+
+enum EnquiryActivityType {
+  CREATED
+  STATUS_CHANGED
+  NOTE_ADDED
+  CUSTOMER_CONTACTED
+  CONVERTED_TO_BOOKING
 }

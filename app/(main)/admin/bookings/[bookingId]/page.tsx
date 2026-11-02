@@ -42,7 +42,6 @@ const SingleBooking = () => {
   const booking = data?.data;
 
   const workflow = getBookingWorkflow(booking);
-
   function handleBookingAction(action: BookingWorkflowAction) {
     if (action.kind !== "ACTION") {
       return;

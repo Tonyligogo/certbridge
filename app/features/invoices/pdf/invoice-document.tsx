@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
 interface InvoiceDocumentProps {
   invoice: InvoicePdfData;
   company: InvoiceCompanyDetails;
+  documentType:string;
 }
 
 function formatMoney(value: string, currency: string) {
@@ -329,26 +330,20 @@ function formatDate(value: string | null) {
   }).format(date);
 }
 
+// works for both quotes and invoices
 export function InvoiceDocument({
   invoice,
   company,
+  documentType
 }: InvoiceDocumentProps) {
-  const isDraft = invoice.status === "DRAFT";
-  const isVoid = invoice.status === "VOID";
 
   return (
     <Document
-      title={`Invoice ${invoice.reference}`}
+      title={`${documentType} ${invoice.reference}`}
       author={company.name}
-      subject={`Invoice for booking ${invoice.bookingReference}`}
+      subject={`${documentType} for booking ${invoice.bookingReference}`}
     >
       <Page size="A4" style={styles.page} wrap>
-        {/* Draft / void watermark */}
-        {(isDraft || isVoid) && (
-          <Text fixed style={styles.watermark}>
-            {isDraft ? "DRAFT" : "VOID"}
-          </Text>
-        )}
 
         {/* Header */}
         <View style={styles.header}>
@@ -375,7 +370,7 @@ export function InvoiceDocument({
 
           <View>
             <Text style={styles.invoiceTitle}>
-              INVOICE
+              {documentType}
             </Text>
 
             <Text style={styles.invoiceReference}>
@@ -417,12 +412,12 @@ export function InvoiceDocument({
 
           <View style={styles.infoColumn}>
             <Text style={styles.sectionLabel}>
-              INVOICE DETAILS
+              {documentType} Details
             </Text>
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>
-                Invoice date
+                {documentType} date
               </Text>
               <Text style={styles.detailValue}>
                 {formatDate(invoice.issuedAt)}
@@ -591,7 +586,7 @@ export function InvoiceDocument({
         {invoice.notes && (
           <View style={styles.notesSection} wrap={false}>
             <Text style={styles.notesTitle}>
-              Invoice Notes
+              {documentType} Notes
             </Text>
 
             <Text style={styles.notesText}>

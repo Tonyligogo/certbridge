@@ -58,6 +58,7 @@ export function toBookingWorkflowInput(
       attended: participant.attended,
       certificateIssued: participant.certificateIssued,
       feedbackSubmitted: participant.feedbackSubmitted,
+      attendanceMarkedAt: participant.attendanceMarkedAt
     })),
   };
 }

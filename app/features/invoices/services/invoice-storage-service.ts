@@ -8,7 +8,7 @@ export const invoiceStorageService = {
   async upload(
     invoiceId: string,
     reference: string,
-    pdf: Buffer
+    pdf: Buffer,
   ) {
     const supabase = createSupabaseAdminClient();
 

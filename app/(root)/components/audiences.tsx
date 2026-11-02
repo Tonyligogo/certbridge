@@ -24,7 +24,7 @@ export default function AudiencesSection({
             <span className="text-sm font-semibold uppercase tracking-wider">
                 Training for Everyone
               </span>
-              <h2 className="mt-3 text-4xl lg:text-5xl font-semibold ">
+              <h2 className="mt-3 text-3xl lg:text-4xl font-semibold ">
                 Who are you looking to train?
               </h2>
           </div>

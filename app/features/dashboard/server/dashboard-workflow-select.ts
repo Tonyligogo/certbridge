@@ -64,6 +64,7 @@ export const dashboardWorkflowSelect = {
       attended: true,
       certificateIssued: true,
       feedbackSubmitted: true,
+      attendanceMarkedAt: true
     },
   },
 } satisfies Prisma.BookingSelect;

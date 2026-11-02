@@ -1,4 +1,4 @@
-
+//  this is used for both quotes and invoices
 export interface InvoicePdfItem {
   name: string;
   quantity: string;
@@ -8,7 +8,6 @@ export interface InvoicePdfItem {
 
 export interface InvoicePdfData {
   reference: string;
-  status: "DRAFT" | "ISSUED" | "PAID" | "VOID";
 
   bookingReference: string;
 

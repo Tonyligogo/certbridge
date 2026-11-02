@@ -84,6 +84,8 @@ export const queryKeys = {
     invoiceId,
     "payments",
   ] as const,
+
+  attendance: (bookingId: string) => ["bookings", "admin", "detail", bookingId, "attendance"] as const,
   },
 
   trainers: {
@@ -115,5 +117,22 @@ export const queryKeys = {
 
     bookings: (id: string) => ["venues", id, "bookings"] as const,
   },
+
+  enquiries: {
+  all: () => ["enquiries"] as const,
+
+  lists: () => ["enquiries", "list"] as const,
+
+  list: () =>
+    ["enquiries", "list",] as const,
+
+  details: () => ["enquiries", "detail"] as const,
+
+  detail: (id: string) =>
+    ["enquiries", "detail", id] as const,
+
+  activities: (id: string) =>
+    ["enquiries", "detail", id, "activities"] as const,
+},
   
 };

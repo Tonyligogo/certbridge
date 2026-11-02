@@ -3,6 +3,7 @@ import {
   CalendarCheck2,
   Wallet,
   ReceiptText,
+  MessagesSquare,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,10 +47,16 @@ export function DashboardStats({
       description: "Unpaid issued invoices",
       icon: ReceiptText,
     },
+    {
+      label: "Enquiries",
+      value: stats.totalEnquiries.toLocaleString("en-KE"),
+      description: `${stats.pendingEnquiries.toLocaleString("en-KE")} pending follow-up`,
+      icon: MessagesSquare,
+    },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       {cards.map((card) => {
         const Icon = card.icon;
 
@@ -60,6 +67,7 @@ export function DashboardStats({
                 <p className="text-sm font-medium text-muted-foreground">
                   {card.label}
                 </p>
+
                 <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
                   <Icon className="size-4 text-muted-foreground" />
                 </div>
@@ -69,6 +77,7 @@ export function DashboardStats({
                 <p className="text-2xl font-semibold tracking-tight">
                   {card.value}
                 </p>
+
                 <p className="mt-1 text-xs text-muted-foreground">
                   {card.description}
                 </p>

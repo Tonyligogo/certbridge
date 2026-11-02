@@ -144,6 +144,7 @@ export const AdminBookingDetailsResponseSelect = {
       attended: true,
       certificateIssued: true,
       feedbackSubmitted: true,
+      attendanceMarkedAt: true,
     },
 
     orderBy: [
@@ -422,6 +423,7 @@ export type BookingWorkflowInput = {
     attended: boolean | null;
     certificateIssued: boolean;
     feedbackSubmitted: boolean;
+    attendanceMarkedAt: Date | null;
   }>;
 };
 
@@ -478,6 +480,7 @@ export interface AdminBookingDetailsResponse {
     attended: boolean | null;
     certificateIssued: boolean;
     feedbackSubmitted: boolean;
+    attendanceMarkedAt: Date;
   }[];
 
   trainers: {

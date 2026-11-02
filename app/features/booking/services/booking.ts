@@ -84,5 +84,21 @@ export const bookingService = {
     `/api/admin/bookings/${bookingId}/schedule`,
     data
   );
-}
+},
+
+async completeBooking(
+  bookingId: string
+): Promise<ApiResponse<{
+  id: string;
+  reference: string;
+  status: "COMPLETED";
+  scheduledStartDate: string | null;
+  scheduledEndDate: string | null;
+  updatedAt: string;
+}>> {
+  return api.post(
+    `/api/admin/bookings/${bookingId}/complete`,
+    {}
+  );
+},
 };

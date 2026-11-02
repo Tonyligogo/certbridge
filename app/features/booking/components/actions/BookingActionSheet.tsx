@@ -1,5 +1,6 @@
 "use client";
 
+import { AttendanceRegister } from "@/app/features/attendance/components/attendance-register";
 import type { BookingWorkflowAction } from "../../types";
 import type { AdminBookingDetailsResponse } from "../../types/admin-booking";
 import { BookingFinanceWorkspace } from "../admin/BookingFinanceWorkspace";
@@ -8,6 +9,7 @@ import { BookingTrainerTab } from "../admin/BookingTrainerTab";
 import { BookingVenueTab } from "../admin/BookingvenueTab";
 import { ScheduleTraining } from "../admin/ScheduleTraining";
 import { ActionSheet } from "./ActionSheet";
+import { CompleteBookingSheetContent } from "../CompleteBookingSheet";
 
 interface BookingActionSheetProps {
   action: BookingWorkflowAction["type"] | null;
@@ -205,7 +207,9 @@ export function BookingActionSheet({
           description="Record attendance for the training participants."
           className="sm:max-w-2xl"
         >
-          <div className="p-6">Attendance recording goes here.</div>
+          <div className="p-6">
+            <AttendanceRegister bookingId={booking.id} />
+          </div>
         </ActionSheet>
       );
 
@@ -253,7 +257,9 @@ export function BookingActionSheet({
           title="Complete booking"
           description="Review and mark this booking as completed."
         >
-          <div className="p-6">Booking completion goes here.</div>
+          <div className="p-6">
+            <CompleteBookingSheetContent booking={booking} onClose={onClose}/>
+          </div>
         </ActionSheet>
       );
 

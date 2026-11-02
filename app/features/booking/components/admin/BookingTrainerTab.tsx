@@ -181,17 +181,21 @@ export function BookingTrainerTab({
     setIsAssignmentDetailsOpen(true);
   }
   function handleOpenEditAssignment(bookingTrainer: AssignedTrainer) {
-    setSelectedTrainerId(bookingTrainer.trainer.id);
+      setSelectedTrainerId(bookingTrainer.trainer.id);
+  setEditingBookingTrainerId(bookingTrainer.id);
 
-    setEditingBookingTrainerId(bookingTrainer.id);
+  const durationDays = Number(booking.course.durationDays);
 
-    setAgreedAmount(bookingTrainer.agreedAmount?.toString() ?? "");
+  const totalAmount = Number(bookingTrainer.agreedAmount ?? 0);
 
-    setCurrency(bookingTrainer.currency);
+  const dailyRate =
+    durationDays > 0 ? totalAmount / durationDays : 0;
 
-    setTrainerAssignmentStatus(bookingTrainer.status);
+  setAgreedAmount(String(dailyRate || ""));
+  setCurrency(bookingTrainer.currency);
+  setTrainerAssignmentStatus(bookingTrainer.status);
 
-    setIsAssignmentDetailsOpen(true);
+  setIsAssignmentDetailsOpen(true);
   }
 
   const handleRemove = (trainerId: string) => {

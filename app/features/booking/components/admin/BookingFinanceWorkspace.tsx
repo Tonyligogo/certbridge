@@ -197,7 +197,6 @@ export function BookingFinanceWorkspace({ booking, onClose, initialMode = "OVERV
       </div>
     )
   }
-  console.log(view)
 
   return (
     <div className="flex flex-col">

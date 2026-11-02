@@ -7,6 +7,7 @@ import type {
   UpdateQuoteInput,
   UpdateQuoteStatusInput,
 } from "../types/quote";
+import { SendInvoiceEmailInput } from "../../invoices/schema/schemas";
 
 export const quoteService = {
   /**
@@ -29,6 +30,17 @@ export const quoteService = {
   ): Promise<ApiResponse<Quote>> {
     return api.post<Quote>(
       `/api/admin/bookings/${bookingId}/quote`,
+      data
+    );
+  },
+
+  async sendQuoteEmail(
+    bookingId: string,
+    quoteId: string,
+    data: SendInvoiceEmailInput = {}
+  ): Promise<ApiResponse<Quote>> {
+    return api.post<Quote>(
+      `/api/admin/bookings/${bookingId}/quote/${quoteId}/send`,
       data
     );
   },

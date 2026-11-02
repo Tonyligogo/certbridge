@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { AdminBookingDetailsResponse } from "../../types/admin-booking";
 import {
   useCreateQuote,
+  useSendQuoteEmail,
   useUpdateQuote,
 } from "@/app/features/quotes/hooks/use-quote";
 import { Quote } from "@/app/features/quotes/types/quote";
@@ -81,6 +82,7 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
     booking.quote?.responseNotes ?? "",
   );
   const { mutate: createQuote, isPending: isCreatingQuote } = useCreateQuote();
+  const {mutateAsync: sendQuoteEmail,} = useSendQuoteEmail();
   const { mutate: updateQuote, isPending: isUpdatingQuote } = useUpdateQuote();
   const isSavingQuote = isCreatingQuote || isUpdatingQuote;
 
@@ -157,7 +159,11 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
 
   function handleSubmit(status: "DRAFT" | "SENT") {
     if (!canSave) return;
-
+    if(status === "SENT"){
+      if(!expiresAt || !taxType){
+        return alert('A quote due date is required before sending a quote.');
+      }
+    }
     const payload = {
       status,
 
@@ -195,8 +201,23 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
         data: payload,
       },
       {
-        onSuccess: (response) => {
+        onSuccess: async (response) => {
           onSaved?.(response.data);
+          const quote = response.data;
+          if (!quote) return;
+
+          if (quote.status === "DRAFT") {
+            try {
+              await sendQuoteEmail({
+                bookingId: booking.id,
+                quoteId: quote.id,
+              });
+
+            } catch (error) {
+              console.error(error)
+            }
+          }
+
         },
       },
     );
@@ -493,12 +514,9 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
             {items.length} {items.length === 1 ? "line item" : "line items"}
           </p>
         </div>
-      </div>
-
       {/* Sticky footer */}
-      <div className="sticky bottom-0 border-t bg-background p-4">
+      <div className=" border-t pt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {booking.quote?.status === "DRAFT" && (
             <div className="flex justify-end gap-3">
               {(!booking.quote || booking.quote.status === "DRAFT") && (
                 <Button
@@ -536,8 +554,8 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
                 )}
               </Button>
             </div>
-          )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -72,3 +72,23 @@ export function useScheduleTraining() {
     },
   });
 }
+
+export function useCompleteBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (bookingId: string) =>
+      bookingService.completeBooking(bookingId),
+
+    onSuccess: async (_response, bookingId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bookings.adminDetail(bookingId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bookings.adminLists(),
+        }),
+      ]);
+    },
+  });
+}

@@ -31,7 +31,7 @@ import { ConfirmedBooking } from "../services/booking";
 import type { Course } from "@/app/features/course-catalog/types/catalogue";
 import { useSearchParams } from "next/navigation";
 import { DeliveryMode } from "@/generated/prisma/enums";
-import { calculateBookingPrice } from "@/lib/pricing-config";
+import { calculateBookingPrice, TRAINER_DAILY_RATES } from "@/lib/pricing-config";
 
 interface Prefill {
   firstName?: string | null;
@@ -123,11 +123,12 @@ export function BookingWizard({
     basePrice !== null &&
     Number.isFinite(basePrice)
       ? calculateBookingPrice({
-          basePricePerParticipant: basePrice,
+          basePricePerParticipantPerDay: basePrice,
           participants: participantCount,
           durationDays: durationDays,
           deliveryMode,
           currency: selectedPricing!.currency,
+          trainerDailyRate: TRAINER_DAILY_RATES[course.level],
         })
       : null;
 
@@ -332,7 +333,7 @@ export function BookingWizard({
         </div>
       </div>
 
-      <aside className="space-y-4 lg:sticky lg:top-24">
+      <aside className="flex-[0.5] space-y-4 lg:sticky lg:top-24">
         <PriceEstimateCard estimate={estimate} />
         <p className="text-xs text-muted-foreground">
           Submitting sends a request only. No payment is taken and nothing is confirmed until our team replies.

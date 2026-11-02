@@ -47,8 +47,7 @@ export function CourseCatalogue({
   const [sheetOpen, setSheetOpen] = useState(false);
   const pathname = usePathname();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const isDashboard =
-    pathname.includes("/admin") || pathname.includes("/portal");
+  const isDashboard = pathname.includes("/admin") || pathname.includes("/portal");
 
   const count = activeFilterCount(search);
   const list = search.view === "list";

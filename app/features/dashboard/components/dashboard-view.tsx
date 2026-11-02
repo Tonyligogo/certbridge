@@ -15,6 +15,7 @@ import { UpcomingTrainings } from "./upcoming-trainings";
 import { TopCourses } from "./top-courses";
 import { AwaitingResponse } from "./awaiting-response";
 import { DashboardPeriodSelect } from "./dashboard-period-select";
+import { RecentEnquiries } from "./recent-enquiries";
 
 interface DashboardViewProps {
   data: DashboardData;
@@ -25,6 +26,7 @@ export function DashboardView({
   data,
   period,
 }: DashboardViewProps) {
+  console.log(data)
 
   return (
     <div className="space-y-6">
@@ -63,6 +65,8 @@ export function DashboardView({
       )}
 
       <RecentBookings bookings={data.recentBookings} />
+
+        <RecentEnquiries enquiries={data.recentEnquiries} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <UpcomingTrainings trainings={data.upcomingTrainings} />

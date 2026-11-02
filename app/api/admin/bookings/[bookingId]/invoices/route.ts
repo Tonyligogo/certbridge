@@ -190,8 +190,7 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    // Create the invoice as a draft.
+    
     const created = await prisma.$transaction(async (tx) => {
       const reference = `INV-${booking.reference}`;
 

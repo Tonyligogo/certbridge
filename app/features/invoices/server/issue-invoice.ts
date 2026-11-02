@@ -132,13 +132,13 @@ export async function issueInvoice({
 
   try {
     const pdfData = mapInvoiceToPdfData(existing, {
-      status: "ISSUED",
       issuedAt,
     });
 
     const pdf = await renderInvoicePdf(
       pdfData,
-      COMPANY_CONFIG
+      COMPANY_CONFIG,
+      'Invoice',
     );
 
     const uploaded = await invoiceStorageService.upload(

@@ -522,28 +522,40 @@ export function getDeliveryTimingState(
 export function getParticipantState(
   booking: BookingWorkflowInput
 ) {
-  const total =
-    booking.participants.length;
+  const participants = booking.participants
+  const total = participants.length;
 
-  const attended =
-    booking.participants.filter(
-      ({ attended }) => attended
-    ).length;
+  const attended = participants.filter(
+    (participant) =>
+      participant.attended &&
+      participant.attendanceMarkedAt != null
+  ).length;
 
+  // Participants explicitly marked absent
+  const absent = participants.filter(
+    (participant) =>
+      !participant.attended &&
+      participant.attendanceMarkedAt != null
+  ).length;
+
+  // Participants whose attendance has not been recorded
+  const unmarked = participants.filter(
+    (participant) =>
+      participant.attendanceMarkedAt == null
+  ).length;
+
+  // True only when every participant has been marked
   const attendanceRecorded =
-  booking.participants.length > 0 &&
-  booking.participants.every(
-    ({ attended }) => attended !== null
-  );
+    total > 0 && unmarked === 0;
 
   const certificatesIssued =
-    booking.participants.filter(
+    participants.filter(
       ({ certificateIssued }) =>
         certificateIssued
     ).length;
 
   const feedbackSubmitted =
-    booking.participants.filter(
+    participants.filter(
       ({ feedbackSubmitted }) =>
         feedbackSubmitted
     ).length;
@@ -552,13 +564,14 @@ export function getParticipantState(
     booking.participants.filter(
       (participant) =>
         participant.attended &&
+      participant.attendanceMarkedAt != null &&
         !participant.certificateIssued
     ).length;
 
   return {
     total,
     attended,
-    absent: total - attended,
+    absent,
 
     certificatesIssued,
     feedbackSubmitted,
@@ -581,26 +594,6 @@ export function canIssueCertificate(
   );
 }
 
-export function canCompleteBooking(
-  booking: BookingWorkflowInput,
-  now = new Date()
-) {
-  const timing =
-    getDeliveryTimingState(booking, now);
-
-  const attendanceRecorded =
-    booking.participants.length > 0 &&
-    booking.participants.every(
-      ({ attended }) =>
-        attended !== null
-    );
-
-  return (
-    booking.status === "CONFIRMED" &&
-    timing.ended &&
-    attendanceRecorded
-  );
-}
 export function getBookingStage(
   booking: BookingWorkflowInput,
   now = new Date()
@@ -907,7 +900,6 @@ function addResourceActions({
   }
 }
 
-
 function addQuoteActions({
   quote,
   actions,
@@ -983,7 +975,6 @@ function addQuoteActions({
   // Unknown or inconsistent quotation state.
   return false;
 }
-
 
 function addSchedulingActions({
   scheduling,

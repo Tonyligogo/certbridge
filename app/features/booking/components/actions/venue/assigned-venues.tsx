@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building, Loader2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { Building, Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
 import { VenueAssignmentStatus } from "./venue-assignment-status";
 import { LoadingState } from "./loading-state";
 import { ResourceSourcingStatus } from "@/generated/prisma/enums";
@@ -34,7 +34,6 @@ interface AssignedVenuesProps {
 
   onRemove: (venueId: string) => void;
   onEdit: (venue: AssignedVenue) => void;
-  onFindVenue: () => void;
 }
 
 export default function AssignedVenues({
@@ -42,7 +41,6 @@ export default function AssignedVenues({
   isLoading,
   isRemoving,
   onRemove,
-  onFindVenue,
   onEdit
 }: AssignedVenuesProps) {
   if (isLoading) {

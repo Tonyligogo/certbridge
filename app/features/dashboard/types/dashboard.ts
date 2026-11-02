@@ -12,6 +12,10 @@ export interface DashboardStats {
   revenueCollected: number;
   outstandingBalance: number;
   currency: string;
+  totalEnquiries: number;
+newEnquiries: number;
+convertedEnquiries: number;
+pendingEnquiries: number;
 }
 
 export interface DashboardAttentionItem {
@@ -57,8 +61,38 @@ export interface DashboardTopCourse {
   bookings: number;
 }
 
+export interface DashboardRecentEnquiries{
+  id: string;
+  reference: string;
+
+  type: "QUOTE" | "GENERAL";
+
+  status:
+    | "NEW"
+    | "CONTACTED"
+    | "IN_PROGRESS"
+    | "CONVERTED"
+    | "CLOSED";
+
+  fullName: string;
+  organization: string | null;
+  courseName: string | null;
+
+  participantCount: number | null;
+
+  deliveryMode:
+    | "ONLINE"
+    | "CLIENT_SITE"
+    | "ARRANGED_VENUE"
+    | null;
+
+  preferredDate: string | null;
+  createdAt: string;
+}
+
 export interface DashboardData {
   stats: DashboardStats;
+  recentEnquiries: DashboardRecentEnquiries[];
   attentionCount: number;
   awaitingResponseCount: number;
   attention: DashboardAttentionItem[];

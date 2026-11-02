@@ -3,8 +3,12 @@ import { Prisma } from "@/generated/prisma/client";
 
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server/course";
-import { createQuoteSchema, updateQuoteSchema } from "@/app/features/quotes/lib/quote-schema";
+import {
+  createQuoteSchema,
+  updateQuoteSchema,
+} from "@/app/features/quotes/lib/quote-schema";
 import { getTaxRate } from "@/app/features/booking/lib/tax";
+import { issueQuote } from "@/app/features/quotes/server/issue-quote";
 
 type RouteContext = {
   params: Promise<{
@@ -25,10 +29,10 @@ type QuoteWithItems = Prisma.QuoteGetPayload<{
   };
 }>;
 
-function serializeQuote(quote: QuoteWithItems) {
+export function serializeQuote(quote: QuoteWithItems) {
   const total = quote.items.reduce(
     (sum, item) => sum.add(item.amount),
-    new Prisma.Decimal(0)
+    new Prisma.Decimal(0),
   );
 
   return {
@@ -43,13 +47,9 @@ function serializeQuote(quote: QuoteWithItems) {
   };
 }
 
-
 //  Get the current quote for a booking.
- 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteContext
-) {
+
+export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const { bookingId } = await params;
 
@@ -71,7 +71,7 @@ export async function GET(
           success: false,
           message: "Booking not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -95,7 +95,7 @@ export async function GET(
           message: "No quote exists for this booking",
           data: null,
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -111,17 +111,14 @@ export async function GET(
         success: false,
         message: "Failed to fetch quote",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 // Create the one quote belonging to a booking.
 
-export async function POST(
-  request: NextRequest,
-  { params }: RouteContext
-) {
+export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
     const { bookingId } = await params;
 
@@ -136,47 +133,37 @@ export async function POST(
         {
           success: false,
           message: "Validation failed",
-          errors:
-            parsed.error.flatten()
-              .fieldErrors,
+          errors: parsed.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const {
-      items,
-      expiresAt,
-      taxType,
-      status,
-      responseNotes,
-    } = parsed.data;
+    const { items, expiresAt, taxType, status, responseNotes } = parsed.data;
 
-    const booking =
-      await prisma.booking.findUnique({
-        where: {
-          id: bookingId,
-        },
-        select: {
-          id: true,
-          reference: true,
-          currency: true,
-          quote: {
-            select: {
-              id: true,
-            },
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+      select: {
+        id: true,
+        reference: true,
+        currency: true,
+        quote: {
+          select: {
+            id: true,
           },
         },
-      });
+      },
+    });
 
     if (!booking) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Booking not found",
+          message: "Booking not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -184,158 +171,172 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          message:
-            "A quote already exists for this booking",
+          message: "A quote already exists for this booking",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     const reference = `QT-${booking.reference}`;
 
+    if (items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "This quotation has no items.",
+        },
+        { status: 400 },
+      );
+    }
+
     /*
      * Calculate all financial values
      * on the server.
      */
-    const calculatedItems =
-      items.map((item) => {
-        const quantity =
-          new Prisma.Decimal(
-            item.quantity
-          );
+    const calculatedItems = items.map((item) => {
+      const quantity = new Prisma.Decimal(item.quantity);
 
-        const unitPrice =
-          new Prisma.Decimal(
-            item.unitPrice
-          );
+      const unitPrice = new Prisma.Decimal(item.unitPrice);
 
-        const amount =
-          quantity.mul(unitPrice);
+      const amount = quantity.mul(unitPrice);
 
-        return {
-          name: item.name,
-          quantity,
-          unitPrice,
-          amount,
-        };
-      });
+      return {
+        name: item.name,
+        quantity,
+        unitPrice,
+        amount,
+      };
+    });
 
-    const subtotal =
-      calculatedItems.reduce(
-        (sum, item) =>
-          sum.add(item.amount),
-        new Prisma.Decimal(0)
-      );
+    const subtotal = calculatedItems.reduce(
+      (sum, item) => sum.add(item.amount),
+      new Prisma.Decimal(0),
+    );
 
     const taxRate = getTaxRate(taxType);
 
-    const taxAmount =
-      subtotal
-        .mul(taxRate)
-        .div(100);
+    const taxAmount = subtotal.mul(taxRate).div(100);
 
-    const totalAmount =
-      subtotal.add(taxAmount);
+    const totalAmount = subtotal.add(taxAmount);
 
-    const quote =
-      await prisma.$transaction(
-        async (tx) => {
-          const createdQuote =
-            await tx.quote.create({
-              data: {
-                bookingId,
-                reference,
-                status,
-                currency:booking.currency,
-                issuedAt: status === 'SENT' ? new Date() : null,
+    const createdQuote = await prisma.$transaction(async (tx) => {
+      const quote = await tx.quote.create({
+        data: {
+          bookingId,
+          reference,
+          status: "DRAFT",
+          currency: booking.currency,
+          issuedAt: null,
+          pdfPath: null,
+          emailStatus: "NOT_SENT",
 
-                expiresAt: expiresAt
-                  ? new Date(expiresAt)
-                  : null,
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
 
-                responseNotes:
-                  responseNotes ??
-                  null,
+          responseNotes: responseNotes ?? null,
 
-                taxType,
-                taxRate,
-                subtotal,
-                taxAmount,
-                totalAmount,
+          taxType,
+          taxRate,
+          subtotal,
+          taxAmount,
+          totalAmount,
 
-                items: {
-                  create:
-                    calculatedItems,
-                },
-              },
+          items: {
+            create: calculatedItems,
+          },
+        },
 
-              include: {
-                items: {
-                  orderBy: {
-                    createdAt:
-                      "asc",
-                  },
-                },
-              },
-            });
+        include: {
+          items: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
+      });
 
-          await tx.bookingActivity.create(
-            {
-              data: {
-                bookingId,
-                type: "QUOTE_CREATED",
+      await tx.bookingActivity.create({
+        data: {
+          bookingId,
+          type: "QUOTE_CREATED",
 
-                description:
-                  `Quote ${createdQuote.reference} created for ` +
-                  `${booking.currency ?? "KES"} ${totalAmount.toFixed(2)}.`,
+          description:
+            `Quote ${quote.reference} created for ` +
+            `${booking.currency ?? "KES"} ${totalAmount.toFixed(2)}.`,
 
-                createdBy:
-                  authResult.user.id,
-              },
-            }
-          );
+          createdBy: authResult.user.id,
+        },
+      });
 
-          return createdQuote;
-        }
+      return quote;
+    });
+
+    // Admin chose to save as draft.
+    if (status === "DRAFT") {
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Draft quote created successfully.",
+          data: serializeQuote(createdQuote),
+        },
+        { status: 201 },
       );
+    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message:
-          "Quote created successfully",
-        data: serializeQuote(quote),
-      },
-      { status: 201 }
-    );
+    // Admin chose to issue immediately.
+    // Use the same service as the dedicated issue route.
+    try {
+      const issued = await issueQuote({
+        bookingId,
+        quoteId: createdQuote.id,
+        adminUserId: authResult.user.id,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Quote created and issued successfully.",
+          data: serializeQuote(issued),
+        },
+        { status: 201 },
+      );
+    } catch (error) {
+      console.error("Quote created but issuance failed:", error);
+
+      // The quote still exists as a draft.
+      // Return its ID so the frontend can recover.
+      return NextResponse.json(
+        {
+          success: false,
+          partialSuccess: true,
+          message:
+            "Quote was created as a draft, but could not be issued. You can retry issuance from the quote details.",
+          data: serializeQuote(createdQuote),
+        },
+        { status: 201 },
+      );
+    }
   } catch (error) {
-    console.error(
-      "POST /api/bookings/[bookingId]/quote error:",
-      error
-    );
+    console.error("POST /api/bookings/[bookingId]/quote error:", error);
 
     if (
-      error instanceof
-        Prisma.PrismaClientKnownRequestError &&
+      error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "A quote already exists for this booking",
+          message: "A quote already exists for this booking",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Failed to create quote",
+        message: "Failed to create quote",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -356,10 +357,7 @@ export async function POST(
  * - acceptedAt
  * - declinedAt
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: RouteContext
-) {
+export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const { bookingId } = await params;
 
@@ -376,7 +374,7 @@ export async function PATCH(
           message: "Validation failed",
           errors: parsed.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -401,7 +399,7 @@ export async function PATCH(
           success: false,
           message: "Quote not found for this booking",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -417,7 +415,7 @@ export async function PATCH(
           success: false,
           message: "Only draft quotes can be edited",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -454,8 +452,7 @@ export async function PATCH(
      * or tax treatment changes.
      */
     const financialsChanged =
-      data.items !== undefined ||
-      data.taxType !== undefined;
+      data.items !== undefined || data.taxType !== undefined;
 
     let subtotal = existingQuote.subtotal;
     let taxRate = existingQuote.taxRate;
@@ -465,14 +462,12 @@ export async function PATCH(
     if (financialsChanged) {
       subtotal = calculatedItems.reduce(
         (sum, item) => sum.add(item.amount),
-        new Prisma.Decimal(0)
+        new Prisma.Decimal(0),
       );
 
       taxRate = getTaxRate(taxType);
 
-      taxAmount = subtotal
-        .mul(taxRate)
-        .div(100);
+      taxAmount = subtotal.mul(taxRate).div(100);
 
       totalAmount = subtotal.add(taxAmount);
     }
@@ -480,14 +475,12 @@ export async function PATCH(
     const updateData: Prisma.QuoteUpdateInput = {};
 
     if (data.expiresAt !== undefined) {
-      updateData.expiresAt = data.expiresAt
-        ? new Date(data.expiresAt)
-        : null;
+      updateData.expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
     }
 
-    if(data.status === 'SENT'){
-      updateData.status = data.status
-      updateData.issuedAt = new Date()
+    if (data.status === "SENT") {
+      updateData.status = data.status;
+      updateData.issuedAt = new Date();
     }
 
     if (data.responseNotes !== undefined) {
@@ -544,8 +537,8 @@ export async function PATCH(
       if (data.items !== undefined) {
         activityParts.push(
           `total changed from ${existingQuote.totalAmount.toFixed(
-            2
-          )} to ${updatedQuote.totalAmount.toFixed(2)}`
+            2,
+          )} to ${updatedQuote.totalAmount.toFixed(2)}`,
         );
       }
 
@@ -554,7 +547,7 @@ export async function PATCH(
         data.taxType !== existingQuote.taxType
       ) {
         activityParts.push(
-          `tax treatment changed from ${existingQuote.taxType} to ${updatedQuote.taxType}`
+          `tax treatment changed from ${existingQuote.taxType} to ${updatedQuote.taxType}`,
         );
       }
 
@@ -591,17 +584,14 @@ export async function PATCH(
       data: serializeQuote(result),
     });
   } catch (error) {
-    console.error(
-      "PATCH /api/bookings/[bookingId]/quote error:",
-      error
-    );
+    console.error("PATCH /api/bookings/[bookingId]/quote error:", error);
 
     return NextResponse.json(
       {
         success: false,
         message: "Failed to update quote",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
