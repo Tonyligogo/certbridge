@@ -76,7 +76,7 @@ export function RecentEnquiries({
             {enquiries.map((enquiry) => (
               <Link
                 key={enquiry.id}
-                href={`/admin/enquiries/${enquiry.id}`}
+                href={`/admin/enquiries?enquiryId=${enquiry.id}`}
                 className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:opacity-75"
               >
                 <div className="min-w-0 space-y-1">

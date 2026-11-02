@@ -26,7 +26,6 @@ export function DashboardView({
   data,
   period,
 }: DashboardViewProps) {
-  console.log(data)
 
   return (
     <div className="space-y-6">
