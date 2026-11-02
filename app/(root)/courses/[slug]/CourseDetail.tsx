@@ -493,7 +493,7 @@ function BookingCard({ course }: { course: Course }) {
         </div>
 
         <Link
-          href={`/contact?courseId=${encodeURIComponent(course.id)}&courseName=${encodeURIComponent(course.slug)}`}
+          href={`/contact?courseId=${encodeURIComponent(course.id)}&courseSlug=${encodeURIComponent(course.slug)}`}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 px-5 py-3 font-semibold text-primary transition hover:bg-blue-50"
         >
           Request a Quote

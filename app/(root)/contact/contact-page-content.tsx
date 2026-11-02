@@ -1,23 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { SubmitEventHandler } from "react";
-import { ArrowUpRight, Check, ChevronDown, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateEnquiryInput } from "@/app/features/enquiry/types";
 import { useCreateEnquiry } from "@/app/features/enquiry/hooks/use-enquiry";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 type EnquiryType = "QUOTE" | "GENERAL";
 
 type DeliveryMode = "ONLINE" | "CLIENT_SITE" | "ARRANGED_VENUE";
-
-type CourseOption = {
-  id: string;
-  title: string;
-  slug: string;
-};
 
 type ContactFormData = {
   enquiryType: EnquiryType;
@@ -26,7 +23,7 @@ type ContactFormData = {
   phone: string;
   organization: string;
   courseId: string;
-  customCourseTitle: string;
+  courseTitle: string;
   participants: string;
   deliveryMode: DeliveryMode;
   preferredDate: string;
@@ -40,7 +37,7 @@ const initialForm: ContactFormData = {
   phone: "",
   organization: "",
   courseId: "",
-  customCourseTitle: "",
+  courseTitle: "",
   participants: "10",
   deliveryMode: "ONLINE",
   preferredDate: "",
@@ -58,47 +55,25 @@ const CONTACT = {
   instagramHref: "",
 };
 
-// Temporary catalogue data.
-// Replace with your actual course data/API later.
-const COURSES: CourseOption[] = [];
-
 function formatCourseSlug(slug: string) {
   return slug.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 export function ContactPageContent() {
   const searchParams = useSearchParams();
-  const courseSlug = searchParams.get("course");
-
-  const matchingCourse = courseSlug
-    ? COURSES.find((course) => course.slug === courseSlug)
-    : undefined;
+  const courseSlug = searchParams.get("courseSlug");
+  const courseId = searchParams.get("courseId");
 
   const [form, setForm] = useState<ContactFormData>(() => ({
     ...initialForm,
     enquiryType: "QUOTE",
-    courseId: matchingCourse?.id ?? "",
-    customCourseTitle:
-      courseSlug && !matchingCourse ? formatCourseSlug(courseSlug) : "",
+    courseId: courseId ?? "",
+    courseTitle: courseSlug ? formatCourseSlug(courseSlug) : "",
   }));
 
-  const createEnquiry = useCreateEnquiry();
+  const {mutateAsync:createEnquiry, isPending:isSubmitting} = useCreateEnquiry();
 
-  const [submittedReference, setSubmittedReference] = useState<string | null>(
-    null,
-  );
-
-  const isSubmitting = false;
-
-  const [courseSearch, setCourseSearch] = useState(
-    () => matchingCourse?.title ?? "",
-  );
-
-  const [showCourseResults, setShowCourseResults] = useState(false);
-
-  const [useCustomCourse, setUseCustomCourse] = useState(() =>
-    Boolean(courseSlug && !matchingCourse),
-  );
+  const [useCustomCourse, setUseCustomCourse] = useState(() => Boolean(courseSlug) );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -120,18 +95,6 @@ export function ContactPageContent() {
     });
   }
 
-  const filteredCourses = COURSES.filter((course) =>
-    course.title.toLowerCase().includes(courseSearch.toLowerCase()),
-  ).slice(0, 6);
-
-  function selectCourse(course: CourseOption) {
-    updateField("courseId", course.id);
-    updateField("customCourseTitle", "");
-    setCourseSearch(course.title);
-    setShowCourseResults(false);
-    setUseCustomCourse(false);
-  }
-
   function validate() {
     const nextErrors: Record<string, string> = {};
 
@@ -146,7 +109,7 @@ export function ContactPageContent() {
     }
 
     if (form.enquiryType === "QUOTE") {
-      if (!form.courseId && !form.customCourseTitle.trim()) {
+      if (!form.courseId && !form.courseTitle.trim()) {
         nextErrors.courseId = "Please specify a training topic.";
       }
 
@@ -171,7 +134,7 @@ export function ContactPageContent() {
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
-    if (!validate() || createEnquiry.isPending) return;
+    if (!validate() || isSubmitting) return;
 
     const isQuote = form.enquiryType === "QUOTE";
 
@@ -184,13 +147,9 @@ export function ContactPageContent() {
 
       ...(isQuote && {
         courseId: form.courseId || undefined,
-        courseName: form.courseId
-          ? undefined
-          : form.customCourseTitle.trim() || undefined,
+        courseName: form.courseId ? undefined : form.courseTitle.trim() || undefined,
 
-        participantCount: form.participants
-          ? Number(form.participants)
-          : undefined,
+        participantCount: form.participants ? Number(form.participants) : undefined,
 
         deliveryMode: form.deliveryMode || undefined,
         preferredDate: form.preferredDate || undefined,
@@ -200,11 +159,14 @@ export function ContactPageContent() {
     };
 
     try {
-      const response = await createEnquiry.mutateAsync(payload);
-
-      if (response.success && response.data) {
-        setSubmittedReference(response.data.reference);
-      }
+      await createEnquiry(
+        payload,
+        {
+          onSuccess(){
+            toast.success('Enquiry submitted successfully!')
+          }
+        }
+      )
     } catch (error) {
       console.error("Failed to submit enquiry:", error);
     }
@@ -409,80 +371,43 @@ export function ContactPageContent() {
                         <span className="ml-1 text-blue-600">*</span>
                       </label>
 
+                      { useCustomCourse && 
                       <button
                         type="button"
                         onClick={() => {
-                          setUseCustomCourse(!useCustomCourse);
+                          setUseCustomCourse(true);
                           updateField("courseId", "");
-                          updateField("customCourseTitle", "");
-                          setCourseSearch("");
+                          updateField("courseTitle", "");
                         }}
                         className="text-xs font-medium text-blue-600 hover:underline"
                       >
-                        {useCustomCourse
-                          ? "Choose from catalogue"
-                          : "Enter custom topic"}
+                        Enter custom topic
                       </button>
+                      }
                     </div>
 
                     {useCustomCourse ? (
-                      <input
+                      <Input
                         type="text"
-                        value={form.customCourseTitle}
+                        value={form.courseTitle}
                         onChange={(event) =>
-                          updateField("customCourseTitle", event.target.value)
+                          updateField("courseTitle", event.target.value)
                         }
                         placeholder="Enter the training topic"
-                        className="w-full border-0 border-b border-slate-300 bg-transparent px-0 py-3 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-blue-600"
                       />
                     ) : (
-                      <div className="relative">
+                      <div>
                         <Input
                           type="text"
-                          value={courseSearch}
-                          onChange={(event) => {
-                            setCourseSearch(event.target.value);
-                            updateField("courseId", "");
-                            setShowCourseResults(true);
-                          }}
-                          onFocus={() => setShowCourseResults(true)}
-                          placeholder="Search available courses"
+                          value={form.courseTitle}
+                          readOnly
                         />
-
-                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-slate-600" />
-                        {showCourseResults &&
-                          courseSearch.trim() &&
-                          filteredCourses.length > 0 && (
-                            <div className="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-md border border-slate-200 bg-white p-1 shadow-lg">
-                              {filteredCourses.map((course) => (
-                                <button
-                                  key={course.id}
-                                  type="button"
-                                  onClick={() => selectCourse(course)}
-                                  className="flex w-full items-center justify-between rounded px-3 py-2.5 text-left text-sm hover:bg-slate-50"
-                                >
-                                  <span>{course.title}</span>
-
-                                  {form.courseId === course.id && (
-                                    <Check className="size-4 text-blue-600" />
-                                  )}
-                                </button>
-                              ))}
-                            </div>
-                          )}
                       </div>
                     )}
 
                     {errors.courseId && (
                       <p className="mt-2 text-xs text-red-600">
                         {errors.courseId}
-                      </p>
-                    )}
-
-                    {!useCustomCourse && COURSES.length === 0 && (
-                      <p className="mt-2 text-xs text-slate-400">
-                        Catalogue search will be connected to your course data.
-                        You can use {"Enter custom topic"} for now.
                       </p>
                     )}
                   </div>
@@ -497,6 +422,27 @@ export function ContactPageContent() {
                       onChange={(value) => updateField("participants", value)}
                       error={errors.participants}
                     />
+                    <div>
+                      <label
+                        htmlFor="preferred-date"
+                        className="mb-2 block text-sm font-medium text-slate-800"
+                      >
+                        Preferred training date
+                      </label>
+
+                      <div className="relative">
+                        <Input
+                          id="preferred-date"
+                          type="date"
+                          value={form.preferredDate}
+                          min={new Date().toLocaleDateString("en-CA")}
+                          onChange={(event) => updateField("preferredDate", event.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    
+                  </div>
 
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-slate-800">
@@ -548,31 +494,6 @@ export function ContactPageContent() {
                         the arrangements when preparing your quotation.
                       </p>
                     </div>
-                  </div>
-
-                  <div className="grid gap-x-7 gap-y-6 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="preferred-date"
-                        className="mb-2 block text-sm font-medium text-slate-800"
-                      >
-                        Preferred training date
-                      </label>
-
-                      <div className="relative">
-                        <Input
-                          id="preferred-date"
-                          type="date"
-                          value={form.preferredDate}
-                          min={new Date().toLocaleDateString("en-CA")}
-                          onChange={(event) =>
-                            updateField("preferredDate", event.target.value)
-                          }
-                          className="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -600,9 +521,7 @@ export function ContactPageContent() {
                       ? "Share your objectives, requirements, or anything we should know..."
                       : "How can we help you?"
                   }
-                  className="w-full resize-y border-0 border-b border-slate-300 bg-transparent px-0 py-3 text-sm leading-7 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-600"
                 />
-
                 {errors.message && (
                   <p className="mt-2 text-xs text-red-600">{errors.message}</p>
                 )}
@@ -611,13 +530,13 @@ export function ContactPageContent() {
               <div className="mt-10 flex flex-col gap-6 border-t border-slate-200 pt-6 sm:flex-row sm:items-end sm:justify-between">
                 <p className="max-w-xs text-xs leading-6 text-slate-400">
                   By submitting this form, you agree that CertBridge Global may
-                  contact you regarding your enquiry.
+                  contact you regarding your inquiry.
                 </p>
 
-                <button
+                <Button
                   type="submit"
+                  size='lg'
                   disabled={isSubmitting}
-                  className="inline-flex shrink-0 items-center justify-center gap-8 bg-blue-600 px-7 py-4 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? (
                     <>
@@ -633,12 +552,8 @@ export function ContactPageContent() {
                       <ArrowUpRight className="size-4" />
                     </>
                   )}
-                </button>
+                </Button>
               </div>
-
-              <p className="mt-3 text-right text-xs text-slate-400">
-                Submission will be enabled when the backend is connected.
-              </p>
             </form>
           </div>
         </div>
@@ -670,15 +585,15 @@ function ContactInput({
 
   return (
     <div className="min-w-0">
-      <label
+      <Label
         htmlFor={id}
         className="mb-2 block text-sm font-medium text-slate-800"
       >
         {label}
         {required && <span className="ml-1 text-blue-600">*</span>}
-      </label>
+      </Label>
 
-      <input
+      <Input
         id={id}
         type={type}
         min={min}
@@ -686,7 +601,6 @@ function ContactInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
-        className="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 aria-invalid:border-red-500"
       />
 
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
