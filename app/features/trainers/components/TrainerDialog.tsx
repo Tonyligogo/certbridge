@@ -263,7 +263,6 @@ useEffect(() => {
 
   // handle view certification details
   const handleViewCert = (certification: TrainerCertification) => {
-    console.log(certification)
     setCertToView(certification);
   }
 

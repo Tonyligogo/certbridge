@@ -25,6 +25,10 @@ const enquiryErrors: Record<string, { message: string; status: number }> = {
     message: "Enquiry already has this status",
     status: 409,
   },
+  ENQUIRY_HAS_ACCEPTED_QUOTE: {
+    message: "Enquiry has an accepted quote and cannot be closed",
+    status: 409,
+  },
 };
 
 export function handleEnquiryError(error: unknown) {

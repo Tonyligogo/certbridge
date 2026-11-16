@@ -8,12 +8,12 @@ export const TRAINER_DAILY_RATES: Record<CourseLevel, number> = {
 };
 
 export const REFERENCE_PARTICIPANTS = 1;
-export const CLIENT_SITE_TRAVEL_DAILY = 3_000;
-export const VENUE_PER_PERSON_DAILY = 4_000;
+export const CLIENT_SITE_TRAVEL_DAILY = 4_000;
+export const VENUE_PER_PERSON_DAILY = 5_000;
 
 const COMPANY_FEE_ANCHORS = [
   { participants: 1, dailyFee: 10_000 },
-  { participants: 5, dailyFee: 18_000 },
+  { participants: 5, dailyFee: 20_000 },
   { participants: 10, dailyFee: 25_000 },
   { participants: 15, dailyFee: 35_000 },
   { participants: 20, dailyFee: 45_000 },
@@ -21,8 +21,15 @@ const COMPANY_FEE_ANCHORS = [
   { participants: 30, dailyFee: 65_000 },
 ] as const;
 
+const MINIMUM_PARTICIPANT_DAILY_PRICE = 10_000;
+const PARTICIPANTS_PER_TRAINER = 10;
+
 export function getCompanyDailyFee(participants: number): number {
-  if ( !Number.isInteger(participants) || participants < 1 || participants > 30 ) {
+  if (
+    !Number.isInteger(participants) ||
+    participants < 1 ||
+    participants > 30
+  ) {
     throw new Error("Participants must be between 1 and 30");
   }
 
@@ -35,15 +42,14 @@ export function getCompanyDailyFee(participants: number): number {
         (participants - previous.participants) /
         (current.participants - previous.participants);
 
-      return previous.dailyFee + progress * (current.dailyFee - previous.dailyFee);
+      return (
+        previous.dailyFee + progress * (current.dailyFee - previous.dailyFee)
+      );
     }
   }
 
   return COMPANY_FEE_ANCHORS.at(-1)!.dailyFee;
 }
-
-const MINIMUM_PARTICIPANT_DAILY_PRICE = 10_000;
-const PARTICIPANTS_PER_TRAINER = 10;
 
 type PricingInput = {
   basePricePerParticipantPerDay: number;
@@ -91,39 +97,47 @@ export function calculateBookingPrice({
     getCompanyDailyFee(participants) -
     getCompanyDailyFee(REFERENCE_PARTICIPANTS);
 
-  // 2. Additional venue allocation
-  const venueAdjustmentDaily =
-    deliveryMode === DeliveryMode.ARRANGED_VENUE
-      ? (participants - REFERENCE_PARTICIPANTS) *
-        VENUE_PER_PERSON_DAILY
-      : 0;
+  // 2. Additional trainers
+  const requiredTrainers = Math.ceil(participants / PARTICIPANTS_PER_TRAINER);
 
-  // 3. Additional trainers
-  const requiredTrainers = Math.ceil(
-    participants / PARTICIPANTS_PER_TRAINER
-  );
-
-  // The seeded base price already covers one trainer.
   const additionalTrainers = Math.max(0, requiredTrainers - 1);
 
-  const additionalTrainerCostDaily =
-    additionalTrainers * trainerDailyRate;
+  const additionalTrainerCostDaily = additionalTrainers * trainerDailyRate;
 
-  // 4. Calculate the group daily price
-  const calculatedDailyTotal =
-    basePricePerParticipantPerDay +
-    companyAdjustmentDaily +
-    venueAdjustmentDaily +
-    additionalTrainerCostDaily;
+  // 3. Identify delivery costs already included in the base price
+  const seededDeliveryCostDaily =
+    deliveryMode === DeliveryMode.CLIENT_SITE
+      ? CLIENT_SITE_TRAVEL_DAILY
+      : deliveryMode === DeliveryMode.ARRANGED_VENUE
+        ? VENUE_PER_PERSON_DAILY * REFERENCE_PARTICIPANTS
+        : 0;
 
-  // 5. Enforce minimum per-person daily pricing
-  const minimumDailyTotal =
-    participants * MINIMUM_PARTICIPANT_DAILY_PRICE;
+  // 4. Remove delivery costs from the seeded base price
+  const trainingBaseDaily =
+    basePricePerParticipantPerDay - seededDeliveryCostDaily;
 
-  const dailyTotal = Math.max(
-    calculatedDailyTotal,
-    minimumDailyTotal
+  // 5. Calculate the training fee independently
+  const calculatedTrainingDaily =
+    trainingBaseDaily + companyAdjustmentDaily + additionalTrainerCostDaily;
+
+  // 6. Apply the minimum to training only
+  const minimumTrainingDaily = participants * MINIMUM_PARTICIPANT_DAILY_PRICE;
+
+  const trainingDailyTotal = Math.max(
+    calculatedTrainingDaily,
+    minimumTrainingDaily,
   );
+
+  // 7. Add delivery-specific costs after applying the minimum
+  const deliveryCostDaily =
+    deliveryMode === DeliveryMode.CLIENT_SITE
+      ? CLIENT_SITE_TRAVEL_DAILY
+      : deliveryMode === DeliveryMode.ARRANGED_VENUE
+        ? participants * VENUE_PER_PERSON_DAILY
+        : 0;
+
+  // 8. Final price
+  const dailyTotal = trainingDailyTotal + deliveryCostDaily;
 
   const totalPrice = Math.round(dailyTotal * durationDays);
 
@@ -136,21 +150,38 @@ export function calculateBookingPrice({
 
     pricePerParticipant: totalPrice / participants,
 
-    pricePerParticipantPerDay:
-      totalPrice / participants / durationDays,
+    pricePerParticipantPerDay: totalPrice / participants / durationDays,
 
     requiredTrainers,
     additionalTrainers,
 
     // For internal use, not customer-facing
     breakdown: {
-      calculatedDailyTotal,
-      minimumDailyTotal,
+      calculatedDailyTotal: calculatedTrainingDaily + deliveryCostDaily,
+      minimumDailyTotal: minimumTrainingDaily + deliveryCostDaily,
       additionalTrainerCostDaily,
-      minimumPriceApplied:
-        minimumDailyTotal > calculatedDailyTotal,
+      minimumPriceApplied: minimumTrainingDaily > calculatedTrainingDaily,
     },
   };
 }
 
+export function calculateBasePrice(level: CourseLevel) {
+  const trainerDailyRate = TRAINER_DAILY_RATES[level];
 
+  if (trainerDailyRate === undefined) {
+    throw new Error(`Unsupported course level: ${level}`);
+  }
+
+  const companyDailyFee = getCompanyDailyFee(REFERENCE_PARTICIPANTS);
+
+  const baseDailyPrice = companyDailyFee + trainerDailyRate;
+
+  return {
+    [DeliveryMode.ONLINE]: baseDailyPrice,
+
+    [DeliveryMode.CLIENT_SITE]: baseDailyPrice + CLIENT_SITE_TRAVEL_DAILY,
+
+    [DeliveryMode.ARRANGED_VENUE]:
+      baseDailyPrice + VENUE_PER_PERSON_DAILY * REFERENCE_PARTICIPANTS,
+  };
+}

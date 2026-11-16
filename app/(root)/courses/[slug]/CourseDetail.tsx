@@ -342,56 +342,46 @@ function BookingCard({ course }: { course: Course }) {
     (pricing) => pricing.deliveryMode === selectedMode,
   );
 
-  const price = selectedPricing ? Number(selectedPricing.amount) : null;
+  const price = selectedPricing ? (Number(selectedPricing.amount) * course.durationDays) : null;
 
   const currency = selectedPricing?.currency ?? "KES";
 
-  const formattedPrice =
-    price !== null && Number.isFinite(price)
+  function formatPrice(price:number | null){
+    return  price !== null && Number.isFinite(price)
       ? new Intl.NumberFormat("en-KE", {
           style: "currency",
           currency,
           maximumFractionDigits: 0,
         }).format(price)
       : "Contact for Pricing";
-
-  const imgUrl =
-    "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg";
+      }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-[0_24px_60px_-20px_rgba(45,27,105,0.35)]">
-      <div className="aspect-video overflow-hidden bg-blue-100">
-        <img
-          src={imgUrl}
-          alt={course.title}
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
-      </div>
-
       <div className="p-6">
         {/* Price */}
         <div aria-live="polite">
-          <p className="mb-1 text-xs font-medium text-text-muted">
+          <p className="mb-1 text-xl font-bold text-text-muted">
             Training price
           </p>
 
           <span className="font-display text-3xl font-bold text-primary">
-            {formattedPrice}
+            {formatPrice(price)}
           </span>
 
           {price !== null && (
             <p className="mt-1 text-sm text-text-muted">
-              Per participant / day
+              Per participant
             </p>
           )}
         </div>
 
         {/* Delivery mode selection */}
         <div className="mt-6">
-          <p className="mb-3 text-sm font-semibold text-text-secondary">
+          <p className="text-sm font-semibold text-text-secondary">
             Choose your delivery mode
           </p>
+          <p className="mt-1 mb-3 text-sm text-muted-foreground">Prices are per participant*</p>
 
           <div className="space-y-2">
             {deliveryOptions.map((option) => {
@@ -403,7 +393,7 @@ function BookingCard({ course }: { course: Course }) {
               );
 
               const optionPrice = optionPricing
-                ? Number(optionPricing.amount)
+                ? (Number(optionPricing.amount) * course.durationDays)
                 : null;
 
               return (
@@ -437,18 +427,15 @@ function BookingCard({ course }: { course: Course }) {
                       {option.label}
                     </p>
 
-                    <p className="mt-0.5 text-xs text-text-muted">
+                    <p className="mt-0.5 text-sm text-muted-foreground">
                       {option.description}
                     </p>
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-primary">
-                      {optionPrice !== null && Number.isFinite(optionPrice)
-                        ? optionPrice.toLocaleString("en-KE")
-                        : "—"}
+                    <p className="font-bold text-primary">
+                        {formatPrice(optionPrice)}
                     </p>
-                    <p className="text-[10px] text-text-muted">per person</p>
                   </div>
                 </button>
               );

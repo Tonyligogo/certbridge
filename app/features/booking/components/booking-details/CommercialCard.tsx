@@ -3,6 +3,8 @@
 import {
   Banknote,
   Check,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   FileText,
   LucideIcon,
@@ -25,6 +27,7 @@ import type {
 import { Badge } from "@/components/ui/badge";
 import { BookingWorkflow } from "../../types";
 import { AdminBookingDetailsResponse } from "../../types/admin-booking";
+import { useState } from "react";
 
 
 interface CommercialCardProps {
@@ -32,7 +35,7 @@ interface CommercialCardProps {
   workflow: BookingWorkflow;
 
   onCreateQuote?: () => void;
-  onViewQuote?: () => void;
+  onViewQuote?: (quoteId:string) => void;
 
   onCreateInvoice?: () => void;
   onViewInvoice?: (
@@ -57,6 +60,11 @@ const quoteStatusConfig: Record<
       "border-slate-200 bg-slate-50 text-slate-700",
   },
 
+  ISSUED: {
+    label: "Issued",
+    className:
+      "border-slate-200 bg-slate-50 text-slate-700",
+  },
   SENT: {
     label: "Sent",
     className:
@@ -83,6 +91,11 @@ const quoteStatusConfig: Record<
 
   CANCELLED: {
     label: "Cancelled",
+    className:
+      "border-slate-200 bg-slate-100 text-slate-500",
+  },
+  VOIDED: {
+    label: "Voided",
     className:
       "border-slate-200 bg-slate-100 text-slate-500",
   },
@@ -161,32 +174,51 @@ function QuoteSection({
 }: {
   booking: AdminBookingDetailsResponse;
   workflow: BookingWorkflow;
-
   onCreateQuote?: () => void;
-  onViewQuote?: () => void;
+  onViewQuote?: (quoteId:string) => void;
 }) {
-  const quote = booking.quote;
 
-  if (!quote) {
-    const canCreate =
-      workflow.actions.some(
-        ({ type }) =>
-          type === "CREATE_QUOTE"
-      );
+  const [showAllQuotes, setShowAllQuotes] = useState(false);
 
+  const quotes = [...booking.quotes].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  );
+
+    const displayedQuote =
+    quotes.find((quote) =>
+      ["DRAFT", "ISSUED", "SENT", "ACCEPTED"].includes(
+        quote.status
+      )
+    ) ??
+    quotes[0] ??
+    null;
+
+
+const otherQuotes = quotes.filter(
+  (quote) => quote.id !== displayedQuote?.id
+);
+
+  const canCreate = workflow.actions.some(
+    ({ type }) =>
+      type === "CREATE_QUOTE" ||
+      type === "REVISE_QUOTE"
+  );
+
+  if (!displayedQuote) {
     return (
       <CommercialSection
         icon={FileText}
-        title="Quote"
+        title="Quotations"
         status="Not created"
       >
         <div className="rounded-lg border border-dashed p-4">
           <p className="text-sm text-muted-foreground">
-            No quote has been prepared
-            for this booking yet.
+            No quotation has been prepared for this booking yet.
           </p>
 
-          {canCreate && (
+          {canCreate && onCreateQuote && (
             <Button
               type="button"
               variant="outline"
@@ -195,7 +227,7 @@ function QuoteSection({
               onClick={onCreateQuote}
             >
               <Plus className="mr-2 size-4" />
-              Prepare quote
+              Prepare quotation
             </Button>
           )}
         </div>
@@ -203,80 +235,131 @@ function QuoteSection({
     );
   }
 
-  const total = getQuoteTotal(quote);
-
   return (
     <CommercialSection
       icon={FileText}
-      title="Quote"
+      title="Quotations"
       status={
-        <QuoteStatusBadge
-          status={quote.status}
-        />
+        <QuoteStatusBadge status={displayedQuote.status} />
       }
     >
       <button
         type="button"
         className="w-full rounded-lg border p-4 text-left transition-colors hover:bg-muted/40"
-        onClick={onViewQuote}
+        onClick={() => onViewQuote?.(displayedQuote.id)}
+        disabled={!onViewQuote}
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 space-y-1">
             <p className="text-sm font-medium">
-              {quote.reference}
+              {displayedQuote.reference}
             </p>
 
-            <p className="mt-1 text-xs text-muted-foreground">
-              {getQuoteDateDescription(
-                quote
-              )}
+            <p className="text-xs text-muted-foreground">
+              {getQuoteDateDescription(displayedQuote)}
             </p>
           </div>
 
           <div className="shrink-0 text-right">
             <p className="text-sm font-semibold">
               {formatMoney(
-                total,
-                booking.currency
+                getQuoteTotal(displayedQuote),
+                displayedQuote.currency
               )}
             </p>
 
             <p className="mt-1 text-xs text-muted-foreground">
-              {quote.items.length}{" "}
-              {quote.items.length === 1
+              {displayedQuote.items.length}{" "}
+              {displayedQuote.items.length === 1
                 ? "item"
                 : "items"}
             </p>
           </div>
         </div>
+
+        {displayedQuote.status === "ACCEPTED" && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700">
+            <Check className="size-3.5" />
+            <span>Accepted by client</span>
+          </div>
+        )}
       </button>
 
-      {quote.status === "ACCEPTED" && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700">
-          <Check className="size-3.5" />
+      {showAllQuotes && otherQuotes.length > 0 && (
+  <div className="mt-3 space-y-2">
+    <p className="text-xs font-medium text-muted-foreground">
+      Other quotations
+    </p>
 
-          <span>
-            Quote accepted by client
-          </span>
+    {otherQuotes.map((quote) => (
+      <button
+        key={quote.id}
+        type="button"
+        className="w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/40"
+        onClick={() => onViewQuote?.(quote.id)}
+        disabled={!onViewQuote}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium">
+                {quote.reference}
+              </p>
+
+              <QuoteStatusBadge status={quote.status} />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              {getQuoteDateDescription(quote)}
+            </p>
+          </div>
+
+          <p className="shrink-0 text-sm font-semibold">
+            {formatMoney(
+              getQuoteTotal(quote),
+              quote.currency
+            )}
+          </p>
         </div>
-      )}
+      </button>
+    ))}
+  </div>
+)}
+
+{otherQuotes.length > 0 && (
+  <Button
+    type="button"
+    variant="ghost"
+    size="sm"
+    className="mt-2 w-full"
+    onClick={() => setShowAllQuotes((prev) => !prev)}
+    aria-expanded={showAllQuotes}
+  >
+    {showAllQuotes ? (
+      <>
+        <ChevronUp className="mr-2 size-4" />
+        Show less
+      </>
+    ) : (
+      <>
+        <ChevronDown className="mr-2 size-4" />
+        View all quotations ({quotes.length})
+      </>
+    )}
+  </Button>
+)}
     </CommercialSection>
   );
 }
 
 type Quote =
   NonNullable<
-    AdminBookingDetailsResponse["quote"]
+  
+    AdminBookingDetailsResponse["quotes"][number]
   >;
 
-function getQuoteTotal(
-  quote: Quote
-) {
-  return quote.items.reduce(
-    (total, item) =>
-      total + Number(item.amount),
-    0
-  );
+function getQuoteTotal(quote: Quote): number {
+  return Number(quote.totalAmount);
 }
 
 function getQuoteDateDescription(
@@ -339,6 +422,9 @@ function FinanceSection({
     );
 
   if (invoices.length === 0) {
+    const hasAcceptedQuote = booking.quotes.some(
+    (quote) => quote.status === "ACCEPTED"
+  );
     return (
       <CommercialSection
         icon={ReceiptText}
@@ -347,8 +433,7 @@ function FinanceSection({
       >
         <div className="rounded-lg border border-dashed p-4">
           <p className="text-sm text-muted-foreground">
-            {booking.quote?.status ===
-            "ACCEPTED"
+            {hasAcceptedQuote
               ? "No invoice has been created for this booking yet."
               : "Invoicing becomes available after the quote has been accepted."}
           </p>

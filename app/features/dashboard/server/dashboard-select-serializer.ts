@@ -33,11 +33,10 @@ export function toBookingWorkflowInput(
       status: venue.status,
     })),
 
-    quote: booking.quote
-      ? {
-          status: booking.quote.status,
-        }
-      : null,
+    quotes: booking.quotes.map((quote)=>({
+      status: quote.status,
+      createdAt: quote.createdAt.toISOString()
+    })),
 
     invoices: booking.invoices.map((invoice) => ({
       id: invoice.id,

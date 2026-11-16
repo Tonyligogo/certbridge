@@ -1,5 +1,5 @@
-import { updateEnquirySchema } from "@/app/features/enquiry/lib/validation/enquiry";
-import { handleEnquiryError } from "@/app/features/enquiry/utils/handle-enquiry-error";
+import { updateEnquiryDetailsSchema } from "@/app/features/enquiry/lib/validation/enquiry";
+import { EnquiryDetailsError, updateEnquiryDetails } from "@/app/features/enquiry/services/update-enquiry-details";
 import { handleAuthError } from "@/app/features/trainers/lib/authError";
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
@@ -10,10 +10,7 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(
-  _request: NextRequest,
-  { params }: RouteContext
-) {
+export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     await requireAdmin();
 
@@ -25,7 +22,7 @@ export async function GET(
           success: false,
           message: "Enquiry ID is required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,7 +59,16 @@ export async function GET(
           select: {
             id: true,
             title: true,
+            durationDays: true,
+            level: true,
             slug: true,
+            pricing: {
+              select: {
+                amount: true,
+                currency: true,
+                deliveryMode: true,
+              },
+            },
           },
         },
 
@@ -87,7 +93,7 @@ export async function GET(
           success: false,
           message: "Enquiry not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -96,10 +102,7 @@ export async function GET(
       data: enquiry,
     });
   } catch (error) {
-    console.error(
-      "GET /api/admin/enquiries/[id] error:",
-      error
-    );
+    console.error("GET /api/admin/enquiries/[id] error:", error);
 
     const authResponse = handleAuthError(error);
 
@@ -110,184 +113,118 @@ export async function GET(
         success: false,
         message: "Failed to fetch enquiry details",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext,
 ) {
   try {
-    const session = await requireAdmin();
-    const { id } = await params;
+    const authResult = await requireAdmin();
+    const { id: enquiryId } = await params;
 
-    const body = await request.json().catch(() => null);
-    const parsed = updateEnquirySchema.safeParse(body);
+    const body = await request.json();
+
+    const parsed =
+      updateEnquiryDetailsSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid enquiry action",
-          errors: parsed.error,
+          message: "Validation failed",
+          errors: parsed.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const input = parsed.data;
-
-    const result = await prisma.$transaction(async (tx) => {
-      const enquiry = await tx.enquiry.findUnique({
-        where: { id },
-        select: {
+    if(parsed.data.courseId){
+      const course = await prisma.course.findUnique({
+        where:{id:parsed.data.courseId},
+        select:{
           id: true,
-          status: true,
-          closedAt: true,
-          bookingId: true,
-        },
-      });
-
-      if (!enquiry) {
-        throw new Error("ENQUIRY_NOT_FOUND");
-      }
-
-      if (
-        enquiry.status === "CONVERTED" ||
-        enquiry.bookingId
-      ) {
-        throw new Error("ENQUIRY_ALREADY_CONVERTED");
-      }
-
-      let newStatus:
-        | "NEW"
-        | "CONTACTED"
-        | "IN_PROGRESS"
-        | "CLOSED";
-
-      let description: string;
-      let activityType: | "STATUS_CHANGED";
-
-      let metadata: Prisma.InputJsonValue;
-
-      let closedAt: Date | null = enquiry.closedAt;
-
-      switch (input.action) {
-        case "CHANGE_STATUS": {
-          if (enquiry.status === "CLOSED") {
-            throw new Error("ENQUIRY_ALREADY_CLOSED");
-          }
-
-          if (enquiry.status === input.status) {
-            throw new Error("ENQUIRY_STATUS_UNCHANGED");
-          }
-
-          newStatus = input.status;
-          closedAt = null;
-
-          description = `Status changed from ${enquiry.status} to ${input.status}`;
-          activityType = "STATUS_CHANGED";
-
-          metadata = {
-            from: enquiry.status,
-            to: input.status,
-          };
-
-          break;
+          title: true
         }
+      })
 
-        case "CLOSE": {
-          if (enquiry.status === "CLOSED") {
-            throw new Error("ENQUIRY_ALREADY_CLOSED");
-          }
-
-          newStatus = "CLOSED";
-          closedAt = new Date();
-
-          description = `Enquiry closed: ${input.reason}`;
-          activityType = "STATUS_CHANGED";
-
-          metadata = {
-            from: enquiry.status,
-            to: "CLOSED",
-            reason: input.reason,
-          };
-
-          break;
-        }
-
-        case "REOPEN": {
-          if (enquiry.status !== "CLOSED") {
-            throw new Error("ENQUIRY_NOT_CLOSED");
-          }
-
-          newStatus = "NEW";
-          closedAt = null;
-
-          description = "Enquiry reopened";
-          activityType = "STATUS_CHANGED";
-
-          metadata = {
-            from: "CLOSED",
-            to: "NEW",
-          };
-
-          break;
-        }
+      if(!course){
+        return NextResponse.json(
+        {
+          success: false,
+          message: "Linked course not found",
+        },
+        { status: 404 },
+      );
       }
+      parsed.data.courseId = course.id;
+      parsed.data.courseName = course.title;
+    }
 
-      const updated = await tx.enquiry.update({
-        where: { id },
-        data: {
-          status: newStatus,
-          closedAt,
-        },
-        select: {
-          id: true,
-          status: true,
-          closedAt: true,
-          updatedAt: true,
-        },
-      });
-
-      await tx.enquiryActivity.create({
-        data: {
-          enquiryId: id,
-          type: activityType,
-          description,
-          metadata,
-          createdBy: session.user.id,
-        },
-      });
-
-      return updated;
+    const updated = await updateEnquiryDetails({
+      enquiryId,
+      adminUserId: authResult.user.id,
+      input: parsed.data,
     });
 
     return NextResponse.json({
       success: true,
-      message: "Enquiry updated successfully",
-      data: result,
+      message: "Enquiry details updated successfully.",
+      data: updated,
     });
   } catch (error) {
+    if (error instanceof EnquiryDetailsError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: error.message,
+        },
+        { status: error.statusCode },
+      );
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2034"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Enquiry was modified by another request. Refresh and try again.",
+        },
+        { status: 409 },
+      );
+    }
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid JSON request body.",
+        },
+        { status: 400 },
+      );
+    }
+
     console.error(
       "PATCH /api/admin/enquiries/[id] error:",
-      error
+      error,
     );
 
     const authResponse = handleAuthError(error);
     if (authResponse) return authResponse;
 
-    const enquiryResponse = handleEnquiryError(error);
-  if (enquiryResponse) return enquiryResponse;
-
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to update enquiry",
+        message: "Failed to update enquiry details.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+

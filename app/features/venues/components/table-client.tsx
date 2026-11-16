@@ -63,7 +63,6 @@ export function VenueTableClient({
     e.preventDefault();
     updateQueryParams({ search: searchTerm, page: "1" });
   };
-  console.log(venues)
   return (
     <div className="space-y-4">
       {/* Search Bar */}

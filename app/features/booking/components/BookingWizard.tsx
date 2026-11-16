@@ -227,7 +227,7 @@ export function BookingWizard({
 
     const newDraft = {
       ...draft,
-      quotedAmount: estimate?.totalPrice || 0,
+      amount: estimate?.totalPrice || 0,
     }
 
     const payload = draftToRequest(newDraft, course.id);

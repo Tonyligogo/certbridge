@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const decimalSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^\d+(\.\d{1,2})?$/,
+    "Enter a valid number with up to 2 decimal places",
+  );
+
 export const quoteItemSchema = z.object({
   name: z
     .string()
@@ -7,72 +15,48 @@ export const quoteItemSchema = z.object({
     .min(1, "Description is required")
     .max(500, "Description is too long"),
 
-  quantity: z
-  .string()
-  .trim()
-  .regex(
-    /^\d+(\.\d{1,2})?$/,
-    "Amount must be a valid number with up to 2 decimal places"
+  quantity: decimalSchema.refine(
+    (value) => Number(value) > 0,
+    "Quantity must be greater than zero",
   ),
 
-  unitPrice: z
-  .string()
-  .trim()
-  .regex(
-    /^\d+(\.\d{1,2})?$/,
-    "Amount must be a valid number with up to 2 decimal places"
+  unitPrice: decimalSchema.refine(
+    (value) => Number(value) >= 0,
+    "Unit price cannot be negative",
   ),
-
 });
 
-export const createQuoteSchema = z.object({
-  expiresAt: z
-    .string()
-    .nullable()
-    .optional(),
+export const createQuoteSchema = z
+  .object({
+    expiresAt: z.coerce.date().nullable().optional(),
 
-  responseNotes: z
-    .string()
-    .trim()
-    .max(2000, "Response notes are too long")
-    .nullable()
-    .optional(),
+    responseNotes: z
+      .string()
+      .trim()
+      .max(2000, "Response notes are too long")
+      .nullable()
+      .optional(),
 
-  taxType: z.enum([
-    "STANDARD",
-    "ZERO_RATED",
-    "EXEMPT",
-    "NONE",
-  ]),
+    taxType: z.enum(["STANDARD", "ZERO_RATED", "EXEMPT", "NONE"]),
 
-  status: z.enum([
-    "DRAFT",
-    "SENT",
-    "ACCEPTED",
-    "DECLINED",
-    "EXPIRED",
-    "CANCELLED",
-  ]),
+    status: z.enum(["DRAFT", "ISSUED"]),
 
-  items: z
-    .array(quoteItemSchema)
-    .min(1, "At least one quote item is required"),
-});
+    items: z
+      .array(quoteItemSchema)
+      .min(1, "At least one quote item is required"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "ISSUED" && !data.expiresAt) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["expiresAt"],
+        message: "An expiry date is required to issue a quotation.",
+      });
+    }
+  });
 
 export const updateQuoteSchema = z.object({
-  expiresAt: z
-    .string()
-    .nullable()
-    .optional(),
-
-  status: z.enum([
-    "DRAFT",
-    "SENT",
-    "ACCEPTED",
-    "DECLINED",
-    "EXPIRED",
-    "CANCELLED",
-  ]),
+  expiresAt: z.coerce.date().nullable().optional(),
 
   responseNotes: z
     .string()
@@ -81,12 +65,7 @@ export const updateQuoteSchema = z.object({
     .nullable()
     .optional(),
 
-  taxType: z.enum([
-    "STANDARD",
-    "ZERO_RATED",
-    "EXEMPT",
-    "NONE",
-  ]),
+  taxType: z.enum(["STANDARD", "ZERO_RATED", "EXEMPT", "NONE"]),
 
   items: z
     .array(quoteItemSchema)
@@ -94,15 +73,12 @@ export const updateQuoteSchema = z.object({
     .optional(),
 });
 
+export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
+
+export type UpdateQuoteInput = z.infer<typeof updateQuoteSchema>;
+
 export const updateQuoteStatusSchema = z.object({
-  status: z.enum([
-    "DRAFT",
-    "SENT",
-    "ACCEPTED",
-    "DECLINED",
-    "EXPIRED",
-    "CANCELLED",
-  ]),
+  status: z.enum(["ACCEPTED", "DECLINED"]),
 
   responseNotes: z
     .string()
@@ -111,3 +87,9 @@ export const updateQuoteStatusSchema = z.object({
     .nullable()
     .optional(),
 });
+
+export const voidQuoteSchema = z
+  .object({
+    reason: z.string().trim().min(5).max(1000),
+  })
+  .strict();

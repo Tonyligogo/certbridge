@@ -1,3 +1,4 @@
+import { DeliveryMode } from "@/generated/prisma/enums";
 import { z } from "zod";
 
 export const createEnquirySchema = z
@@ -108,3 +109,59 @@ export type UpdateEnquiryInput = z.infer<
 export type AddEnquiryNoteInput = z.infer<
   typeof addEnquiryNoteSchema
 >;
+
+export const convertEnquirySchema = z.object({
+  contactName: z.string().trim().min(2),
+  contactEmail: z.email(),
+  contactPhone: z.string().trim().min(7),
+
+  organizationName: z.string().trim().optional(),
+
+  participantCount: z.number().int().min(1),
+
+  deliveryMode: z.enum([
+    "ONLINE",
+    "CLIENT_SITE",
+    "ARRANGED_VENUE",
+  ]),
+
+  preferredStartDate: z.iso.datetime().optional(),
+  preferredEndDate: z.iso.datetime().optional(),
+
+  specialRequirements: z.string().trim().optional(),
+
+  locationAddress: z.string().trim().optional(),
+  locationCity: z.string().trim().optional(),
+  locationCountry: z.string().trim().optional(),
+  locationNotes: z.string().trim().optional(),
+});
+
+export type ConvertEnquiryInput = z.infer<
+  typeof convertEnquirySchema
+>;
+
+export const updateEnquiryDetailsSchema = z
+  .object({
+    fullName: z.string().trim().min(2).max(200).optional(),
+    email: z.email().optional(),
+    phone: z.string().trim().max(30).nullable().optional(),
+    organization: z.string().trim().max(200).nullable().optional(),
+
+    courseId: z.string().min(1).nullable().optional(),
+    courseName: z.string().trim().max(250).nullable().optional(),
+
+    participantCount: z.number().int().min(1).nullable().optional(),
+    deliveryMode: z.enum(DeliveryMode).nullable().optional(),
+    preferredDate: z.coerce.date().nullable().optional(),
+
+    message: z.string().trim().max(5000).nullable().optional(),
+    adminNotes: z.string().trim().max(5000).nullable().optional(),
+  })
+  .strict()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    "Provide at least one field to update.",
+  );
+
+export type UpdateEnquiryDetailsInput =
+  z.infer<typeof updateEnquiryDetailsSchema>;

@@ -341,7 +341,7 @@ export function InvoiceDocument({
     <Document
       title={`${documentType} ${invoice.reference}`}
       author={company.name}
-      subject={`${documentType} for booking ${invoice.bookingReference}`}
+      subject={`${documentType} for ${invoice.bookingReference}`}
     >
       <Page size="A4" style={styles.page} wrap>
 

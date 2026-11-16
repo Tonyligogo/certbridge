@@ -8,6 +8,7 @@ import {
   Loader2,
   MessageSquareText,
   MoreHorizontal,
+  Pencil,
   Plus,
   RefreshCw,
   RotateCcw,
@@ -35,6 +36,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { AdminEnquiryDetail, EnquiryStatus } from "../types";
 import { CopyableField } from "@/components/web/copyableField";
+import { useState } from "react";
+import { EditEnquiryDetails } from "./EditEnquiryDetails";
 
 interface EnquiryDetailsSheetProps {
   open: boolean;
@@ -147,6 +150,7 @@ export function EnquiryDetailsSheet({
 }: EnquiryDetailsSheetProps) {
   const isConverted = enquiry?.status === "CONVERTED";
   const isClosed = enquiry?.status === "CLOSED";
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -222,6 +226,20 @@ export function EnquiryDetailsSheet({
               </Button>
             ) : null}
 
+            {enquiry &&
+              !isClosed &&
+              !isConverted && (
+                <Button
+                  size="sm"
+                  variant={isEditing ? "secondary" : "outline"}
+                  onClick={() => setIsEditing((previous) => !previous)}
+                  disabled={isLoading || isSubmitting}
+                >
+                  <Pencil className="size-4" />
+                  {isEditing ? "View details" : "Edit details"}
+                </Button>
+              )}
+
             {/* Additional actions */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -293,7 +311,14 @@ export function EnquiryDetailsSheet({
             </div>
           ) : isLoading || !enquiry ? (
             <DetailsSkeleton />
-          ) : (
+          ) : isEditing ? (
+            <EditEnquiryDetails
+              enquiry={enquiry}
+              onCancel={() => setIsEditing(false)}
+              onSuccess={() => setIsEditing(false)}
+            />
+          ) : 
+          (
             <div className="space-y-6 px-5 py-6">
               {/* Customer */}
               <section className="space-y-4">

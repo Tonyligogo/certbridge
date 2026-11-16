@@ -17,12 +17,14 @@ interface BookingActionSheetProps {
   booking: AdminBookingDetailsResponse;
 
   onClose: () => void;
+  selectedQuoteId:string | null;
 }
 
 export function BookingActionSheet({
   action,
   booking,
   onClose,
+  selectedQuoteId
 }: BookingActionSheetProps) {
   if (!action) {
     return null;
@@ -67,6 +69,7 @@ export function BookingActionSheet({
 
     case "CREATE_QUOTE":
     case "SEND_QUOTE":
+    case "VIEW_QUOTE":
     case "REVISE_QUOTE":
     case "UPDATE_QUOTE_STATUS":
       {
@@ -78,6 +81,10 @@ export function BookingActionSheet({
     SEND_QUOTE: {
       title: "Send Quote",
       description: `Review and send the quotation for booking ${booking.reference}.`,
+    },
+    VIEW_QUOTE: {
+      title: "View Quote",
+      description: `View quotation for booking ${booking.reference}.`,
     },
     REVISE_QUOTE: {
       title: "Revise Quote",
@@ -102,9 +109,11 @@ export function BookingActionSheet({
           >
             <div>
               <QuotationWorkspace
+                key={`${action}-${selectedQuoteId ?? "new"}`}
                 booking={booking}
                 action={action}
                 onClose={onClose}
+                quoteId={selectedQuoteId ?? undefined}
               />
             </div>
           </ActionSheet>

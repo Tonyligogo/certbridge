@@ -34,9 +34,10 @@ export const dashboardWorkflowSelect = {
     },
   },
 
-  quote: {
+  quotes: {
     select: {
       status: true,
+      createdAt:true
     },
   },
 

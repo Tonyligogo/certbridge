@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const siteName = "Certbridge Global";
+const siteName = "CertBridge Global";
 
 interface PageMetadataOptions {
   title: string;

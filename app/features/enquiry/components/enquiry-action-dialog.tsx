@@ -28,6 +28,7 @@ export type EnquiryDialogType =
   | "STATUS"
   | "NOTE"
   | "CLOSE"
+  | "CONVERT"
   | null;
 
 type ActiveEnquiryStatus = Extract<

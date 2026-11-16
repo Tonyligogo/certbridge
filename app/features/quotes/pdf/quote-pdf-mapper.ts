@@ -1,4 +1,3 @@
-
 import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
@@ -12,6 +11,11 @@ export type QuotePdfRecord = Prisma.QuoteGetPayload<{
         course: true;
       };
     };
+    enquiry: {
+      include: {
+        course: true;
+      };
+    };
   };
 }>;
 
@@ -20,42 +24,66 @@ type QuotePdfOverrides = {
 };
 
 export function mapQuoteToPdfData(
-  invoice: QuotePdfRecord,
-  overrides: QuotePdfOverrides = {}
+  quote: QuotePdfRecord,
+  overrides: QuotePdfOverrides = {},
 ): InvoicePdfData {
+  const booking = quote.booking;
+  const enquiry = quote.enquiry;
+
+  if (!booking && !enquiry) {
+    throw new Error(
+      "Quotation must be associated with a booking or enquiry.",
+    );
+  }
+
   const issuedAt =
     overrides.issuedAt !== undefined
       ? overrides.issuedAt
-      : invoice.issuedAt;
+      : quote.issuedAt;
+
+  const client = booking
+    ? {
+        organizationName: booking.organizationName,
+        contactName: booking.contactName,
+        email: booking.contactEmail,
+        phone: booking.contactPhone,
+      }
+    : {
+        organizationName: enquiry!.organization,
+        contactName: enquiry!.fullName,
+        email: enquiry!.email,
+        phone: enquiry!.phone,
+      };
+
+  const courseTitle = booking
+    ? booking.course.title
+    : enquiry!.course?.title ?? enquiry!.courseName;
 
   return {
-    reference: invoice.reference,
+    reference: quote.reference,
 
-    bookingReference: invoice.booking.reference,
+    bookingReference: booking
+      ? booking.reference
+      : enquiry!.reference,
 
-    client: {
-      organizationName: invoice.booking.organizationName,
-      contactName: invoice.booking.contactName,
-      email: invoice.booking.contactEmail,
-      phone: invoice.booking.contactPhone,
-    },
+    client,
 
-    courseTitle: invoice.booking.course.title,
+    courseTitle: courseTitle ?? "Training Programme",
 
-    currency: invoice.currency,
-    taxType: invoice.taxType,
-    taxRate: invoice.taxRate.toString(),
+    currency: quote.currency,
+    taxType: quote.taxType,
+    taxRate: quote.taxRate.toString(),
 
-    subtotal: invoice.subtotal.toString(),
-    taxAmount: invoice.taxAmount.toString(),
-    totalAmount: invoice.totalAmount.toString(),
+    subtotal: quote.subtotal.toString(),
+    taxAmount: quote.taxAmount.toString(),
+    totalAmount: quote.totalAmount.toString(),
 
     issuedAt: issuedAt?.toISOString() ?? null,
-    dueAt: invoice.expiresAt?.toISOString() ?? null,
+    dueAt: quote.expiresAt?.toISOString() ?? null,
 
-    notes: invoice.responseNotes,
+    notes: quote.responseNotes,
 
-    items: invoice.items.map((item) => ({
+    items: quote.items.map((item) => ({
       name: item.name,
       quantity: item.quantity.toString(),
       unitPrice: item.unitPrice.toString(),

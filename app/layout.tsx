@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const siteName = "Certbridge Global";
+const siteName = "CertBridge Global";
 const siteDescription =
   "Kenya's leading corporate training platform. Browse 200+ expert-led courses in leadership, IT, compliance, sales and more. We source the trainer, arrange the logistics, and deliver — online, on-site, or at a venue near you.";
  
@@ -47,6 +47,7 @@ export const metadata: Metadata = {
     "CertBridgeGlobal",
     "certbridgeglobal",
     "certbridge global",
+    "CertBridge"
   ],
   authors: [{ name: siteName, url: siteUrl }],
   creator: siteName,

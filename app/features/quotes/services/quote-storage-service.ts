@@ -1,66 +1,60 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+// import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { pdfStorageService } from "@/lib/storage/pdf-storage";
 
 const BUCKET = "quotations";
 
 export const quoteStorageService = {
-  async upload(
-    quoteId: string,
-    reference: string,
-    pdf: Buffer,
-  ) {
-    const supabase = createSupabaseAdminClient();
-
-    const path = `${quoteId}/${reference}.pdf`;
-
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, pdf, {
-        contentType: "application/pdf",
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      throw new Error(
-        error.message || "Failed to upload quote PDF"
-      );
-    }
-
-    return {
-      path: data.path,
-      fullPath: data.fullPath,
-    };
+  upload(quoteId: string, reference: string, pdf: Buffer) {
+    const uploadPath = `${quoteId}/${reference}`;
+    return pdfStorageService.upload(pdf, BUCKET, uploadPath);
   },
 
-  async download(path: string) {
-    const supabase = createSupabaseAdminClient();
-
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .download(path);
-
-    if (error) {
-      throw new Error(
-        error.message || "Failed to download quote PDF"
-      );
-    }
-
-    return data;
+  createSignedUrl( quoteId: string, reference: string, expiresIn = 60, download = false ) {
+    const path = `${quoteId}/${reference}`;
+    return pdfStorageService.createSignedUrl(
+      BUCKET,
+      path,
+      download,
+      expiresIn,
+    );
   },
 
-  async remove(path: string) {
-    const supabase = createSupabaseAdminClient();
+  // async upload(
+  //   quoteId: string,
+  //   reference: string,
+  //   pdf: Buffer,
+  // ) {
+  //   const supabase = createSupabaseAdminClient();
 
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .remove([path]);
+  //   const path = `${quoteId}/${reference}.pdf`;
 
-    if (error) {
-      throw new Error(
-        error.message || "Failed to remove quote PDF"
-      );
-    }
+  //   const { data, error } = await supabase.storage
+  //     .from(BUCKET)
+  //     .upload(path, pdf, {
+  //       contentType: "application/pdf",
+  //       cacheControl: "3600",
+  //       upsert: false,
+  //     });
+
+  //   if (error) {
+  //     throw new Error(
+  //       error.message || "Failed to upload quote PDF"
+  //     );
+  //   }
+
+  //   return {
+  //     path: data.path,
+  //     fullPath: data.fullPath,
+  //   };
+  // },
+
+  download(uploadPath: string) {
+    return pdfStorageService.download(BUCKET, uploadPath);
+  },
+
+  remove(uploadPath: string) {
+    return pdfStorageService.remove(BUCKET, uploadPath);
   },
 };

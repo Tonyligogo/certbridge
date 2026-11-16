@@ -28,7 +28,6 @@ import { useDeleteCourse, useUpdateCourseStatus } from "@/hooks/course/use-cours
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import dynamic from "next/dynamic";
-import { DeliveryMode } from "@/generated/prisma/enums";
 
 const MarkdownRenderer = dynamic(
   () => import("@/app/features/courses/MarkdownRenderer"),
@@ -48,7 +47,7 @@ export function CourseDetailsSheet({
   course,
   open,
   onOpenChange,
-  onEnroll,
+  // onEnroll,
 }: CourseDetailsSheetProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -59,17 +58,6 @@ export function CourseDetailsSheet({
   if (!course) return null;
 
   const isAdminRoute = pathname.startsWith("/admin/courses");
-const selectedPricing = course.pricing.find(
-    (pricing) => pricing.deliveryMode === DeliveryMode.ARRANGED_VENUE
-  );
-
-  const price = selectedPricing
-    ? Number(selectedPricing.amount)
-    : null;
-
-  const currency = selectedPricing?.currency ?? "KES";
-
-  const imgUrl = course.thumbnailUrl || "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg";
 
   const handleDelete = async () => {
     deleteCourse(course.id, {
@@ -108,12 +96,13 @@ const selectedPricing = course.pricing.find(
           <div className="order-2 md:order-1 md:col-span-4 border-r p-4 flex flex-col justify-between md:overflow-y-auto space-y-6">
             <SheetTitle className="sr-only">Course Details</SheetTitle>
           <div className="space-y-6">
-                <div className="aspect-video bg-slate-100 overflow-hidden rounded-lg">
-                    <img src={imgUrl} alt={course.title} className="h-full w-full object-cover" />
-                </div>
-                <div className="border-b border-primary/20 pb-6">
-                    <p className="font-display text-2xl font-bold">{`From ${currency} ${price}`}</p>
-                    <p className="text-sm text-muted-foreground">per participant</p>
+                <div className="border-b border-primary/20 pb-6 space-y-3">
+                    {course.pricing.map((price)=>(
+                      <div key={price.deliveryMode} className="">
+                        <p className="font-display text-2xl font-semibold">{`From ${price.currency} ${Number(price.amount) * course.durationDays}`}</p>
+                    <p className="text-sm">per participant · {price.deliveryMode}</p>
+                      </div>
+                    ))}
                 </div>
                     <ul className="space-y-3 text-sm text-text-secondary border-b border-primary/20 pb-6">
             <li className="flex items-center gap-3">
@@ -135,14 +124,16 @@ const selectedPricing = course.pricing.find(
               <div className="flex gap-2 items-center justify-between">
               <Button
                 onClick={() => router.push(`/admin/courses/edit/${course.slug}`)}
-                className="inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
+                size='lg'
+                className="inline-flex items-center justify-center gap-2 font-semibold hover:opacity-90 transition"
                 >
                 Edit This Course <ArrowRight className="h-4 w-4" />
                 </Button>
               <Button
               onClick={() => setArchiveOpen(true)}
               variant='outline'
-               className="py-6 font-semibold hover:opacity-90 transition"
+              size='lg'
+               className="font-semibold hover:opacity-90 transition"
                 >
                 {course.status === 'ARCHIVED' ? 'Unarchive' : 'Archive'} This Course <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -150,7 +141,6 @@ const selectedPricing = course.pricing.find(
                 :
               (<div>
                 <Button
-                onClick={() => onEnroll?.(course)}
                 className="w-full inline-flex items-center py-6 rounded-xl justify-center gap-2 font-semibold hover:opacity-90 transition"
                 >
                 Book This Course <ArrowRight className="h-4 w-4" />
@@ -209,9 +199,9 @@ const selectedPricing = course.pricing.find(
           <p className="mt-5 text-base max-w-2xl leading-relaxed">
             {course.shortDescription}
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap gap-2">
           {course.audiences.map((audience) => (
-              <span key={audience.id} className="px-5 mr-2 py-1.5 rounded-full bg-primary text-white text-xs font-semibold">
+              <span key={audience.id} className="px-5 py-1.5 rounded-full bg-primary text-white text-xs font-semibold">
                 {audience.name}
               </span>
             ))}

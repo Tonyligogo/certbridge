@@ -28,6 +28,7 @@ const SingleBooking = () => {
   const [financeOpen, setFinanceOpen] = useState(false);
   const [selectedTrainerAssignmentId, setSelectedTrainerAssignmentId] = useState<string | null>(null);
   const [selectedVenueAssignmentId, setSelectedVenueAssignmentId] = useState<string | null>(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
 
   const { data, isPending, isError } = useAdminBookingDetailsResponse(bookingId);
 
@@ -101,8 +102,9 @@ const selectedVenueAssignment =
               workflow={workflow}
               onCreateQuote={() => setActiveAction("CREATE_QUOTE")}
               onCreateInvoice={() => setActiveAction("CREATE_INVOICE")}
-              onViewQuote={() => {
-                setActiveAction("UPDATE_QUOTE_STATUS");
+              onViewQuote={(quoteId) => {
+                setSelectedQuoteId(quoteId);
+                setActiveAction("VIEW_QUOTE");
               }}
               onViewInvoice={(invoiceId) => {
                 // Open invoice
@@ -157,7 +159,11 @@ const selectedVenueAssignment =
       <BookingActionSheet
         action={activeAction}
         booking={booking}
-        onClose={() => setActiveAction(null)}
+        onClose={() => {
+          setActiveAction(null);
+          setSelectedQuoteId(null);
+        }}
+        selectedQuoteId={selectedQuoteId ?? null}
       />
 
       <BookingFinanceActionSheet

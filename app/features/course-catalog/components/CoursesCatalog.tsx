@@ -156,7 +156,7 @@ export function CourseCatalogue({
           if (!open) setSelectedCourse(null);
         }}
         onEnroll={(course) => {
-          console.log("Enrolling in course:", course.id);
+          
         }}
       />
     </div>

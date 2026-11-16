@@ -15,16 +15,20 @@ import { EnquiryFilters, EnquiryFilterValues } from "./enquiry-filter";
 import {
   useAddEnquiryNote,
   useAdminEnquiries,
+  useConvertEnquiry,
   useEnquiryDetails,
-  useUpdateEnquiry,
+  useUpdateEnquiryStatus,
 } from "../hooks/use-enquiry";
 import { EnquiriesTableSkeleton } from "./table-skeleton";
 import { EnquiriesTable } from "./table";
-import { EnquiryDetailsSheet } from "./enquiry-detail-sheet";
+// import { EnquiryDetailsSheet } from "./enquiry-detail-sheet";
 import {
   EnquiryActionDialogs,
   type EnquiryDialogType,
 } from "./enquiry-action-dialog";
+import type { ConvertEnquiryInput } from "../lib/validation/enquiry";
+import { ConvertEnquiryDialog } from "./convert-enquiry-dialog";
+import { EnquiryDetailsSheet } from "./EnquiryDetailsSheet";
 
 const STATUS_TABS: {
   value: EnquiryStatusFilter;
@@ -86,10 +90,11 @@ export function EnquiriesView() {
   const [searchInput, setSearchInput] = useState(filters.search);
   const [activeDialog, setActiveDialog] = useState<EnquiryDialogType>(null);
 
-  const updateEnquiry = useUpdateEnquiry();
+  const updateEnquiryStatus = useUpdateEnquiryStatus();
   const addNote = useAddEnquiryNote();
+  const convertEnquiry = useConvertEnquiry();
 
-  const isSubmitting = updateEnquiry.isPending || addNote.isPending;
+  const isSubmitting = updateEnquiryStatus.isPending || addNote.isPending;
 
   function updateParams(
     patch: Record<string, string | number | undefined>,
@@ -139,12 +144,11 @@ export function EnquiriesView() {
     dateTo: filters.dateTo || undefined,
   };
 
-  const { data, isPending, isError, isFetching, refetch } =
-    useAdminEnquiries(queryParams);
+  const { data, isPending, isError, isFetching, refetch } = useAdminEnquiries(queryParams);
 
-  const enquiries = data?.data?.enquiries ?? [];
-  const counts = data?.data?.counts;
-  const pagination = data?.data?.pagination;
+  const enquiries = data?.enquiries ?? [];
+  const counts = data?.counts;
+  const pagination = data?.pagination;
 
   const selectedEnquiryId = searchParams.get("enquiryId");
 
@@ -172,7 +176,7 @@ export function EnquiriesView() {
     if (!selectedEnquiryId) return;
 
     try {
-      await updateEnquiry.mutateAsync({
+      await updateEnquiryStatus.mutateAsync({
         id: selectedEnquiryId,
         input: {
           action: "CHANGE_STATUS",
@@ -205,7 +209,7 @@ export function EnquiriesView() {
     if (!selectedEnquiryId) return;
 
     try {
-      await updateEnquiry.mutateAsync({
+      await updateEnquiryStatus.mutateAsync({
         id: selectedEnquiryId,
         input: {
           action: "CLOSE",
@@ -223,7 +227,7 @@ export function EnquiriesView() {
     if (!selectedEnquiryId) return;
 
     try {
-      await updateEnquiry.mutateAsync({
+      await updateEnquiryStatus.mutateAsync({
         id: selectedEnquiryId,
         input: {
           action: "REOPEN",
@@ -231,6 +235,26 @@ export function EnquiriesView() {
       });
     } catch {
       // Mutation hook handles error toast.
+    }
+  }
+
+  async function handleConvertEnquiry(input: ConvertEnquiryInput) {
+    if (!selectedEnquiryId) return;
+
+    try {
+      const response = await convertEnquiry.mutateAsync({
+        id: selectedEnquiryId,
+        input,
+      });
+
+      if (!response?.data) return;
+
+      setActiveDialog(null);
+
+      router.push(`/admin/bookings/${response.data.booking.id}`);
+    } catch {
+      // Error feedback is handled by the mutation hook.
+      // Keep the dialog open so the admin can retry.
     }
   }
 
@@ -355,6 +379,7 @@ export function EnquiriesView() {
         onAddNote={() => setActiveDialog("NOTE")}
         onCloseEnquiry={() => setActiveDialog("CLOSE")}
         onReopenEnquiry={() => void handleReopenEnquiry()}
+        onConvert={() => setActiveDialog("CONVERT")}
       />
 
       {enquiryDetails && activeDialog && (
@@ -367,6 +392,17 @@ export function EnquiriesView() {
           onChangeStatus={handleChangeStatus}
           onAddNote={handleAddNote}
           onCloseEnquiry={handleCloseEnquiry}
+        />
+      )}
+      {enquiryDetails && activeDialog && activeDialog === "CONVERT" && (
+        <ConvertEnquiryDialog
+          open={activeDialog === "CONVERT"}
+          onOpenChange={(open) => {
+            if (!open) setActiveDialog(null);
+          }}
+          enquiry={enquiryDetails}
+          isSubmitting={convertEnquiry.isPending}
+          onConfirm={handleConvertEnquiry}
         />
       )}
     </div>

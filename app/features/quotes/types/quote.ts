@@ -1,17 +1,4 @@
-
-export type QuoteStatus =
-  | "DRAFT"
-  | "SENT"
-  | "ACCEPTED"
-  | "DECLINED"
-  | "EXPIRED"
-  | "CANCELLED";
-
-export type TaxType = 
-|"STANDARD"
-|"ZERO_RATED"
-|"EXEMPT"
-|"NONE"
+import { QuoteStatus, TaxType } from "@/generated/prisma/enums";
 
 export interface QuoteItem {
   id: string;
@@ -61,13 +48,6 @@ export interface CreateQuoteInput {
   responseNotes?: string | null;
   taxType:TaxType;
   items: CreateQuoteItemInput[];
-}
-
-export interface UpdateQuoteInput {
-  expiresAt?: Date | null;
-  responseNotes?: string | null;
-  taxType:TaxType;
-  items?: CreateQuoteItemInput[];
 }
 
 export interface UpdateQuoteStatusInput {

@@ -99,7 +99,7 @@ model CourseCategory {
   name        String
   slug        String   @unique
   description String?
-  featured   Boolean @default(false)
+  featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
   isActive    Boolean  @default(true)
   updatedAt   DateTime @updatedAt
@@ -110,7 +110,7 @@ model CourseAudience {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  featured   Boolean @default(false)
+  featured  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   courses   Course[] @relation("CourseToCourseAudience")
@@ -138,8 +138,8 @@ model Course {
   modules             CourseModule[]
   pricing             CoursePricing[]
   audiences           CourseAudience[] @relation("CourseToCourseAudience")
-  trainers TrainerCourse[]
-  enquiries Enquiry[]
+  trainers            TrainerCourse[]
+  enquiries           Enquiry[]
 }
 
 model CoursePricing {
@@ -151,7 +151,7 @@ model CoursePricing {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  course Course @relation( fields: [courseId], references: [id],onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, deliveryMode])
   @@index([courseId])
@@ -161,7 +161,7 @@ model CourseModule {
   id                String   @id @default(cuid())
   courseId          String
   title             String
-  topics       String[]
+  topics            String[]
   createdAt         DateTime @default(now())
   estimatedDuration Int?
   updatedAt         DateTime @updatedAt
@@ -197,7 +197,7 @@ model Booking {
   contactPhone        String
   participantCount    Int
   specialRequirements String?
-  amount              Decimal @db.Decimal(12, 2)
+  amount              Decimal              @db.Decimal(12, 2)
   currency            String               @default("KES")
   status              BookingStatus        @default(OPEN)
   adminNotes          String?
@@ -211,12 +211,12 @@ model Booking {
   course              Course               @relation(fields: [courseId], references: [id])
   profile             Profile?             @relation(fields: [profileId], references: [id])
   participants        BookingParticipant[]
-  trainers BookingTrainer[]
-  venues    BookingVenue[]
-  quote Quote?
-  invoices Invoice[]
-  activities BookingActivity[]
-  enquiry Enquiry?
+  trainers            BookingTrainer[]
+  venues              BookingVenue[]
+  quotes               Quote[]
+  invoices            Invoice[]
+  activities          BookingActivity[]
+  enquiry             Enquiry?
 
   @@index([profileId])
   @@index([courseId])
@@ -225,20 +225,20 @@ model Booking {
 }
 
 model BookingParticipant {
-  id                String       @id @default(cuid())
-  bookingId         String
-  participantId     String?
-  attended          Boolean @default(false)
+  id                 String       @id @default(cuid())
+  bookingId          String
+  participantId      String?
+  attended           Boolean      @default(false)
   attendanceMarkedAt DateTime?
-  attendanceMarkedBy String?     
-  certificateIssued Boolean      @default(false)
-  feedbackSubmitted Boolean      @default(false)
-  email             String
-  firstName         String
-  lastName          String
-  phone             String
-  booking           Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  participant       Participant? @relation(fields: [participantId], references: [id])
+  attendanceMarkedBy String?
+  certificateIssued  Boolean      @default(false)
+  feedbackSubmitted  Boolean      @default(false)
+  email              String
+  firstName          String
+  lastName           String
+  phone              String
+  booking            Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  participant        Participant? @relation(fields: [participantId], references: [id])
 
   @@index([bookingId])
 }
@@ -266,9 +266,9 @@ model Trainer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  courses       TrainerCourse[]
+  courses        TrainerCourse[]
   certifications TrainerCertification[]
-  bookings      BookingTrainer[]
+  bookings       BookingTrainer[]
 
   @@index([status])
   @@index([primaryCity])
@@ -321,17 +321,17 @@ model BookingTrainer {
   id String @id @default(cuid())
 
   bookingId String
-  booking   Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   trainerId String
-  trainer   Trainer @relation(fields: [trainerId],references: [id])
+  trainer   Trainer @relation(fields: [trainerId], references: [id])
 
   status ResourceSourcingStatus @default(CONSIDERING)
 
   role TrainerAssignmentRole @default(LEAD)
 
   agreedAmount Decimal? @db.Decimal(10, 2)
-  currency     String  @default("KES")
+  currency     String   @default("KES")
 
   notes String?
 
@@ -349,11 +349,11 @@ model BookingTrainer {
 model Venue {
   id String @id @default(cuid())
 
-  name String
+  name        String
   description String?
 
   country String
-  city String
+  city    String
   address String?
 
   phone String?
@@ -381,15 +381,15 @@ model BookingVenue {
   id String @id @default(cuid())
 
   bookingId String
-  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   venueId String
-  venue Venue @relation(fields: [venueId],references: [id])
+  venue   Venue  @relation(fields: [venueId], references: [id])
 
   status ResourceSourcingStatus @default(CONSIDERING)
 
   agreedAmount Decimal? @db.Decimal(10, 2)
-  currency String @default("KES")
+  currency     String   @default("KES")
 
   notes String?
 
@@ -408,10 +408,10 @@ model BookingActivity {
   id String @id @default(cuid())
 
   bookingId String
-  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  type BookingActivityType
-  metadata    Json?
+  type     BookingActivityType
+  metadata Json?
 
   description String
 
@@ -425,24 +425,27 @@ model BookingActivity {
 model Quote {
   id String @id @default(cuid())
 
-  bookingId String @unique
-  booking Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: Restrict)
 
   reference String @unique
 
-  status QuoteStatus @default(DRAFT)
+  status   QuoteStatus @default(DRAFT)
   currency String
 
-  taxType TaxType @default(STANDARD)
-  taxRate Decimal @default(16) @db.Decimal(5, 2)
+  taxType     TaxType @default(STANDARD)
+  taxRate     Decimal @default(16) @db.Decimal(5, 2)
   subtotal    Decimal @default(0) @db.Decimal(12, 2)
   taxAmount   Decimal @default(0) @db.Decimal(12, 2)
   totalAmount Decimal @default(0) @db.Decimal(12, 2)
 
-  issuedAt DateTime?
+  issuedAt  DateTime?
   expiresAt DateTime?
 
-  issueToken String? @unique
+  issueToken  String?            @unique
   pdfPath     String?
   sentAt      DateTime?
   sentTo      String?
@@ -456,10 +459,11 @@ model Quote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items QuoteItem[]
+  items    QuoteItem[]
   invoices Invoice[]
 
   @@index([bookingId])
+  @@index([enquiryId])
   @@index([status])
 }
 
@@ -467,12 +471,12 @@ model QuoteItem {
   id String @id @default(cuid())
 
   quoteId String
-  quote   Quote @relation(fields: [quoteId],references: [id],onDelete: Cascade)
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
-  name String
-  quantity Decimal @db.Decimal(10, 2)
+  name      String
+  quantity  Decimal @db.Decimal(10, 2)
   unitPrice Decimal @db.Decimal(10, 2)
-  amount Decimal @db.Decimal(10, 2)
+  amount    Decimal @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
 
@@ -483,10 +487,10 @@ model Invoice {
   id String @id @default(cuid())
 
   bookingId String
-  booking   Booking @relation(fields: [bookingId],references: [id],onDelete: Cascade)
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   quoteId String
-  quote   Quote @relation(fields: [quoteId],references: [id])
+  quote   Quote  @relation(fields: [quoteId], references: [id])
 
   reference String @unique
 
@@ -506,7 +510,7 @@ model Invoice {
   issuedAt DateTime?
   dueAt    DateTime?
 
-  issueToken String? @unique
+  issueToken  String?            @unique
   pdfPath     String?
   sentAt      DateTime?
   sentTo      String?
@@ -530,7 +534,7 @@ model InvoiceItem {
   id String @id @default(cuid())
 
   invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId],references: [id],onDelete: Cascade)
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   name String
 
@@ -550,7 +554,7 @@ model Payment {
   id String @id @default(cuid())
 
   invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId],references: [id])
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
 
   reference String @unique
 
@@ -576,15 +580,15 @@ model Payment {
 }
 
 model Enquiry {
-  id               String        @id @default(cuid())
-  reference        String        @unique
-  type             EnquiryType
-  status           EnquiryStatus @default(NEW)
+  id        String        @id @default(cuid())
+  reference String        @unique
+  type      EnquiryType
+  status    EnquiryStatus @default(NEW)
 
-  fullName         String
-  email            String
-  phone            String?
-  organization     String?
+  fullName     String
+  email        String
+  phone        String?
+  organization String?
 
   courseId         String?
   course           Course?       @relation(fields: [courseId], references: [id], onDelete: SetNull)
@@ -593,19 +597,20 @@ model Enquiry {
   deliveryMode     DeliveryMode?
   preferredDate    DateTime?
 
-  message          String?       @db.Text
-  adminNotes       String?       @db.Text
+  message    String? @db.Text
+  adminNotes String? @db.Text
 
-  contactedAt      DateTime?
-  closedAt         DateTime?
+  contactedAt DateTime?
+  closedAt    DateTime?
 
-  bookingId        String?       @unique
-  booking          Booking?      @relation(fields: [bookingId], references: [id])
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
 
-  activities       EnquiryActivity[]
+  activities EnquiryActivity[]
+  quotes     Quote[]
 
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([type, createdAt])
@@ -614,9 +619,9 @@ model Enquiry {
 }
 
 model EnquiryActivity {
-  id          String              @id @default(cuid())
-  enquiryId   String
-  enquiry     Enquiry             @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  enquiryId String
+  enquiry   Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
 
   type        EnquiryActivityType
   description String
@@ -658,25 +663,30 @@ enum BookingStatus {
   COMPLETED //Training has taken place and booking is finished
   CANCELLED //Booking will no longer proceed
 }
+
 enum TrainerStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
 }
+
 enum TrainerCertificationStatus {
   PENDING
   VALID
   EXPIRED
   REJECTED
 }
+
 enum TrainerAssignmentRole {
   LEAD
   ASSISTANT
 }
+
 enum VenueStatus {
   ACTIVE
   INACTIVE
 }
+
 enum ResourceSourcingStatus {
   CONSIDERING
   CONTACTED
@@ -686,6 +696,7 @@ enum ResourceSourcingStatus {
   REPLACED
   CANCELLED
 }
+
 enum BookingActivityType {
   CREATED
   STATUS_CHANGED
@@ -707,6 +718,8 @@ enum BookingActivityType {
   QUOTE_SENT
   QUOTE_ACCEPTED
   QUOTE_DECLINED
+  QUOTE_ISSUED
+  QUOTE_VOIDED
 
   SCHEDULED
   RESCHEDULED
@@ -726,13 +739,16 @@ enum BookingActivityType {
   PAYMENT_UPDATED
   PAYMENT_REFUNDED
 }
+
 enum QuoteStatus {
   DRAFT
   SENT
   ACCEPTED
   DECLINED
+  ISSUED
   EXPIRED
   CANCELLED
+  VOIDED
 }
 
 enum InvoiceStatus {
@@ -741,12 +757,14 @@ enum InvoiceStatus {
   PAID
   VOID
 }
+
 enum InvoiceEmailStatus {
   NOT_SENT
   PENDING
   SENT
   FAILED
 }
+
 enum PaymentMethod {
   BANK_TRANSFER
   MOBILE_MONEY
@@ -755,6 +773,7 @@ enum PaymentMethod {
   CHEQUE
   OTHER
 }
+
 enum PaymentStatus {
   PENDING
   COMPLETED
@@ -787,6 +806,14 @@ enum EnquiryActivityType {
   CREATED
   STATUS_CHANGED
   NOTE_ADDED
+  DETAILS_UPDATED
   CUSTOMER_CONTACTED
   CONVERTED_TO_BOOKING
+  QUOTE_CREATED
+  QUOTE_ACCEPTED
+  QUOTE_DECLINED
+  QUOTE_ISSUED
+  QUOTE_UPDATED
+  QUOTE_SENT
+  QUOTE_VOIDED
 }
