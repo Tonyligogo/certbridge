@@ -66,6 +66,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
   }
 }
 
+
 export async function POST(
   request: NextRequest,
   { params }: RouteContext
@@ -75,7 +76,6 @@ export async function POST(
     const { bookingId } = await params;
 
     const body = await request.json();
-
     const parsed = createInvoiceSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -91,7 +91,6 @@ export async function POST(
 
     const { quoteId, dueAt, notes, status } = parsed.data;
 
-    // Only draft or issued can be selected during creation.
     if (status !== "DRAFT" && status !== "ISSUED") {
       return NextResponse.json(
         {
@@ -113,14 +112,12 @@ export async function POST(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: {
-        id: bookingId,
-      },
+      where: { id: bookingId },
       select: {
         id: true,
         status: true,
         reference: true,
-        quote: {
+        quotes: {
           select: {
             id: true,
             status: true,
@@ -157,27 +154,31 @@ export async function POST(
       );
     }
 
-    const quote = booking.quote;
+    // Select the quotation being invoiced.
+    const quote = quoteId
+      ? booking.quotes.find((q) => q.id === quoteId)
+      : booking.quotes.find((q) => q.status === "ACCEPTED");
 
-    if (!quote || quote.status !== "ACCEPTED") {
+    if (!quote) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "An invoice can only be created after the quotation has been accepted.",
+          message: quoteId
+            ? "The selected quotation does not belong to this booking."
+            : "No accepted quotation was found for this booking.",
         },
-        { status: 409 }
+        { status: quoteId ? 400 : 409 }
       );
     }
 
-    if (quoteId && quoteId !== quote.id) {
+    if (quote.status !== "ACCEPTED") {
       return NextResponse.json(
         {
           success: false,
           message:
-            "The selected quotation does not belong to this booking.",
+            "An invoice can only be created from an accepted quotation.",
         },
-        { status: 400 }
+        { status: 409 }
       );
     }
 
@@ -190,7 +191,31 @@ export async function POST(
         { status: 400 }
       );
     }
-    
+
+    // Prevent creating another invoice for the same quotation.
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: {
+        bookingId,
+        quoteId: quote.id,
+      },
+      select: {
+        id: true,
+        reference: true,
+      },
+    });
+
+    if (existingInvoice) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            `Invoice ${existingInvoice.reference} already exists for this quotation.`,
+          invoiceId: existingInvoice.id,
+        },
+        { status: 409 }
+      );
+    }
+
     const created = await prisma.$transaction(async (tx) => {
       const reference = `INV-${booking.reference}`;
 
@@ -212,7 +237,6 @@ export async function POST(
 
           issuedAt: null,
           pdfPath: null,
-
           emailStatus: "NOT_SENT",
 
           dueAt: dueAt ? new Date(dueAt) : null,
@@ -239,6 +263,7 @@ export async function POST(
           metadata: {
             invoiceId: invoice.id,
             invoiceReference: invoice.reference,
+            quoteId: quote.id,
             totalAmount: invoice.totalAmount.toString(),
             currency: invoice.currency,
           },
@@ -248,7 +273,6 @@ export async function POST(
       return invoice;
     });
 
-    // Admin chose to save as draft.
     if (status === "DRAFT") {
       return NextResponse.json(
         {
@@ -260,8 +284,6 @@ export async function POST(
       );
     }
 
-    // Admin chose to issue immediately.
-    // Use the same service as the dedicated issue route.
     try {
       const issued = await issueInvoice({
         bookingId,
@@ -283,8 +305,6 @@ export async function POST(
         error
       );
 
-      // The invoice still exists as a draft.
-      // Return its ID so the frontend can recover.
       return NextResponse.json(
         {
           success: false,
@@ -305,11 +325,13 @@ export async function POST(
         message: "Failed to create invoice.",
       },
       {
-        status: error instanceof InvoiceIssueError
-          ? error.statusCode
-          : 500,
+        status:
+          error instanceof InvoiceIssueError
+            ? error.statusCode
+            : 500,
       }
     );
   }
 }
+
 
