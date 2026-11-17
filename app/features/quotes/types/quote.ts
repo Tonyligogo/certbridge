@@ -10,7 +10,7 @@ export interface QuoteItem {
 
 export interface Quote {
   id: string;
-  bookingId: string;
+  bookingId: string | null;
   reference: string;
   status: QuoteStatus;
 

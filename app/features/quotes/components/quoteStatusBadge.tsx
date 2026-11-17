@@ -1,8 +1,8 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { QuoteStatus } from "@/generated/prisma/enums";
 import { Clock, Send, CheckCircle2, XCircle } from "lucide-react";
-import type { QuoteStatus } from "../types/quote";
 
 export function QuoteStatusBadge({ status }: { status?: QuoteStatus }) {
   switch (status) {

@@ -42,6 +42,7 @@ interface QuoteLineItem {
 
 interface PrepareQuoteProps {
   booking: AdminBookingDetailsResponse;
+  quoteId?: string;
   onSaved?: (quote?: Quote) => void;
 }
 
@@ -64,40 +65,39 @@ function calculateAmount(quantity: string, unitPrice: string) {
   return qty * price;
 }
 
-export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
-  /*
-   * Populate the form from an existing draft,
-   * otherwise create a sensible initial item.
-   */
-  const [expiresAt, setExpiresAt] = useState(() =>
-    booking.quote?.expiresAt
-      ? booking.quote.expiresAt.toString().slice(0, 10)
-      : "",
+export function PrepareQuote({ booking, onSaved, quoteId }: PrepareQuoteProps) {
+  const quote = quoteId
+    ? booking.quotes.find((q) => q.id === quoteId)
+    : undefined;
+
+  const [expiresAt, setExpiresAt] = useState(
+    quote?.expiresAt ? String(quote.expiresAt).slice(0, 10) : "",
   );
+
   const [taxType, setTaxType] = useState<TaxType>(
-    booking.quote?.taxType ?? TaxType.STANDARD,
+    quote?.taxType ?? TaxType.STANDARD,
   );
 
   const [responseNotes, setResponseNotes] = useState(
-    booking.quote?.responseNotes ?? "",
+    quote?.responseNotes ?? "",
   );
-  const { mutate: createQuote, isPending: isCreatingQuote } = useCreateQuote();
-  const {mutateAsync: sendQuoteEmail,} = useSendQuoteEmail();
-  const { mutate: updateQuote, isPending: isUpdatingQuote } = useUpdateQuote();
-  const isSavingQuote = isCreatingQuote || isUpdatingQuote;
 
   const [items, setItems] = useState<QuoteLineItem[]>(() => {
-    if (booking.quote && booking.quote.items.length > 0) {
-      return booking.quote.items.map((item) => ({
+    if (quote?.items.length) {
+      return quote.items.map((item) => ({
         id: item.id,
         name: item.name,
-        quantity: item.quantity.toString(),
-        unitPrice: item.unitPrice.toString(),
+        quantity: String(item.quantity),
+        unitPrice: String(item.unitPrice),
       }));
     }
 
-    return [createItem(booking.course.title, "1", booking.amount)];
+    return [createItem(booking.course.title, "1", String(booking.amount))];
   });
+  const { mutate: createQuote, isPending: isCreatingQuote } = useCreateQuote();
+  const { mutateAsync: sendQuoteEmail } = useSendQuoteEmail();
+  const { mutate: updateQuote, isPending: isUpdatingQuote } = useUpdateQuote();
+  const isSavingQuote = isCreatingQuote || isUpdatingQuote;
 
   const currency = booking.currency || "KES";
 
@@ -158,11 +158,11 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
   }
 
   function handleSubmit(status: "DRAFT" | "SENT") {
-    if (!canSave) return;
-    if(status === "SENT"){
-      if(!expiresAt || !taxType){
-        return alert('A quote due date is required before sending a quote.');
-      }
+    if (!canSave || isSavingQuote) return;
+
+    if (status === "SENT" && !expiresAt) {
+      alert("A quotation expiry date is required before sending.");
+      return;
     }
     const payload = {
       status,
@@ -180,7 +180,8 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
         amount: calculateAmount(item.quantity, item.unitPrice).toFixed(2),
       })),
     };
-    if (booking.quote) {
+
+    if (quote) {
       updateQuote(
         {
           bookingId: booking.id,
@@ -195,6 +196,7 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
 
       return;
     }
+
     createQuote(
       {
         bookingId: booking.id,
@@ -206,18 +208,16 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
           const quote = response.data;
           if (!quote) return;
 
-          if (quote.status === "DRAFT") {
+          if (status === "SENT") {
             try {
               await sendQuoteEmail({
                 bookingId: booking.id,
                 quoteId: quote.id,
               });
-
             } catch (error) {
-              console.error(error)
+              console.error(error);
             }
           }
-
         },
       },
     );
@@ -226,7 +226,7 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
     <div className="flex min-h-full flex-col">
       <div className="flex-1 space-y-6 p-6">
         {/* Booking context */}
-        {booking.quote && <QuoteStatusBadge status={booking.quote.status} />}
+        {quote && <QuoteStatusBadge status={quote.status} />}
         <div className="rounded-lg border bg-muted/30 p-4">
           <div className="mb-3 flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -514,11 +514,11 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
             {items.length} {items.length === 1 ? "line item" : "line items"}
           </p>
         </div>
-      {/* Sticky footer */}
-      <div className=" border-t pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex justify-end gap-3">
-              {(!booking.quote || booking.quote.status === "DRAFT") && (
+        {/* Sticky footer */}
+        <div className="border-t pt-6">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {(!quote || quote.status === "DRAFT") && (
+              <>
                 <Button
                   type="button"
                   variant="outline"
@@ -528,34 +528,34 @@ export function PrepareQuote({ booking, onSaved }: PrepareQuoteProps) {
                 >
                   {isSavingQuote ? (
                     <Loader2 className="size-4 animate-spin" />
-                  ) : booking.quote ? (
+                  ) : quote ? (
                     "Update Draft"
                   ) : (
                     "Save as Draft"
                   )}
                 </Button>
-              )}
 
-              <Button
-                type="button"
-                onClick={() => handleSubmit("SENT")}
-                disabled={!canSave || isSavingQuote}
-                className="min-w-32"
-              >
-                {isSavingQuote ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : !booking.quote ? (
-                  "Send Quote"
-                ) : booking.quote.status === "DRAFT" && (
-                  "Update & Send"
-                )}
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  onClick={() => handleSubmit("SENT")}
+                  disabled={!canSave || isSavingQuote}
+                  className="min-w-32"
+                >
+                  {isSavingQuote ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : quote ? (
+                    "Update & Send"
+                  ) : (
+                    "Send Quote"
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

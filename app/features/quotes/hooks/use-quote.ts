@@ -10,11 +10,11 @@ import { quoteService } from "../services/quote-service";
 
 import type {
   CreateQuoteInput,
-  UpdateQuoteInput,
   UpdateQuoteStatusInput,
 } from "../types/quote";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { SendInvoiceEmailInput } from "../../invoices/schema/schemas";
+import { UpdateQuoteInput } from "../lib/quote-schema";
 
 /**
  * Get the quote for a booking.

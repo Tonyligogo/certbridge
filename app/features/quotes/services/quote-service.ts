@@ -4,10 +4,10 @@ import type {
   CreateQuoteInput,
   Quote,
   QuoteStatusResponse,
-  UpdateQuoteInput,
   UpdateQuoteStatusInput,
 } from "../types/quote";
 import { SendInvoiceEmailInput } from "../../invoices/schema/schemas";
+import { UpdateQuoteInput } from "../lib/quote-schema";
 
 export const quoteService = {
   /**

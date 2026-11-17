@@ -153,7 +153,7 @@ type FinanceView =
 export function BookingFinanceWorkspace({ booking, onClose, initialMode = "OVERVIEW" }: BookingFinanceWorkspaceProps) {
 
   const { id: bookingId, currency, invoices } = booking;
-  const quote = booking.quote
+  const quotes = booking.quotes
 
   const [view, setView] =
   useState<FinanceView>(() =>
@@ -190,10 +190,18 @@ export function BookingFinanceWorkspace({ booking, onClose, initialMode = "OVERV
     );
   }
 
-  if(view.type === "CREATE_INVOICE" && quote){
+  if(view.type === "CREATE_INVOICE" && quotes){
+    const acceptedQuote = quotes.find((quote)=>quote.status === 'ACCEPTED')
+    if(!acceptedQuote){
+      return (
+        <div>
+          <p>A quotation is needed to create an invoice! Please create a quotation first.</p>
+        </div>
+      )
+    }
     return (
       <div className="p-6">
-        <BookingInvoice booking={booking} quote={quote} onRevise={()=>setView({type:'OVERVIEW'})} onClose={onClose} />
+        <BookingInvoice booking={booking} quote={acceptedQuote} onRevise={()=>setView({type:'OVERVIEW'})} onClose={onClose} />
       </div>
     )
   }

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
@@ -28,7 +27,7 @@ type Money = string | number | null | undefined;
 
 interface Props {
   booking: AdminBookingDetailsResponse;
-  onClose: ()=>void;
+  onClose: () => void;
 }
 
 const toNumber = (value: Money) => {
@@ -55,13 +54,7 @@ function formatRange(start: string | null, end: string | null) {
   return `${formatDate(start)} – ${formatDate(end)}`;
 }
 
-function Detail({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function Detail({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -97,31 +90,27 @@ function MoneyRow({
   );
 }
 
-export function CompleteBookingSheetContent({
-  booking,
-  onClose
-}: Props) {
-    const [currentTime] = useState(() => Date.now());
+export function CompleteBookingSheetContent({ booking, onClose }: Props) {
+  const [currentTime] = useState(() => Date.now());
 
-    const completeBooking = useCompleteBooking();
-
+  const completeBooking = useCompleteBooking();
 
   const attendance = useMemo(() => {
     const total = booking.participants.length;
     const present = booking.participants.filter(
-      (p) => p.attendanceMarkedAt && p.attended
+      (p) => p.attendanceMarkedAt && p.attended,
     ).length;
     const absent = booking.participants.filter(
-      (p) => p.attendanceMarkedAt && !p.attended
+      (p) => p.attendanceMarkedAt && !p.attended,
     ).length;
     const unmarked = booking.participants.filter(
-      (p) => !p.attendanceMarkedAt
+      (p) => !p.attendanceMarkedAt,
     ).length;
     const certificatesPending = booking.participants.filter(
-      (p) => p.attendanceMarkedAt && p.attended && !p.certificateIssued
+      (p) => p.attendanceMarkedAt && p.attended && !p.certificateIssued,
     ).length;
     const feedbackPending = booking.participants.filter(
-      (p) => p.attendanceMarkedAt && p.attended && !p.feedbackSubmitted
+      (p) => p.attendanceMarkedAt && p.attended && !p.feedbackSubmitted,
     ).length;
 
     return {
@@ -136,71 +125,83 @@ export function CompleteBookingSheetContent({
   }, [booking.participants]);
 
   const finances = useMemo(() => {
-    const confirmedTrainers = booking.trainers.filter(
-      (item) => item.status === "CONFIRMED"
-    );
-    const confirmedVenues = booking.venues.filter(
-      (item) => item.status === "CONFIRMED"
-    );
+    // 1. Confirmed resource costs
+    const trainerCost = booking.trainers
+      .filter((item) => item.status === "CONFIRMED")
+      .reduce((sum, item) => sum + toNumber(item.agreedAmount), 0);
 
-    const trainerCost = confirmedTrainers.reduce(
-      (sum, item) => sum + toNumber(item.agreedAmount),
-      0
-    );
-    const venueCost = confirmedVenues.reduce(
-      (sum, item) => sum + toNumber(item.agreedAmount),
-      0
-    );
-
-    const revenue = booking.quote
-      ? toNumber(booking.quote.subtotal)
-      : null;
+    const venueCost = booking.venues
+      .filter((item) => item.status === "CONFIRMED")
+      .reduce((sum, item) => sum + toNumber(item.agreedAmount), 0);
 
     const totalCosts = trainerCost + venueCost;
+
+    // 2. Find the accepted quotation
+    const acceptedQuote =
+      booking.quotes.find((quote) => quote.status === "ACCEPTED") ?? null;
+
+    // 3. Find the issued invoice, if available
+    const issuedInvoice =
+      booking.invoices.find((invoice) => invoice.status === "ISSUED") ?? null;
+
+    // 4. Determine the financial source
+    const financialSource = issuedInvoice ?? acceptedQuote;
+
+    const revenue = financialSource ? toNumber(financialSource.subtotal) : null;
+
+    const tax = financialSource ? toNumber(financialSource.taxAmount) : null;
+
+    const total = financialSource
+      ? toNumber(financialSource.totalAmount)
+      : null;
+
+    // 5. Calculate estimated gross result
     const grossResult = revenue === null ? null : revenue - totalCosts;
 
+    // 6. Calculate payments received
     const paid = booking.invoices.reduce(
       (sum, invoice) =>
         sum +
         invoice.payments.reduce(
-          (paymentSum, payment) =>
-            paymentSum + toNumber(payment.amount),
-          0
+          (paymentSum, payment) => paymentSum + toNumber(payment.amount),
+          0,
         ),
-      0
+      0,
     );
 
     return {
       revenue,
-      tax: booking.quote ? toNumber(booking.quote.taxAmount) : null,
-      total: booking.quote ? toNumber(booking.quote.totalAmount) : null,
+      tax,
+      total,
       trainerCost,
       venueCost,
       totalCosts,
       grossResult,
       paid,
+      source: issuedInvoice
+        ? ("INVOICE" as const)
+        : acceptedQuote
+          ? ("QUOTATION" as const)
+          : null,
     };
   }, [booking]);
-  
 
   const endDatePassed = useMemo(() => {
-  if (!booking.scheduledEndDate) return false;
+    if (!booking.scheduledEndDate) return false;
 
-  const endDate = new Date(booking.scheduledEndDate);
+    const endDate = new Date(booking.scheduledEndDate);
 
-  if (Number.isNaN(endDate.getTime())) return false;
+    if (Number.isNaN(endDate.getTime())) return false;
 
-  // Treat the scheduled end date as an inclusive calendar date.
-  const endOfTraining = new Date(endDate);
-  endOfTraining.setUTCHours(23, 59, 59, 999);
+    // Treat the scheduled end date as an inclusive calendar date.
+    const endOfTraining = new Date(endDate);
+    endOfTraining.setUTCHours(23, 59, 59, 999);
 
-  return currentTime > endOfTraining.getTime();
-}, [booking.scheduledEndDate, currentTime]);
+    return currentTime > endOfTraining.getTime();
+  }, [booking.scheduledEndDate, currentTime]);
 
   const canComplete =
-    booking.status === "CONFIRMED" &&
-    attendance.complete &&
-    endDatePassed;
+    booking.status === "CONFIRMED" && attendance.complete && endDatePassed;
 
   const money = (amount: number) =>
     `${booking.currency} ${new Intl.NumberFormat("en-KE", {
@@ -214,32 +215,28 @@ export function CompleteBookingSheetContent({
       ARRANGED_VENUE: "Arranged venue",
     }[booking.deliveryMode] ?? booking.deliveryMode;
 
-const handleComplete = async () => {
-  if (!canComplete || completeBooking.isPending) return;
+  const handleComplete = async () => {
+    if (!canComplete || completeBooking.isPending) return;
 
-  try {
-    const response = await completeBooking.mutateAsync(booking.id);
+    try {
+      const response = await completeBooking.mutateAsync(booking.id);
 
-    toast.success(
-      response.message ?? "Booking completed successfully."
-    );
+      toast.success(response.message ?? "Booking completed successfully.");
 
-    onClose();
-  } catch (error) {
-    const apiError = error as {
-      message?: string;
-      errors?: Record<string, string[]>;
-    };
+      onClose();
+    } catch (error) {
+      const apiError = error as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
 
-    const validationMessage = apiError.errors?.completion?.[0];
+      const validationMessage = apiError.errors?.completion?.[0];
 
-    toast.error(
-      validationMessage ??
-        apiError.message ??
-        "Failed to complete booking."
-    );
-  }
-};
+      toast.error(
+        validationMessage ?? apiError.message ?? "Failed to complete booking.",
+      );
+    }
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
@@ -269,7 +266,7 @@ const handleComplete = async () => {
               label="Training dates"
               value={formatRange(
                 booking.scheduledStartDate,
-                booking.scheduledEndDate
+                booking.scheduledEndDate,
               )}
             />
             <Detail label="Delivery" value={deliveryMode} />
@@ -345,23 +342,23 @@ const handleComplete = async () => {
           )}
 
           <Button
-  className="w-full"
-  size="lg"
-  disabled={!canComplete || completeBooking.isPending}
-  onClick={handleComplete}
->
-  {completeBooking.isPending ? (
-    <>
-      <Loader2 className="mr-2 size-4 animate-spin" />
-      Completing booking...
-    </>
-  ) : (
-    <>
-      <CheckCircle2 className="mr-2 size-4" />
-      Mark as complete
-    </>
-  )}
-</Button>
+            className="w-full"
+            size="lg"
+            disabled={!canComplete || completeBooking.isPending}
+            onClick={handleComplete}
+          >
+            {completeBooking.isPending ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Completing booking...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 size-4" />
+                Mark as complete
+              </>
+            )}
+          </Button>
 
           <p className="text-center text-xs text-muted-foreground">
             Certificates and feedback remain accessible afterward.
@@ -398,7 +395,7 @@ const handleComplete = async () => {
               <CalendarDays className="size-4 text-muted-foreground" />
               {formatRange(
                 booking.scheduledStartDate,
-                booking.scheduledEndDate
+                booking.scheduledEndDate,
               )}
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -544,14 +541,18 @@ const handleComplete = async () => {
               </div>
 
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Estimated result = quotation subtotal minus confirmed
-                trainer and venue agreed fees. Other expenses and
-                supplier taxes are not included.
+                Estimated gross result ={" "}
+                {finances.source === "INVOICE"
+                  ? "invoice"
+                  : "accepted quotation"}{" "}
+                subtotal minus confirmed trainer and venue fees. Other expenses
+                and supplier taxes are not included.
               </p>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No quotation is available to calculate revenue and profit.
+              No accepted quotation or issued invoice is available to calculate
+              the financial summary.
             </p>
           )}
         </section>
@@ -563,9 +564,7 @@ const handleComplete = async () => {
               Across recorded invoice payments
             </p>
           </div>
-          <p className="font-semibold tabular-nums">
-            {money(finances.paid)}
-          </p>
+          <p className="font-semibold tabular-nums">{money(finances.paid)}</p>
         </div>
       </main>
     </div>

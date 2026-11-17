@@ -12,8 +12,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Quote, QuoteStatus } from "../types/quote";
+import type { Quote } from "../types/quote";
 import { QuoteStatusBadge } from "./quoteStatusBadge";
+import { QuoteStatus } from "@/generated/prisma/enums";
 
 interface QuoteHeaderProps {
   quote?: Quote | null;

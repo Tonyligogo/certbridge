@@ -120,9 +120,11 @@ export function QuotationWorkspace({
 
     return (
       <PrepareQuote
-        booking={booking}
-        onSaved={handleSaved}
-      />
+  key={quoteId ?? "new"}
+  booking={booking}
+  quoteId={quoteId}
+  onSaved={handleSaved}
+/>
     );
   }
 
