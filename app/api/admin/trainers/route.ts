@@ -106,7 +106,6 @@ export async function GET(request: NextRequest) {
     }
 
     const skip = (page - 1) * pageSize;
-const start = performance.now();
     const [trainers, total] = await prisma.$transaction([
       prisma.trainer.findMany({
         where,
@@ -147,10 +146,6 @@ const start = performance.now();
         where,
       }),
     ]);
-
-    console.log(
-  `DB query: ${(performance.now() - start).toFixed(2)}ms`
-);
 
     return NextResponse.json({
       success: true,

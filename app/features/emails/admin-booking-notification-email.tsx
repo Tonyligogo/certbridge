@@ -53,7 +53,7 @@ export function AdminBookingNotificationEmail({
   specialRequirements,
   isGuestBooking,
   participants,
-  adminUrl = "https://trainhub.com/admin/bookings",
+  adminUrl = "https://certbridge.com/admin/bookings",
 }: AdminBookingNotificationEmailProps) {
   const location =
     locationCity && locationCountry
@@ -249,7 +249,7 @@ export function AdminBookingNotificationEmail({
           textAlign: "center",
         }}
       >
-        This is an automated notification from Certbridge Global. Do not reply to this email.
+        This is an automated notification from CertBridge Global. Do not reply to this email.
       </Text>
     </EmailLayout>
   );

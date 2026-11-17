@@ -12,7 +12,7 @@ const FeaturedCourses = ({courses}:{courses: LandingCourse[]}) => {
               <span className="text-sm font-semibold uppercase tracking-wider">
                 Featured Courses
               </span>
-              <h2 className="mt-3 text-4xl lg:text-5xl font-semibold ">
+              <h2 className="mt-3 text-3xl lg:text-4xl font-semibold ">
                 Selected courses for you
               </h2>
             </div>

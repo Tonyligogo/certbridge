@@ -83,7 +83,7 @@ export function ThumbnailDropzone({
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Thumbnail URL — https://cdn.certbridge.global/courses/..."
+        placeholder="Thumbnail URL..."
       />
     </div>
   );

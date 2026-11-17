@@ -49,7 +49,7 @@ export function VenueFinder({
   onAssign,
 }: VenueFinderProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 border-t pt-6">
       {/* Filters */}
       <div className="space-y-3">
         <div className="relative">

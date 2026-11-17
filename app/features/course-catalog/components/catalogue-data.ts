@@ -37,19 +37,20 @@ export const slugify = (v: string) =>
 
 
 export const formatStartingPrice = (
-  course: Pick<Course, "pricing">
+  course: Pick<Course, "pricing" | "durationDays">
 ): string => {
   const pricing = course.pricing?.find(
-    (price) => price.deliveryMode === DeliveryMode.ARRANGED_VENUE
+    (price) => price.deliveryMode === DeliveryMode.ONLINE
   );
 
   if (!pricing) {
     return "Contact for Pricing";
   }
 
-  const numericAmount = Number(pricing.amount);
+  const numericAmount =
+    Number(pricing.amount) * Number(course.durationDays);
 
-  if (!Number.isFinite(numericAmount)) {
+  if (!Number.isFinite(numericAmount) || numericAmount < 0) {
     return "Contact for Pricing";
   }
 

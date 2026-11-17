@@ -11,7 +11,7 @@ export function PopularCourses({ courses }: { courses: LandingCourse[] }) {
             <span className="text-sm font-semibold uppercase tracking-wider">
               Popular Courses
             </span>
-            <h2 className="mt-3 text-4xl lg:text-5xl font-semibold ">
+            <h2 className="mt-3 text-3xl lg:text-4xl font-semibold ">
               Training every team wants to take
             </h2>
           </div>
@@ -72,9 +72,9 @@ export function LandingCourseCard({ course }: { course: LandingCourse }) {
                     style: "currency",
                     currency: course.startingPrice.currency,
                     maximumFractionDigits: 0,
-                  }).format(Number(course.startingPrice.amount))}
+                  }).format((Number(course.startingPrice.amount) * Number(course.durationDays)))}
                   <span className="text-xs block font-normal">
-                    / participant
+                  / participant
                   </span>
                 </p>
               ) : (

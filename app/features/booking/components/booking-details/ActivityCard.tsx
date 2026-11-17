@@ -485,6 +485,13 @@ const activityConfig = {
       "bg-blue-50 text-blue-700",
   },
 
+  QUOTE_ISSUED: {
+    label: "Quote issued",
+    icon: FileText,
+    iconClassName:
+      "bg-blue-50 text-blue-700",
+  },
+
   QUOTE_ACCEPTED: {
     label: "Quote accepted",
     icon: FileCheck2,
@@ -494,6 +501,12 @@ const activityConfig = {
 
   QUOTE_DECLINED: {
     label: "Quote declined",
+    icon: XCircle,
+    iconClassName:
+      "bg-rose-50 text-rose-700",
+  },
+  QUOTE_VOIDED: {
+    label: "Quote voided",
     icon: XCircle,
     iconClassName:
       "bg-rose-50 text-rose-700",

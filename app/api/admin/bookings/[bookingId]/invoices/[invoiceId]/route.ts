@@ -113,6 +113,7 @@ export async function PATCH(
       select: {
         id: true,
         status: true,
+        issueToken:true,
       },
     });
 
@@ -131,6 +132,16 @@ export async function PATCH(
         {
           success: false,
           message: "Only draft invoices can be edited.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (existing.issueToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "This invoice is in progress and cannot be edited.",
         },
         { status: 409 }
       );

@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/server/profile";
 import { bookingRequestSchema } from "@/app/features/booking/lib/booking-schema";
 import { sendBookingEmails } from "@/app/features/emails/booking-emails";
 import { generateReference } from "@/lib/utils";
+import { Prisma } from "@/generated/prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           message: "Validation failed.",
-          errors: validated.error.flatten().fieldErrors,
+          errors: validated.error,
         },
         {
           status: 400,
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
         contactName: data.contactName,
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone,
+        amount: new Prisma.Decimal(data.amount),
 
         organizationName: data.organizationName ?? null,
 

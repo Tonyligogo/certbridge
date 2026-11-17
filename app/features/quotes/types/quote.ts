@@ -1,17 +1,4 @@
-
-export type QuoteStatus =
-  | "DRAFT"
-  | "SENT"
-  | "ACCEPTED"
-  | "DECLINED"
-  | "EXPIRED"
-  | "CANCELLED";
-
-export type TaxType = 
-|"STANDARD"
-|"ZERO_RATED"
-|"EXEMPT"
-|"NONE"
+import { QuoteStatus, TaxType } from "@/generated/prisma/enums";
 
 export interface QuoteItem {
   id: string;
@@ -23,7 +10,7 @@ export interface QuoteItem {
 
 export interface Quote {
   id: string;
-  bookingId: string;
+  bookingId: string | null;
   reference: string;
   status: QuoteStatus;
 
@@ -63,13 +50,6 @@ export interface CreateQuoteInput {
   items: CreateQuoteItemInput[];
 }
 
-export interface UpdateQuoteInput {
-  expiresAt?: Date | null;
-  responseNotes?: string | null;
-  taxType:TaxType;
-  items?: CreateQuoteItemInput[];
-}
-
 export interface UpdateQuoteStatusInput {
   status: QuoteStatus;
   responseNotes?: string | null;
@@ -99,7 +79,7 @@ export interface CompanyConfig {
 export const COMPANY_CONFIG: CompanyConfig = {
   name:         "CertBridge Global",
   email:        "info@certbridgeglobal.com",
-  phone:        "+254 700 000 000",
+  phone:        "+254 710 507 872",
   website:      "certbridgeglobal.com",
   paybill:      "123456",
   bankName:     "Equity Bank Kenya",

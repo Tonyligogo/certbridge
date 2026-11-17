@@ -28,8 +28,6 @@ export default function EditCoursePage({ params }: EditCoursePageProps) {
   }
 
   // Format record into CourseForm structure
-  
-
 const initialFormData: CourseFormType = {
   title: course.title,
   slug: course.slug,

@@ -68,7 +68,7 @@ export interface BookingDraft {
   preferredEndDate: string;
   
   specialRequirements: string;
-  quotedAmount: number;
+  amount: number;
 }
 
 export type DraftPatch = Partial<BookingDraft>;
@@ -106,7 +106,7 @@ export function emptyDraft(): BookingDraft {
     preferredStartDate: "",
     preferredEndDate: "",
     specialRequirements: "",
-    quotedAmount: 0,
+    amount: 0,
   };
 }
 
@@ -137,7 +137,7 @@ export function draftToRequest(draft: BookingDraft, courseIdOrSlug: string): Boo
     preferredStartDate: draft.preferredStartDate,
     preferredEndDate: draft.preferredEndDate,
 
-    quotedAmount: draft.quotedAmount || 0,
+    amount: draft.amount || 0,
     
     specialRequirements: draft.specialRequirements || undefined,
   };
@@ -159,6 +159,8 @@ export type BookingNextAction =
   | "SOURCE_VENUE"
   | "CREATE_QUOTE"
   | "SEND_QUOTE"
+  | "ISSUE_QUOTE"
+  | "VIEW_QUOTE"
   | "AWAIT_QUOTE_RESPONSE"
   | "REVISE_QUOTE"
   | "UPDATE_QUOTE_STATUS"

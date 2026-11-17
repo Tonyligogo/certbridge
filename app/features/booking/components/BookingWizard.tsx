@@ -31,7 +31,7 @@ import { ConfirmedBooking } from "../services/booking";
 import type { Course } from "@/app/features/course-catalog/types/catalogue";
 import { useSearchParams } from "next/navigation";
 import { DeliveryMode } from "@/generated/prisma/enums";
-import { calculateBookingPrice } from "@/lib/pricing-config";
+import { calculateBookingPrice, TRAINER_DAILY_RATES } from "@/lib/pricing-config";
 
 interface Prefill {
   firstName?: string | null;
@@ -96,6 +96,16 @@ export function BookingWizard({
       ),
     }));
   }, [prefill]); 
+  
+  useEffect(() => {
+    if (Object.keys(errors).length === 0) return;
+  
+    const timeout = setTimeout(() => {
+      setErrors({});
+    }, 4000);
+  
+    return () => clearTimeout(timeout);
+  }, [errors]);
 
   const participantCount = draft.participants.length;
   const deliveryMode = draft.deliveryMode;
@@ -113,11 +123,12 @@ export function BookingWizard({
     basePrice !== null &&
     Number.isFinite(basePrice)
       ? calculateBookingPrice({
-          basePricePerParticipant: basePrice,
+          basePricePerParticipantPerDay: basePrice,
           participants: participantCount,
           durationDays: durationDays,
           deliveryMode,
           currency: selectedPricing!.currency,
+          trainerDailyRate: TRAINER_DAILY_RATES[course.level],
         })
       : null;
 
@@ -216,7 +227,7 @@ export function BookingWizard({
 
     const newDraft = {
       ...draft,
-      quotedAmount: estimate?.totalPrice || 0,
+      amount: estimate?.totalPrice || 0,
     }
 
     const payload = draftToRequest(newDraft, course.id);
@@ -247,7 +258,7 @@ export function BookingWizard({
     }
   }
 
-  if (confirmation) return <BookingConfirmation confirmation={confirmation} />;
+  if (confirmation) return <BookingConfirmation confirmation={confirmation} estimate={estimate} />;
 
   const progress = ((step + 1) / BOOKING_STEPS.length) * 100;
 
@@ -274,7 +285,7 @@ export function BookingWizard({
               <TrainingDetailsStep draft={draft} errors={errors} onChange={patch} course={course} />
             )}
             {step === 3 && (
-              <ScheduleLocationStep draft={draft} errors={errors} onChange={patch} course={course} />
+              <ScheduleLocationStep draft={draft} errors={errors} onChange={patch} />
             )}
             {step === 4 && <ReviewStep draft={draft} course={course} onEditStep={goTo} />}
           </div>
@@ -322,7 +333,7 @@ export function BookingWizard({
         </div>
       </div>
 
-      <aside className="space-y-4 lg:sticky lg:top-24">
+      <aside className="flex-[0.5] space-y-4 lg:sticky lg:top-24">
         <PriceEstimateCard estimate={estimate} />
         <p className="text-xs text-muted-foreground">
           Submitting sends a request only. No payment is taken and nothing is confirmed until our team replies.

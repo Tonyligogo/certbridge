@@ -24,6 +24,8 @@ export function serializeAdminBookingDetailsResponse(
   return {
     ...booking,
 
+    amount: booking.amount.toString(),
+
     preferredStartDate:
       booking.preferredStartDate?.toISOString() ?? null,
 
@@ -82,44 +84,48 @@ export function serializeAdminBookingDetailsResponse(
       })
     ),
 
-    quote: booking.quote
-      ? {
-          ...booking.quote,
+    quotes: booking.quotes.map(
+      (quote) => ({
+        ...quote,
 
           issuedAt:
-            booking.quote.issuedAt?.toISOString() ??
+            quote.issuedAt?.toISOString() ??
             null,
 
           taxRate:
-                booking.quote.taxRate.toString(),
+                quote.taxRate.toString(),
           subtotal:
-                booking.quote.subtotal.toString(),
+                quote.subtotal.toString(),
 
               taxAmount:
-                booking.quote.taxAmount.toString(),
+                quote.taxAmount.toString(),
 
               totalAmount:
-                booking.quote.totalAmount.toString(),
+                quote.totalAmount.toString(),
+
+          sentAt:
+            quote.expiresAt?.toISOString() ??
+            null,
 
           expiresAt:
-            booking.quote.expiresAt?.toISOString() ??
+            quote.expiresAt?.toISOString() ??
             null,
 
           acceptedAt:
-            booking.quote.acceptedAt?.toISOString() ??
+            quote.acceptedAt?.toISOString() ??
             null,
 
           declinedAt:
-            booking.quote.declinedAt?.toISOString() ??
+            quote.declinedAt?.toISOString() ??
             null,
 
           createdAt:
-            booking.quote.createdAt.toISOString(),
+            quote.createdAt.toISOString(),
 
           updatedAt:
-            booking.quote.updatedAt.toISOString(),
+            quote.updatedAt.toISOString(),
 
-          items: booking.quote.items.map(
+          items: quote.items.map(
             (item) => ({
               ...item,
 
@@ -133,8 +139,8 @@ export function serializeAdminBookingDetailsResponse(
                 item.amount.toString(),
             })
           ),
-        }
-      : null,
+      })
+    ),    
 
     invoices: booking.invoices.map(
       (invoice) => ({

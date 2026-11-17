@@ -105,6 +105,11 @@ const adminSidebar = {
       icon: <ClipboardList />,
     },
     {
+      title: "Enquiries",
+      url: "/admin/enquiries",
+      icon: <ClipboardList />,
+    },
+    {
       title: "Trainers",
       url: "/admin/trainers",
       icon: <BriefcaseBusiness />,

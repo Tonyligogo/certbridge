@@ -30,6 +30,7 @@ export function ParticipantsStep({
     )?.key ?? null
   );
 
+
   function setType(type: "individual" | "group") {
     if (type === "individual") {
       const first = draft.participants[0] ?? newParticipant();
@@ -366,7 +367,7 @@ export function ParticipantsStep({
                       <Label
                         htmlFor={`p-email-${participant.key}`}
                       >
-                        Email (optional)
+                        Email *
                       </Label>
                       <Input
                         id={`p-email-${participant.key}`}
@@ -394,7 +395,7 @@ export function ParticipantsStep({
                       <Label
                         htmlFor={`p-phone-${participant.key}`}
                       >
-                        Phone (optional)
+                        Phone *
                       </Label>
                       <Input
                         id={`p-phone-${participant.key}`}

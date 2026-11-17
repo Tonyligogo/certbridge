@@ -1,6 +1,6 @@
 import { api, ApiResponse } from "@/lib/api";
 import { Invoice } from "../types/invoice";
-import { CreateInvoiceInput, UpdateInvoiceInput } from "../schema/schemas";
+import { CreateInvoiceInput, SendInvoiceEmailInput, UpdateInvoiceInput } from "../schema/schemas";
 
 export const invoiceService = {
     async getInvoices(
@@ -26,6 +26,17 @@ async createInvoice(
 ): Promise<ApiResponse<Invoice>> {
   return api.post<Invoice>(
     `/api/admin/bookings/${bookingId}/invoices`,
+    data
+  );
+},
+
+async sendInvoiceEmail(
+  bookingId: string,
+  invoiceId: string,
+  data: SendInvoiceEmailInput = {}
+): Promise<ApiResponse<Invoice>> {
+  return api.post<Invoice>(
+    `/api/admin/bookings/${bookingId}/invoices/${invoiceId}/send`,
     data
   );
 },

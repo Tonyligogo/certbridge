@@ -4,6 +4,7 @@ import {
   MapPin,
   Monitor,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import {
@@ -16,6 +17,7 @@ import {
 import { DetailItem } from "./detail-item";
 import type { AdminBookingDetailsResponse } from "../../types/admin-booking";
 import { formatDateRange } from "../../utils/format-booking-date";
+import { formatMoney } from "../../utils/utils";
 
 interface TrainingRequestCardProps {
   booking: AdminBookingDetailsResponse;
@@ -50,7 +52,22 @@ export function TrainingRequestCard({
             label="Course"
             value={booking.course.title}
           />
+          {/* price */}
+          <div className="flex min-w-0 gap-3">
+            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+              <Wallet className="size-4 text-muted-foreground" />
+            </div>
 
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">
+              Price
+            </p>
+
+              <p className="mt-0.5 wrap-break-word text-sm font-medium">
+                {formatMoney(Number(booking.amount),booking.currency)}
+              </p>
+          </div>
+        </div>
           <DetailItem
             icon={
               booking.deliveryMode ===

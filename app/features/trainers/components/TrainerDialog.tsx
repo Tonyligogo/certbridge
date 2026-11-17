@@ -263,7 +263,6 @@ useEffect(() => {
 
   // handle view certification details
   const handleViewCert = (certification: TrainerCertification) => {
-    console.log(certification)
     setCertToView(certification);
   }
 
@@ -809,6 +808,7 @@ useEffect(() => {
                 type="button"
                 size="sm"
                 onClick={onClose}
+                disabled={Boolean(certFile)}
                 className="h-8 text-xs"
               >
                 Finish & Close

@@ -34,7 +34,7 @@ const DeliveryFormats = () => {
               <span className="text-sm font-semibold uppercase tracking-wider">
                 Choose Your Experience
               </span>
-              <h2 className="mt-3 text-5xl font-semibold ">
+              <h2 className="mt-3 text-4xl font-semibold lg:text-5xl">
                  Flexible training delivery options for you.
               </h2>
             </div>

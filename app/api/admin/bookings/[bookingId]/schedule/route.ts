@@ -10,10 +10,7 @@ interface RouteContext {
   }>;
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: RouteContext
-) {
+export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const authResult = await requireAdmin();
 
@@ -30,14 +27,11 @@ export async function PATCH(
           message: "Invalid schedule details.",
           errors: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const {
-      scheduledStartDate,
-      scheduledEndDate,
-    } = parsed.data;
+    const { scheduledStartDate, scheduledEndDate } = parsed.data;
 
     const booking = await prisma.booking.findUnique({
       where: {
@@ -63,7 +57,7 @@ export async function PATCH(
           },
         },
 
-        quote: {
+        quotes: {
           select: {
             status: true,
           },
@@ -77,7 +71,7 @@ export async function PATCH(
           success: false,
           message: "Booking not found.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -87,7 +81,7 @@ export async function PATCH(
           success: false,
           message: "A cancelled booking cannot be scheduled.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -97,7 +91,7 @@ export async function PATCH(
           success: false,
           message: "A completed booking cannot be rescheduled.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -107,7 +101,7 @@ export async function PATCH(
      * Every booking requires a confirmed trainer.
      */
     const hasConfirmedTrainer = booking.trainers.some(
-      (trainer) => trainer.status === "CONFIRMED"
+      (trainer) => trainer.status === "CONFIRMED",
     );
 
     if (!hasConfirmedTrainer) {
@@ -117,7 +111,7 @@ export async function PATCH(
           message:
             "A confirmed trainer is required before scheduling training.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -130,7 +124,7 @@ export async function PATCH(
      */
     if (booking.deliveryMode === "ARRANGED_VENUE") {
       const hasConfirmedVenue = booking.venues.some(
-        (venue) => venue.status === "CONFIRMED"
+        (venue) => venue.status === "CONFIRMED",
       );
 
       if (!hasConfirmedVenue) {
@@ -140,7 +134,7 @@ export async function PATCH(
             message:
               "A confirmed venue is required before scheduling training.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -150,14 +144,17 @@ export async function PATCH(
      *
      * Scheduling should happen after the client accepts the quotation.
      */
-    if (!booking.quote || booking.quote.status !== "ACCEPTED") {
+    const hasAcceptedQuote = booking.quotes.some(
+      (quote) => quote.status === "ACCEPTED",
+    );
+
+    if (!hasAcceptedQuote) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "The quotation must be accepted before scheduling training.",
+          message: "A quotation must be accepted before scheduling training.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -168,83 +165,64 @@ export async function PATCH(
      * If either date already exists, treat this as a reschedule.
      */
     const isReschedule =
-      booking.scheduledStartDate !== null ||
-      booking.scheduledEndDate !== null;
+      booking.scheduledStartDate !== null || booking.scheduledEndDate !== null;
 
     const previousStartDate = booking.scheduledStartDate;
     const previousEndDate = booking.scheduledEndDate;
 
-    const updatedBooking = await prisma.$transaction(
-      async (tx) => {
-        const updated = await tx.booking.update({
-          where: {
-            id: booking.id,
-          },
-          data: {
-            scheduledStartDate: startDate,
-            scheduledEndDate: endDate,
-          },
-          select: {
-            id: true,
-            reference: true,
-            status: true,
-            scheduledStartDate: true,
-            scheduledEndDate: true,
-            updatedAt: true,
-          },
-        });
+    const updatedBooking = await prisma.$transaction(async (tx) => {
+      const updated = await tx.booking.update({
+        where: {
+          id: booking.id,
+        },
+        data: {
+          scheduledStartDate: startDate,
+          scheduledEndDate: endDate,
+        },
+        select: {
+          id: true,
+          reference: true,
+          status: true,
+          scheduledStartDate: true,
+          scheduledEndDate: true,
+          updatedAt: true,
+        },
+      });
 
-        await tx.bookingActivity.create({
-          data: {
-            bookingId: booking.id,
-            type: isReschedule
-              ? "RESCHEDULED"
-              : "SCHEDULED",
+      await tx.bookingActivity.create({
+        data: {
+          bookingId: booking.id,
+          type: isReschedule ? "RESCHEDULED" : "SCHEDULED",
 
-            description: isReschedule
-              ? `Training rescheduled from ${formatDateRange(
-                  previousStartDate,
-                  previousEndDate
-                )} to ${formatDateRange(
-                  startDate,
-                  endDate
-                )}.`
-              : `Training scheduled for ${formatDateRange(
-                  startDate,
-                  endDate
-                )}.`,
+          description: isReschedule
+            ? `Training rescheduled from ${formatDateRange(
+                previousStartDate,
+                previousEndDate,
+              )} to ${formatDateRange(startDate, endDate)}.`
+            : `Training scheduled for ${formatDateRange(startDate, endDate)}.`,
 
-            metadata: isReschedule
-              ? {
-                  previousStartDate:
-                    previousStartDate?.toISOString() ??
-                    null,
+          metadata: isReschedule
+            ? {
+                previousStartDate: previousStartDate?.toISOString() ?? null,
 
-                  previousEndDate:
-                    previousEndDate?.toISOString() ??
-                    null,
+                previousEndDate: previousEndDate?.toISOString() ?? null,
 
-                  scheduledStartDate:
-                    startDate.toISOString(),
+                scheduledStartDate: startDate.toISOString(),
 
-                  scheduledEndDate:
-                    endDate.toISOString(),
-                }
-              : {
-                  scheduledStartDate:
-                    startDate.toISOString(),
+                scheduledEndDate: endDate.toISOString(),
+              }
+            : {
+                scheduledStartDate: startDate.toISOString(),
 
-                  scheduledEndDate:
-                    endDate.toISOString(),
-                },
+                scheduledEndDate: endDate.toISOString(),
+              },
 
-            createdBy: authResult.user.id,
-          },
-        });
+          createdBy: authResult.user.id,
+        },
+      });
 
-        return updated;
-      }
-    );
+      return updated;
+    });
 
     return NextResponse.json({
       success: true,
@@ -256,37 +234,27 @@ export async function PATCH(
       data: {
         ...updatedBooking,
 
-        scheduledStartDate:
-          updatedBooking.scheduledStartDate!.toString(),
+        scheduledStartDate: updatedBooking.scheduledStartDate!.toString(),
 
-        scheduledEndDate:
-          updatedBooking.scheduledEndDate!.toString(),
+        scheduledEndDate: updatedBooking.scheduledEndDate!.toString(),
 
-        updatedAt:
-          updatedBooking.updatedAt.toString(),
+        updatedAt: updatedBooking.updatedAt.toString(),
       },
     });
   } catch (error) {
-    console.error(
-      "Failed to schedule training:",
-      error
-    );
+    console.error("Failed to schedule training:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Failed to schedule training. Please try again.",
+        message: "Failed to schedule training. Please try again.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-function formatDateRange(
-  start: Date | null,
-  end: Date | null
-) {
+function formatDateRange(start: Date | null, end: Date | null) {
   if (!start || !end) {
     return "the previous schedule";
   }

@@ -1,5 +1,19 @@
 import { Prisma } from "@/generated/prisma/client";
-import { BookingActivityType, BookingStatus, DeliveryMode, InvoiceStatus, PaymentMethod, PaymentStatus, QuoteStatus, ResourceSourcingStatus, TaxType, TrainerAssignmentRole, TrainerStatus, VenueStatus } from "@/generated/prisma/enums";
+import {
+  BookingActivityType,
+  BookingStatus,
+  DeliveryMode,
+  InvoiceEmailStatus,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+  QuoteStatus,
+  ResourceSourcingStatus,
+  TaxType,
+  TrainerAssignmentRole,
+  TrainerStatus,
+  VenueStatus,
+} from "@/generated/prisma/enums";
 import { BookingFinancialInvoice } from "../lib/get-booking-financial-state";
 
 export interface GetAdminBookingsParams {
@@ -69,7 +83,7 @@ export interface BookingDetails {
 
   specialRequirements: string | null;
 
-  quotedAmount: string | null;
+  amount: string | null;
   finalAmount: string | null;
   currency: string;
 
@@ -77,10 +91,7 @@ export interface BookingDetails {
 }
 
 export const AdminBookingDetailsResponseSelect = {
-  // --------------------------------------------------
-  // Booking
-  // --------------------------------------------------
-
+  // booking
   id: true,
   reference: true,
 
@@ -110,26 +121,22 @@ export const AdminBookingDetailsResponseSelect = {
   adminNotes: true,
 
   currency: true,
+  amount: true,
 
   createdAt: true,
   updatedAt: true,
 
-  // --------------------------------------------------
-  // Course
-  // --------------------------------------------------
-
+  // course
   course: {
     select: {
       id: true,
       title: true,
       slug: true,
+      durationDays: true,
     },
   },
 
-  // --------------------------------------------------
   // Participants
-  // --------------------------------------------------
-
   participants: {
     select: {
       id: true,
@@ -142,6 +149,7 @@ export const AdminBookingDetailsResponseSelect = {
       attended: true,
       certificateIssued: true,
       feedbackSubmitted: true,
+      attendanceMarkedAt: true,
     },
 
     orderBy: [
@@ -154,10 +162,7 @@ export const AdminBookingDetailsResponseSelect = {
     ],
   },
 
-  // --------------------------------------------------
   // Trainer sourcing
-  // --------------------------------------------------
-
   trainers: {
     select: {
       id: true,
@@ -200,10 +205,7 @@ export const AdminBookingDetailsResponseSelect = {
     },
   },
 
-  // --------------------------------------------------
   // Venue sourcing
-  // --------------------------------------------------
-
   venues: {
     select: {
       id: true,
@@ -245,26 +247,29 @@ export const AdminBookingDetailsResponseSelect = {
     },
   },
 
-  // --------------------------------------------------
   // Quote
-  // --------------------------------------------------
-
-  quote: {
+  quotes: {
     select: {
       id: true,
-      bookingId:true,
+      bookingId: true,
       reference: true,
       status: true,
-      currency:true,
+      currency: true,
 
-      taxRate:true,
-      taxType:true,
+      taxRate: true,
+      taxType: true,
       subtotal: true,
       taxAmount: true,
       totalAmount: true,
 
       issuedAt: true,
       expiresAt: true,
+
+      sentAt: true,
+      sentTo: true,
+      emailStatus: true,
+
+      pdfPath: true,
 
       acceptedAt: true,
       declinedAt: true,
@@ -287,12 +292,12 @@ export const AdminBookingDetailsResponseSelect = {
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   },
 
-  // --------------------------------------------------
   // Invoices
-  // --------------------------------------------------
-
   invoices: {
     select: {
       id: true,
@@ -302,8 +307,8 @@ export const AdminBookingDetailsResponseSelect = {
 
       status: true,
       currency: true,
-      taxRate:true,
-      taxType:true,
+      taxRate: true,
+      taxType: true,
       subtotal: true,
       taxAmount: true,
       totalAmount: true,
@@ -360,10 +365,7 @@ export const AdminBookingDetailsResponseSelect = {
     },
   },
 
-  // --------------------------------------------------
   // Activity
-  // --------------------------------------------------
-
   activities: {
     select: {
       id: true,
@@ -387,10 +389,9 @@ export const AdminBookingDetailsResponseSelect = {
   },
 } satisfies Prisma.BookingSelect;
 
-export type AdminBookingDetails=
-  Prisma.BookingGetPayload<{
-    select: typeof AdminBookingDetailsResponseSelect;
-  }>;
+export type AdminBookingDetails = Prisma.BookingGetPayload<{
+  select: typeof AdminBookingDetailsResponseSelect;
+}>;
 
 export type BookingWorkflowInput = {
   status: BookingStatus;
@@ -410,9 +411,10 @@ export type BookingWorkflowInput = {
     status: ResourceSourcingStatus;
   }>;
 
-  quote: {
+  quotes: {
+    createdAt: string;
     status: QuoteStatus;
-  } | null;
+  }[];
 
   invoices: BookingFinancialInvoice[];
 
@@ -420,6 +422,7 @@ export type BookingWorkflowInput = {
     attended: boolean | null;
     certificateIssued: boolean;
     feedbackSubmitted: boolean;
+    attendanceMarkedAt: Date | null;
   }>;
 };
 
@@ -453,6 +456,7 @@ export interface AdminBookingDetailsResponse {
   adminNotes: string | null;
 
   currency: string;
+  amount: string;
 
   createdAt: string;
   updatedAt: string;
@@ -461,6 +465,7 @@ export interface AdminBookingDetailsResponse {
     id: string;
     title: string;
     slug: string;
+    durationDays: number;
   };
 
   participants: {
@@ -474,6 +479,7 @@ export interface AdminBookingDetailsResponse {
     attended: boolean | null;
     certificateIssued: boolean;
     feedbackSubmitted: boolean;
+    attendanceMarkedAt: Date | null;
   }[];
 
   trainers: {
@@ -544,22 +550,28 @@ export interface AdminBookingDetailsResponse {
     };
   }[];
 
-  quote: {
+  quotes: {
     id: string;
-    bookingId: string;
+    bookingId: string | null;
     reference: string;
 
     status: QuoteStatus;
 
-    taxRate:string,
-    taxType:TaxType,
-    currency:string,
+    taxRate: string;
+    taxType: TaxType;
+    currency: string;
     subtotal: string;
     taxAmount: string;
     totalAmount: string;
 
     issuedAt: string | null;
     expiresAt: string | null;
+
+    sentAt: string | null;
+    sentTo: string | null;
+    emailStatus: InvoiceEmailStatus;
+
+    pdfPath: string | null;
 
     acceptedAt: string | null;
     declinedAt: string | null;
@@ -576,7 +588,7 @@ export interface AdminBookingDetailsResponse {
       unitPrice: string;
       amount: string;
     }[];
-  } | null;
+  }[];
 
   invoices: {
     id: string;
@@ -586,8 +598,8 @@ export interface AdminBookingDetailsResponse {
 
     status: InvoiceStatus;
     currency: string;
-    taxRate:string,
-    taxType:TaxType,
+    taxRate: string;
+    taxType: TaxType;
     subtotal: string;
     taxAmount: string;
     totalAmount: string;
@@ -607,7 +619,6 @@ export interface AdminBookingDetailsResponse {
       unitPrice: string;
       amount: string;
       createdAt: string;
-      
     }[];
 
     payments: {

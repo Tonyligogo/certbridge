@@ -20,7 +20,7 @@ const page = async ({
       <section className="bg-primary text-white">
         <div className="mx-auto max-w-350 px-4 pt-12 pb-16 lg:px-10">
           <span className="text-sm font-semibold uppercase tracking-wider text-white">
-            YOU&apos;Re REQUESTING :
+            YOU&apos;Re REQUESTING
           </span>
           <h1 className="my-3 text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight max-w-3xl">
             {course.title}

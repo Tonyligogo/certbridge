@@ -188,43 +188,62 @@ export function getResourceState(
 export function getQuoteState(
   booking: BookingWorkflowInput
 ) {
-  const quote = booking.quote;
+  const quotes = [...(booking.quotes ?? [])].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  );
 
-  if (!quote) {
-    return {
-      exists: false,
-      status: null,
-      draft: false,
-      sent: false,
-      accepted: false,
-      declined: false,
-      expired: false,
-      cancelled: false,
-    };
-  }
+  const latestQuote = quotes[0] ?? null;
+
+  const activeQuote =
+    quotes.find((quote) =>
+      ["DRAFT", "ISSUED", "SENT", "ACCEPTED"].includes(
+        quote.status
+      )
+    ) ?? null;
+
+  const acceptedQuote =
+    activeQuote?.status === "ACCEPTED"
+      ? activeQuote
+      : null;
+
+  const status =
+    activeQuote?.status ?? latestQuote?.status ?? null;
 
   return {
-    exists: true,
-    status: quote.status,
+    exists: quotes.length > 0,
+    count: quotes.length,
 
-    draft: quote.status === "DRAFT",
-    sent: quote.status === "SENT",
-    accepted: quote.status === "ACCEPTED",
-    declined: quote.status === "DECLINED",
-    expired: quote.status === "EXPIRED",
-    cancelled: quote.status === "CANCELLED",
+    status,
+    latestQuote,
+    activeQuote,
+    acceptedQuote,
+
+    draft: status === "DRAFT",
+    issued: status === "ISSUED",
+    sent: status === "SENT",
+    accepted: status === "ACCEPTED",
+    declined: status === "DECLINED",
+    expired: status === "EXPIRED",
+    cancelled: status === "CANCELLED",
+    voided: status === "VOIDED",
+
+    hasAccepted: acceptedQuote !== null,
+    hasDraft: status === "DRAFT",
+
+    canCreateNew: activeQuote === null,
   };
 }
 
 export function canCreateQuote(
   booking: BookingWorkflowInput
 ) {
-  const resources = getResourceState(booking);
+  const quoteState = getQuoteState(booking);
 
   return (
     booking.status === "OPEN" &&
-    resources.ready &&
-    !booking.quote
+    quoteState.canCreateNew
   );
 }
 
@@ -232,19 +251,24 @@ export const QUOTE_TRANSITIONS: Record<
   QuoteStatus,
   QuoteStatus[]
 > = {
-  DRAFT: ["SENT", "CANCELLED"],
+  DRAFT: ["ISSUED", "CANCELLED"],
+
+  ISSUED: ["SENT", "CANCELLED", "VOIDED"],
 
   SENT: [
     "ACCEPTED",
     "DECLINED",
     "EXPIRED",
     "CANCELLED",
+    "VOIDED",
   ],
 
-  ACCEPTED: [],
+  ACCEPTED: ["VOIDED"],
+
   DECLINED: [],
   EXPIRED: [],
   CANCELLED: [],
+  VOIDED: [],
 };
 
 export const BOOKING_TRANSITIONS: Record<
@@ -396,9 +420,11 @@ export const INVOICE_TRANSITIONS: Record<
 export function canCreateInvoice(
   booking: BookingWorkflowInput
 ) {
+  const quoteState = getQuoteState(booking);
+
   return (
     booking.status === "CONFIRMED" &&
-    booking.quote?.status === "ACCEPTED"
+    quoteState.hasAccepted
   );
 }
 
@@ -522,28 +548,40 @@ export function getDeliveryTimingState(
 export function getParticipantState(
   booking: BookingWorkflowInput
 ) {
-  const total =
-    booking.participants.length;
+  const participants = booking.participants
+  const total = participants.length;
 
-  const attended =
-    booking.participants.filter(
-      ({ attended }) => attended
-    ).length;
+  const attended = participants.filter(
+    (participant) =>
+      participant.attended &&
+      participant.attendanceMarkedAt != null
+  ).length;
 
+  // Participants explicitly marked absent
+  const absent = participants.filter(
+    (participant) =>
+      !participant.attended &&
+      participant.attendanceMarkedAt != null
+  ).length;
+
+  // Participants whose attendance has not been recorded
+  const unmarked = participants.filter(
+    (participant) =>
+      participant.attendanceMarkedAt == null
+  ).length;
+
+  // True only when every participant has been marked
   const attendanceRecorded =
-  booking.participants.length > 0 &&
-  booking.participants.every(
-    ({ attended }) => attended !== null
-  );
+    total > 0 && unmarked === 0;
 
   const certificatesIssued =
-    booking.participants.filter(
+    participants.filter(
       ({ certificateIssued }) =>
         certificateIssued
     ).length;
 
   const feedbackSubmitted =
-    booking.participants.filter(
+    participants.filter(
       ({ feedbackSubmitted }) =>
         feedbackSubmitted
     ).length;
@@ -552,13 +590,14 @@ export function getParticipantState(
     booking.participants.filter(
       (participant) =>
         participant.attended &&
+      participant.attendanceMarkedAt != null &&
         !participant.certificateIssued
     ).length;
 
   return {
     total,
     attended,
-    absent: total - attended,
+    absent,
 
     certificatesIssued,
     feedbackSubmitted,
@@ -581,26 +620,6 @@ export function canIssueCertificate(
   );
 }
 
-export function canCompleteBooking(
-  booking: BookingWorkflowInput,
-  now = new Date()
-) {
-  const timing =
-    getDeliveryTimingState(booking, now);
-
-  const attendanceRecorded =
-    booking.participants.length > 0 &&
-    booking.participants.every(
-      ({ attended }) =>
-        attended !== null
-    );
-
-  return (
-    booking.status === "CONFIRMED" &&
-    timing.ended &&
-    attendanceRecorded
-  );
-}
 export function getBookingStage(
   booking: BookingWorkflowInput,
   now = new Date()
@@ -638,7 +657,13 @@ export function getBookingStage(
     return "AWAITING_QUOTE_RESPONSE";
   }
 
-  if (quote.draft) {
+  if (quote.hasAccepted) {
+    return resources.ready
+      ? "SCHEDULING"
+      : "RESOURCE_SOURCING";
+  }
+
+  if (quote.draft || quote.issued) {
     return "QUOTE_PREPARATION";
   }
 
@@ -842,14 +867,22 @@ function addFinancialActions({
     return;
   }
 
-  actions.push({
-    type: "AWAIT_PAYMENT",
-    kind: "WAITING",
-    priority: "LOW",
-    label: "Awaiting payment",
-    description:
-      "There is an outstanding invoice balance awaiting payment.",
-  });
+ const hasOutstandingIssuedInvoices =
+    issuedInvoices.some(
+      (invoice) =>
+        getInvoicePaymentState(invoice).balance > 0
+    );
+
+  if (hasOutstandingIssuedInvoices) {
+    actions.push({
+      type: "AWAIT_PAYMENT",
+      kind: "WAITING",
+      priority: "LOW",
+      label: "Awaiting payment",
+      description:
+        "Issued invoices have outstanding balances.",
+    });
+  }
 }
 
 function addResourceActions({
@@ -905,31 +938,45 @@ function addQuoteActions({
 }: {
   quote: ReturnType<typeof getQuoteState>;
   actions: BookingWorkflowAction[];
-}) {
+}): boolean {
+  const current = quote.activeQuote;
   if (!quote.exists) {
     actions.push({
       type: "CREATE_QUOTE",
       kind: "ACTION",
       priority: "HIGH",
-      label: "Prepare quote",
+      label: "Prepare quotation",
       description:
-        "All required resources have been secured. Prepare a quote for the client.",
+        "Prepare a quotation for the client's training requirements.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
-  if (quote.status === "DRAFT") {
+   if (quote.status === "DRAFT") {
+    actions.push({
+      type: "ISSUE_QUOTE",
+      kind: "ACTION",
+      priority: "HIGH",
+      label: "Review and issue quotation",
+      description:
+        "Review the draft quotation and issue it before sending it to the client.",
+    });
+
+    return quote.hasAccepted;
+  }
+
+   if (quote.status === "ISSUED") {
     actions.push({
       type: "SEND_QUOTE",
       kind: "ACTION",
       priority: "HIGH",
-      label: "Review and send quote",
+      label: "Send quotation",
       description:
-        "The quote is still in draft. Review the pricing and send it to the client when ready.",
+        "The quotation has been issued. Send it to the client for review.",
     });
 
-    return sortBookingActions(actions);
+    return quote.hasAccepted;
   }
 
   if (quote.status === "SENT") {
@@ -939,42 +986,42 @@ function addQuoteActions({
       priority: "NORMAL",
       label: "Awaiting client response",
       description:
-        "The quote has been sent and is awaiting the client's response.",
+        "The quotation has been sent and is awaiting the client's response.",
     });
 
-    return sortBookingActions(actions);
+    return quote.hasAccepted;
+  }
+
+  if (quote.hasAccepted) {
+    return true;
   }
 
   if (
     quote.status === "DECLINED" ||
     quote.status === "EXPIRED" ||
-    quote.status === "CANCELLED"
+    quote.status === "CANCELLED" ||
+    current?.status === "VOIDED"
   ) {
-    actions.push({
+     actions.push({
       type: "REVISE_QUOTE",
       kind: "ACTION",
       priority: "HIGH",
-      label: "Revise quote",
+      label: "Prepare revised quotation",
       description:
-        quote.status === "DECLINED"
-          ? "The client declined the quote. Review the requirements or pricing before preparing a revision."
-          : quote.status === "EXPIRED"
-            ? "The quote has expired. Review it before issuing a revised quote."
-            : "The quote was cancelled. Prepare a revision if this booking is still proceeding.",
+        current?.status === "DECLINED"
+          ? "The client declined the previous quotation. Review the requirements or pricing and prepare a revision."
+          : current?.status === "EXPIRED"
+            ? "The previous quotation expired. Prepare an updated quotation."
+            : current?.status === "VOIDED"
+              ? "The previous quotation was voided. Prepare a replacement quotation."
+              : "The previous quotation was cancelled. Prepare a new quotation if the booking is proceeding.",
     });
 
-    return sortBookingActions(actions);
+    return false;
   }
 
-  /*
-   * At this point the quote should be ACCEPTED.
-   *
-   * Quote acceptance should normally also cause
-   * Booking.status to become CONFIRMED transactionally.
-   */
-  if (!quote.accepted) {
-    return sortBookingActions(actions);
-  }
+  // Unknown or inconsistent quotation state.
+  return false;
 }
 
 function addSchedulingActions({
@@ -986,37 +1033,32 @@ function addSchedulingActions({
   delivery: ReturnType<typeof getDeliveryTimingState>;
   actions: BookingWorkflowAction[];
 }) {
-  const hasSchedule = scheduling.startDate !== null && scheduling.endDate !== null;
-  if (hasSchedule) {
-  actions.push({
-    type: "RESCHEDULE_TRAINING",
-    kind: "ACTION",
-    priority: "HIGH",
-    label: "Reschedule training",
-      description:
-        "The booking is confirmed. You can reschedule if needed.",
-  });
-} else {
-  actions.push({
-    type: "SCHEDULE_TRAINING",
-    kind: "ACTION",
-    priority: "HIGH",
-      label: "Schedule training",
-      description:
-        "The booking is confirmed. Set the final training start and end dates.",
-  });
-}
-  if (scheduling.scheduled && delivery.upcoming) {
+  if (!scheduling.scheduled) {
     actions.push({
-      type: "PREPARE_FOR_TRAINING",
+      type: scheduling.partiallyScheduled
+        ? "RESCHEDULE_TRAINING"
+        : "SCHEDULE_TRAINING",
       kind: "ACTION",
-      priority: "NORMAL",
-      label: "Prepare for training",
+      priority: "HIGH",
+      label: scheduling.partiallyScheduled
+        ? "Complete training schedule"
+        : "Schedule training",
       description:
-        "The training is scheduled. Review participants, trainer, venue or delivery arrangements before the training date.",
+        "Set the final training start and end dates.",
     });
 
-    return sortBookingActions(actions);
+    return;
+  }
+
+  if (delivery.upcoming) {
+    actions.push({
+      type: "PREPARE_FOR_TRAINING",
+      kind: "INFO",
+      priority: "LOW",
+      label: "Prepare for training",
+      description:
+        "Review participants, trainer, venue and delivery arrangements before the training date.",
+    });
   }
 }
 

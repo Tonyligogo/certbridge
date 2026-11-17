@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { DEFAULT_PRICE_MAX } from "../components/catalogue-data";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/react-query/query-keys";
+import { courseOptionsService } from "../services/use-course-options";
 
 export const catalogueSearchSchema = z.object({
   q: z.string().default(""),
@@ -234,4 +237,21 @@ export function activeFilterCount(search: CatalogueSearch) {
   if (search.certificateProvided) count++;
 
   return count;
+}
+
+export function useCourseOptions(search: string, enabled = true) {
+  const normalizedSearch = search.trim();
+
+  return useQuery({
+    queryKey: queryKeys.courseOptions.search(normalizedSearch),
+
+    queryFn: async () => {
+      const response =
+        await courseOptionsService.search(normalizedSearch);
+
+      return response.data;
+    },
+    enabled: enabled && normalizedSearch.length > 0,
+    staleTime: 60_000,
+  });
 }

@@ -156,7 +156,7 @@ export function FinanceCard({
             </div>
           </div>
         )}
-
+{/* 
         <div>
               <Button
                 size="sm"
@@ -167,7 +167,7 @@ export function FinanceCard({
               >
                 Action
               </Button>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

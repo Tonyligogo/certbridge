@@ -26,28 +26,6 @@ export function CourseCard({
         list ? "flex-col sm:flex-row" : "flex-col"
       )}
     >
-      {/* <div
-        className={cn(
-          "relative shrink-0 bg-linear-to-br",
-          course || "from-muted/50 to-muted",
-          list ? "h-40 sm:h-auto sm:w-56" : "aspect-video"
-        )}
-        role="img"
-        aria-label={`${course.category?.name ?? "Course"} thumbnail`}
-      >
-        
-        {highlight ? (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
-            {course.featured ? (
-              <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-            ) : (
-              <Flame className="size-3.5 text-primary" aria-hidden="true" />
-            )}
-            {highlight}
-          </span>
-        ) : null}
-      </div> */}
-
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
         <div className="min-w-0">
           <h3 className="font-display line-clamp-2 text-xl font-bold text-text-primary leading-snug mb-2">
@@ -57,15 +35,6 @@ export function CourseCard({
           {course.shortDescription}
         </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* {course.category?.name && (
-            <span className="text-xs font-semibold uppercase tracking-wide text-primary bg-primary/10 px-2.5 py-1 rounded-md">
-            {course.category.name}
-          </span>
-          )} */}
-        </div>
-
 
         <ul className="flex flex-col gap-x-4 gap-y-1.5 text-sm">
           <li className="flex items-center gap-1.5 text-xs">
@@ -97,7 +66,7 @@ export function CourseCard({
         <div className="mt-auto border-t flex justify-between items-center gap-3 pt-2">
           <p className="font-semibold text-foreground">
             {formatStartingPrice(course)} 
-            <span className="text-xs block font-normal">/ participant</span>
+            <span className="text-xs block font-normal">/ participant </span>
           </p>
           {
             isDashboard ? 

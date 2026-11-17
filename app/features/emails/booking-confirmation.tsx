@@ -33,7 +33,7 @@ function formatDeliveryMode(mode: string): string {
   const map: Record<string, string> = {
     ONLINE: "Online (Virtual)",
     ONSITE: "On-Site (At your location)",
-    VENUE:  "At a Venue (Arranged by TrainHub)",
+    VENUE:  "At a Venue (Arranged by CertBridge Global)",
   };
   return map[mode] ?? mode;
 }

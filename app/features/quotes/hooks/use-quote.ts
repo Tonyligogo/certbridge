@@ -10,10 +10,11 @@ import { quoteService } from "../services/quote-service";
 
 import type {
   CreateQuoteInput,
-  UpdateQuoteInput,
   UpdateQuoteStatusInput,
 } from "../types/quote";
 import { queryKeys } from "@/lib/react-query/query-keys";
+import { SendInvoiceEmailInput } from "../../invoices/schema/schemas";
+import { UpdateQuoteInput } from "../lib/quote-schema";
 
 /**
  * Get the quote for a booking.
@@ -52,6 +53,31 @@ export function useCreateQuote() {
         queryKey: queryKeys.bookings.adminDetail(
           variables.bookingId
         ),
+      });
+    },
+  });
+}
+
+interface SendQuoteEmailVariables {
+  bookingId: string;
+  quoteId: string;
+  data?: SendInvoiceEmailInput;
+}
+
+export function useSendQuoteEmail() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      bookingId,
+      quoteId,
+      data = {},
+    }: SendQuoteEmailVariables) =>
+      quoteService.sendQuoteEmail(bookingId, quoteId, data),
+
+    onSuccess: async (_response, { bookingId }) => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.bookings.adminDetail(bookingId),
       });
     },
   });

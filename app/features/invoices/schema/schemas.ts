@@ -7,6 +7,10 @@ export const createInvoiceSchema = z.object({
     .min(1)
     .nullable()
     .optional(),
+  
+  status: z
+    .enum(["DRAFT", "ISSUED"])
+    .default("DRAFT"),
 
   dueAt: z
     .string()
@@ -32,3 +36,8 @@ export type CreateInvoiceInput =
 
 export type UpdateInvoiceInput =
   z.infer<typeof updateInvoiceSchema>;
+
+export interface SendInvoiceEmailInput {
+  email?: string;
+  resend?: boolean;
+}

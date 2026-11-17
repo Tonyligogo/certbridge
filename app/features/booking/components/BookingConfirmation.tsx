@@ -6,7 +6,14 @@ import { Separator } from "@/components/ui/separator";
 import { deliveryModeLabel, formatMoney } from "../lib/pricing";
 import { ConfirmedBooking } from "../services/booking";
 
-export function BookingConfirmation({ confirmation }: { confirmation: ConfirmedBooking }) {
+interface PriceEstimate{
+  participants:number;
+  currency:string;
+  totalPrice:number;
+  pricePerParticipant:number;
+}
+
+export function BookingConfirmation({ confirmation, estimate }: { confirmation: ConfirmedBooking, estimate: PriceEstimate | null }) {
   // Format preferred dates for display
   const formatDate = (d: string | Date | null | undefined) => {
     if (!d) return null;
@@ -26,7 +33,7 @@ export function BookingConfirmation({ confirmation }: { confirmation: ConfirmedB
       : startDateFormatted
     : "Flexible";
 
-  const totalAmount = 0;
+  const totalAmount = estimate?.totalPrice;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -88,11 +95,11 @@ export function BookingConfirmation({ confirmation }: { confirmation: ConfirmedB
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild>
+          <Button asChild size='lg'>
             <Link href="/courses">Browse more courses</Link>
           </Button>
           {confirmation.profileId && (
-            <Button asChild variant="outline">
+            <Button asChild size='lg' variant="outline">
               <Link href="/my-bookings">View my bookings</Link>
             </Button>
           )}

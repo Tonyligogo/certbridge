@@ -32,12 +32,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import {
-  EmptyState,
-  ErrorText,
-  FieldLabel,
-  SectionCard,
-} from "./SectionCard";
+import { EmptyState, ErrorText, FieldLabel, SectionCard } from "./SectionCard";
 import {
   DIFFICULTY_LABELS,
   DIFFICULTY_LEVELS,
@@ -61,16 +56,23 @@ import { SummaryRow } from "./SummaryRow";
 import { Chip } from "./Chip";
 import dynamic from "next/dynamic";
 import { DeliveryMode } from "@/generated/prisma/enums";
+import { calculateBasePrice } from "@/lib/pricing-config";
 const MAX_SHORT_WORDS = 300;
-const DELIVERY_MODES = [DeliveryMode.ARRANGED_VENUE, DeliveryMode.CLIENT_SITE, DeliveryMode.ONLINE] as const;
-const makePricing = (pricing: CoursePricingFormType[] = []): CoursePricingFormType[] =>
+const DELIVERY_MODES = [
+  DeliveryMode.ARRANGED_VENUE,
+  DeliveryMode.CLIENT_SITE,
+  DeliveryMode.ONLINE,
+] as const;
+const makePricing = (
+  pricing: CoursePricingFormType[] = [],
+): CoursePricingFormType[] =>
   DELIVERY_MODES.map((deliveryMode) => {
     const existing = pricing.find((p) => p.deliveryMode === deliveryMode);
     return existing ?? { deliveryMode, amount: "", currency: "KES" };
   });
 const RichTextEditor = dynamic(
   () => import("@/app/features/courses/RichTextEditor"),
-  { ssr: false}
+  { ssr: false },
 );
 
 export const defaultInitialForm: CourseFormType = {
@@ -91,11 +93,13 @@ export const defaultInitialForm: CourseFormType = {
   pricing: makePricing(),
   modules: [],
 };
-type Errors = Partial<Record<keyof CourseFormType, string>> & {
-};
+type Errors = Partial<Record<keyof CourseFormType, string>> & {};
 interface CourseFormProps {
   initialData?: CourseFormType;
-  onSubmit: (payload: CreateCourseInput, status: CreateCourseInput["status"]) => void;
+  onSubmit: (
+    payload: CreateCourseInput,
+    status: CreateCourseInput["status"],
+  ) => void;
   isSubmitting?: boolean;
   submitButtonText?: string;
 }
@@ -113,16 +117,49 @@ export function CourseForm({
   const { data: courseCategories } = useCourseCategories();
   const { data: courseAudiences } = useCourseAudiences();
   const isEditing = Boolean(initialData);
-  const set = <K extends keyof CourseFormType>(key: K, value: CourseFormType[K]) => {
+  const set = <K extends keyof CourseFormType>(
+    key: K,
+    value: CourseFormType[K],
+  ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
+
+  const updateCoursePricing = (
+    level: CourseFormType["level"],
+  ) => {
+    const calculated = calculateBasePrice(level);
+
+    setForm((prev) => ({
+      ...prev,
+      pricing: prev.pricing.map((price) => ({
+        ...price,
+        amount: (calculated[price.deliveryMode]).toFixed(2),
+        currency: "KES",
+      })),
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      pricing: undefined,
+    }));
+  };
+
   const shortWords = countWords(form.shortDescription);
 
-  const patchPricing = (mode: DeliveryMode, patch: Partial<CoursePricingFormType>) =>
-    set("pricing", form.pricing.map((p) =>
-      p.deliveryMode === mode ? { ...p, ...patch, deliveryMode: mode } : p
-    ));
+  const patchPricing = (
+    mode: DeliveryMode,
+    patch: Partial<CoursePricingFormType>,
+  ) => {
+    set(
+      "pricing",
+      form.pricing.map((price) =>
+        price.deliveryMode === mode
+          ? { ...price, ...patch, deliveryMode: mode }
+          : price,
+      ),
+    );
+  };
 
   const addModule = () =>
     set("modules", [
@@ -132,17 +169,17 @@ export function CourseForm({
 
   const patchModule = (
     id: string,
-    patch: Partial<CourseFormType["modules"][number]>
+    patch: Partial<CourseFormType["modules"][number]>,
   ) =>
     set(
       "modules",
-      form.modules.map((m) => (m.id === id ? { ...m, ...patch } : m))
+      form.modules.map((m) => (m.id === id ? { ...m, ...patch } : m)),
     );
 
   const removeModule = (id: string) =>
     set(
       "modules",
-      form.modules.filter((m) => m.id !== id)
+      form.modules.filter((m) => m.id !== id),
     );
 
   const reorderModules = (from: number, to: number) => {
@@ -157,9 +194,9 @@ export function CourseForm({
     () =>
       form.modules.reduce(
         (sum, m) => sum + (Number(m.estimatedDuration) || 0),
-        0
+        0,
       ),
-    [form.modules]
+    [form.modules],
   );
 
   const completion = useMemo(() => {
@@ -173,9 +210,16 @@ export function CourseForm({
       form.audiences.length > 0,
       DELIVERY_MODES.every((mode) => {
         const p = form.pricing.find((p) => p.deliveryMode === mode);
-        return p && p.amount.trim() !== "" && Number.isFinite(Number(p.amount)) && Number(p.amount) >= 0 && p.currency === "KES";
+        return (
+          p &&
+          p.amount.trim() !== "" &&
+          Number.isFinite(Number(p.amount)) &&
+          Number(p.amount) >= 0 &&
+          p.currency === "KES"
+        );
       }),
-      form.learningOutcomes.length > 0 && form.learningOutcomes.every((outcome) => outcome.trim().length >= 3),
+      form.learningOutcomes.length > 0 &&
+        form.learningOutcomes.every((outcome) => outcome.trim().length >= 3),
       form.modules.length > 0,
       Boolean(form.thumbnailUrl),
     ];
@@ -211,18 +255,30 @@ export function CourseForm({
       next.learningOutcomes =
         "Learning outcomes cannot exceed 500 characters each.";
     }
-    if (form.pricing.length !== DELIVERY_MODES.length ||
-      new Set(form.pricing.map((p) => p.deliveryMode)).size !== DELIVERY_MODES.length ||
+    if (
+      form.pricing.length !== DELIVERY_MODES.length ||
+      new Set(form.pricing.map((p) => p.deliveryMode)).size !==
+        DELIVERY_MODES.length ||
       DELIVERY_MODES.some((mode) => {
         const p = form.pricing.find((p) => p.deliveryMode === mode);
-        return !p || p.amount.trim() === "" || !Number.isFinite(Number(p.amount)) ||
-          Number(p.amount) < 0 || p.currency !== "KES";
-      })) {
+        return (
+          !p ||
+          p.amount.trim() === "" ||
+          !Number.isFinite(Number(p.amount)) ||
+          Number(p.amount) < 0 ||
+          p.currency !== "KES"
+        );
+      })
+    ) {
       next.pricing = "Enter a valid KES price for all three delivery modes.";
     }
     if (form.modules.length === 0)
       next.modules = "Add at least one syllabus module.";
-    else if (form.modules.some((m) => !m.title.trim() || m.topics.some((t) => !t.trim())))
+    else if (
+      form.modules.some(
+        (m) => !m.title.trim() || m.topics.some((t) => !t.trim()),
+      )
+    )
       next.modules = "Every module needs a title and valid topics.";
     setErrors(next);
     return (
@@ -250,25 +306,23 @@ export function CourseForm({
     const payload: CreateCourseInput = buildPayload(nextStatus);
     onSubmit(payload, nextStatus);
   };
-  const buildPayload = (targetStatus: CreateCourseInput["status"]): CreateCourseInput => ({
+  const buildPayload = (
+    targetStatus: CreateCourseInput["status"],
+  ): CreateCourseInput => ({
     ...form,
     status: targetStatus,
     durationDays: Number(form.durationDays),
-    learningOutcomes: form.learningOutcomes.map((outcome) =>
-    outcome.trim()
-  ),
+    learningOutcomes: form.learningOutcomes.map((outcome) => outcome.trim()),
     pricing: form.pricing.map((p) => ({
       deliveryMode: p.deliveryMode,
       amount: p.amount.trim() === "" ? 0 : Number(p.amount),
       currency: p.currency,
     })),
-    modules: form.modules.map((m) => ({
-      ...(module.id && !module.id.startsWith("temp-")
-        ? { id: m.id }
-        : {}),
-      title: m.title.trim(),
-      topics: m.topics.map((t) => t.trim()).filter(Boolean),
-      estimatedDuration: m.estimatedDuration || null,
+    modules: form.modules.map((module) => ({
+      ...(module.id && !module.id.startsWith("temp-") ? { id: module.id } : {}),
+      title: module.title.trim(),
+      topics: module.topics.map((t) => t.trim()).filter(Boolean),
+      estimatedDuration: module.estimatedDuration || null,
     })),
   });
   return (
@@ -316,7 +370,7 @@ export function CourseForm({
                         onChange={(e) => set("slug", slugify(e.target.value))}
                         className={cn(
                           "font-mono text-sm",
-                          errors.slug && "field-error"
+                          errors.slug && "field-error",
                         )}
                       />
                       <Button
@@ -338,7 +392,7 @@ export function CourseForm({
                       <span
                         className={cn(
                           shortWords > MAX_SHORT_WORDS &&
-                            "font-semibold text-destructive"
+                            "font-semibold text-destructive",
                         )}
                       >
                         {shortWords} / {MAX_SHORT_WORDS} words
@@ -362,8 +416,9 @@ export function CourseForm({
                     Full description
                   </FieldLabel>
                   <RichTextEditor
-                    
-                    defaultValue={form.description ? JSON.parse(form.description) : []}
+                    defaultValue={
+                      form.description ? JSON.parse(form.description) : []
+                    }
                     onChange={(v) => set("description", v)}
                   />
                   <ErrorText>{errors.description}</ErrorText>
@@ -379,12 +434,15 @@ export function CourseForm({
                       min="1"
                       value={form.durationDays}
                       placeholder="5"
-                      onChange={(e) =>
-                        set("durationDays", Number(e.target.value))
-                      }
+                      onChange={(e) => {
+                        const durationDays = Number(e.target.value);
+
+                        set("durationDays", durationDays);
+                        updateCoursePricing(form.level);
+                      }}
                       className={cn(
                         "tabular-nums",
-                        errors.durationDays && "field-error"
+                        errors.durationDays && "field-error",
                       )}
                     />
                     <ErrorText>{errors.durationDays}</ErrorText>
@@ -415,9 +473,14 @@ export function CourseForm({
                   <ToggleGroup
                     type="single"
                     value={form.level}
-                    onValueChange={(v) =>
-                      v && set("level", v as CourseFormType["level"])
-                    }
+                    onValueChange={(value) => {
+                      if (!value) return;
+
+                      const level = value as CourseFormType["level"];
+
+                      set("level", level);
+                      updateCoursePricing(level);
+                    }}
                     className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
                   >
                     {DIFFICULTY_LEVELS.map((level) => (
@@ -434,61 +497,61 @@ export function CourseForm({
               </div>
             </SectionCard>
 
-<SectionCard
-  icon={GraduationCap}
-  step="Section 02"
-  title="Learning outcomes"
-  description="Describe the skills and knowledge participants will gain."
->
-  <div className="space-y-3">
-    {form.learningOutcomes.map((outcome, index) => (
-      <div key={index} className="flex items-center gap-2">
-        <span className="w-6 shrink-0 text-sm text-muted-foreground">
-          {index + 1}.
-        </span>
+            <SectionCard
+              icon={GraduationCap}
+              step="Section 02"
+              title="Learning outcomes"
+              description="Describe the skills and knowledge participants will gain."
+            >
+              <div className="space-y-3">
+                {form.learningOutcomes.map((outcome, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="w-6 shrink-0 text-sm text-muted-foreground">
+                      {index + 1}.
+                    </span>
 
-        <Input
-          value={outcome}
-          placeholder="e.g. Apply effective project planning techniques"
-          onChange={(e) => {
-            const next = [...form.learningOutcomes];
-            next[index] = e.target.value;
-            set("learningOutcomes", next);
-          }}
-        />
+                    <Input
+                      value={outcome}
+                      placeholder="e.g. Apply effective project planning techniques"
+                      onChange={(e) => {
+                        const next = [...form.learningOutcomes];
+                        next[index] = e.target.value;
+                        set("learningOutcomes", next);
+                      }}
+                    />
 
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label={`Remove outcome ${index + 1}`}
-          onClick={() =>
-            set(
-              "learningOutcomes",
-              form.learningOutcomes.filter((_, i) => i !== index)
-            )
-          }
-        >
-          <Trash2 className="size-4" />
-        </Button>
-      </div>
-    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Remove outcome ${index + 1}`}
+                      onClick={() =>
+                        set(
+                          "learningOutcomes",
+                          form.learningOutcomes.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                ))}
 
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={() =>
-        set("learningOutcomes", [...form.learningOutcomes, ""])
-      }
-    >
-      <Plus className="size-4" />
-      Add learning outcome
-    </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    set("learningOutcomes", [...form.learningOutcomes, ""])
+                  }
+                >
+                  <Plus className="size-4" />
+                  Add learning outcome
+                </Button>
 
-    <ErrorText>{errors.learningOutcomes}</ErrorText>
-  </div>
-</SectionCard>
+                <ErrorText>{errors.learningOutcomes}</ErrorText>
+              </div>
+            </SectionCard>
 
             <SectionCard
               icon={Sparkles}
@@ -549,7 +612,7 @@ export function CourseForm({
                         data-invalid={Boolean(errors.categoryId)}
                         className={cn(
                           "w-full",
-                          errors.categoryId && "field-error"
+                          errors.categoryId && "field-error",
                         )}
                       >
                         <SelectValue placeholder="Select a training sector" />
@@ -619,25 +682,38 @@ export function CourseForm({
             >
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Enter the complete course price for <strong>one participant</strong>,
-                  inclusive of costs for the selected delivery mode and entire course duration.
+                  Prices are automatically generated using our standard pricing
+                  model. You can adjust any price manually.
                 </p>
                 <div className="grid gap-4 md:grid-cols-3">
                   {DELIVERY_MODES.map((mode) => {
-                    const price = form.pricing.find((p) => p.deliveryMode === mode);
+                    const price = form.pricing.find(
+                      (p) => p.deliveryMode === mode,
+                    );
                     return (
-                      <div key={mode} className="rounded-xl border border-border p-4">
+                      <div
+                        key={mode}
+                        className="rounded-xl border border-border p-4"
+                      >
                         <FieldLabel htmlFor={`price-${mode}`} required>
                           {DELIVERY_MODE_LABELS[mode]}
                         </FieldLabel>
                         <p className="mb-3 text-xs text-muted-foreground">
-                          KES · total for 1 participant
+                          KES · total for 1 participant / day
                         </p>
                         <Input
-                          id={`price-${mode}`} type="number" min="0" step="0.01"
+                          id={`price-${mode}`}
+                          type="number"
+                          min="0"
+                          step="0.01"
                           value={price?.amount ?? ""}
-                          onChange={(e) => patchPricing(mode, { amount: e.target.value })}
-                          className={cn("tabular-nums", errors.pricing && "field-error")}
+                          onChange={(e) =>
+                            patchPricing(mode, { amount: e.target.value })
+                          }
+                          className={cn(
+                            "tabular-nums",
+                            errors.pricing && "field-error",
+                          )}
                           placeholder="0.00"
                         />
                       </div>
@@ -668,55 +744,109 @@ export function CourseForm({
               <div className="space-y-4">
                 {form.modules.length === 0 ? (
                   <div className="rounded-xl border border-dashed p-6 text-center">
-                    <p className="mb-3 text-sm text-muted-foreground">No syllabus modules yet.</p>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      No syllabus modules yet.
+                    </p>
                     <Button type="button" variant="outline" onClick={addModule}>
                       <Plus className="size-4" /> Add first module
                     </Button>
                   </div>
-                ) : form.modules.map((module, index) => (
-                  <div key={module.id} className="rounded-xl border border-border p-4 space-y-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold">Module {index + 1}</p>
-                      <div className="flex items-center gap-1">
-                        <Button type="button" variant="ghost" size="icon"
-                          aria-label="Move module up" disabled={index === 0}
-                          onClick={() => reorderModules(index, index - 1)}>
-                          <ArrowUp className="size-4" />
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon"
-                          aria-label="Move module down" disabled={index === form.modules.length - 1}
-                          onClick={() => reorderModules(index, index + 1)}>
-                          <ArrowDown className="size-4" />
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon"
-                          aria-label="Remove module" onClick={() => removeModule(module.id!)}>
-                          <Trash2 className="size-4" />
-                        </Button>
+                ) : (
+                  form.modules.map((module, index) => (
+                    <div
+                      key={module.id}
+                      className="rounded-xl border border-border p-4 space-y-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold">
+                          Module {index + 1}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Move module up"
+                            disabled={index === 0}
+                            onClick={() => reorderModules(index, index - 1)}
+                          >
+                            <ArrowUp className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Move module down"
+                            disabled={index === form.modules.length - 1}
+                            onClick={() => reorderModules(index, index + 1)}
+                          >
+                            <ArrowDown className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Remove module"
+                            onClick={() => removeModule(module.id!)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <FieldLabel
+                          htmlFor={`module-title-${module.id}`}
+                          required
+                        >
+                          Module title
+                        </FieldLabel>
+                        <Input
+                          id={`module-title-${module.id}`}
+                          value={module.title}
+                          onChange={(e) =>
+                            patchModule(module.id!, { title: e.target.value })
+                          }
+                          placeholder="Introduction to the subject"
+                        />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor={`module-topics-${module.id}`}>
+                          Topics (one per line)
+                        </FieldLabel>
+                        <Textarea
+                          id={`module-topics-${module.id}`}
+                          rows={4}
+                          value={module.topics.join("\n")}
+                          onChange={(e) =>
+                            patchModule(module.id!, {
+                              topics: e.target.value.split("\n"),
+                            })
+                          }
+                          placeholder={"Topic one\nTopic two\nTopic three"}
+                        />
+                      </div>
+                      <div className="max-w-xs">
+                        <FieldLabel htmlFor={`module-minutes-${module.id}`}>
+                          Estimated duration (minutes)
+                        </FieldLabel>
+                        <Input
+                          id={`module-minutes-${module.id}`}
+                          type="number"
+                          min="0"
+                          value={module.estimatedDuration ?? ""}
+                          onChange={(e) =>
+                            patchModule(module.id!, {
+                              estimatedDuration:
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value),
+                            })
+                          }
+                        />
                       </div>
                     </div>
-                    <div>
-                      <FieldLabel htmlFor={`module-title-${module.id}`} required>Module title</FieldLabel>
-                      <Input id={`module-title-${module.id}`} value={module.title}
-                        onChange={(e) => patchModule(module.id!, { title: e.target.value })}
-                        placeholder="Introduction to the subject" />
-                    </div>
-                    <div>
-                      <FieldLabel htmlFor={`module-topics-${module.id}`}>Topics (one per line)</FieldLabel>
-                      <Textarea id={`module-topics-${module.id}`} rows={4}
-                        value={module.topics.join("\n")}
-                        onChange={(e) => patchModule(module.id!, { topics: e.target.value.split("\n") })}
-                        placeholder={"Topic one\nTopic two\nTopic three"} />
-                    </div>
-                    <div className="max-w-xs">
-                      <FieldLabel htmlFor={`module-minutes-${module.id}`}>Estimated duration (minutes)</FieldLabel>
-                      <Input id={`module-minutes-${module.id}`} type="number" min="0"
-                        value={module.estimatedDuration ?? ""}
-                        onChange={(e) => patchModule(module.id!, {
-                          estimatedDuration: e.target.value === "" ? null : Number(e.target.value),
-                        })} />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               <ErrorText>{errors.modules}</ErrorText>
             </SectionCard>
@@ -760,8 +890,8 @@ export function CourseForm({
                 <SummaryRow
                   label="Category"
                   value={
-                    courseCategories?.find((c) => c.id === form.categoryId)?.name ??
-                    "Not selected"
+                    courseCategories?.find((c) => c.id === form.categoryId)
+                      ?.name ?? "Not selected"
                   }
                 />
                 <SummaryRow
@@ -779,7 +909,10 @@ export function CourseForm({
                   value={
                     form.audiences.length
                       ? form.audiences
-                          .map((id) => courseAudiences?.find((a) => a.id === id)?.name)
+                          .map(
+                            (id) =>
+                              courseAudiences?.find((a) => a.id === id)?.name,
+                          )
                           .filter(Boolean)
                           .join(", ")
                       : "None"
@@ -795,10 +928,17 @@ export function CourseForm({
                     Pricing
                   </p>
                   {DELIVERY_MODES.map((mode) => {
-                    const price = form.pricing.find((p) => p.deliveryMode === mode);
+                    const price = form.pricing.find(
+                      (p) => p.deliveryMode === mode,
+                    );
                     return (
-                      <div key={mode} className="flex items-center justify-between gap-3 py-1 text-xs">
-                        <span className="text-muted-foreground">{DELIVERY_MODE_LABELS[mode]}</span>
+                      <div
+                        key={mode}
+                        className="flex items-center justify-between gap-3 py-1 text-xs"
+                      >
+                        <span className="text-muted-foreground">
+                          {DELIVERY_MODE_LABELS[mode]}
+                        </span>
                         <span className="font-semibold tabular-nums text-foreground">
                           {price?.amount?.trim()
                             ? `KES ${Number(price.amount).toLocaleString("en-KE")}`
@@ -851,7 +991,8 @@ export function CourseForm({
               onClick={handlePublishOrUpdate}
             >
               <Send className="size-4" />
-              {submitButtonText || (isEditing ? "Save Changes" : "Publish Course")}
+              {submitButtonText ||
+                (isEditing ? "Save Changes" : "Publish Course")}
             </Button>
           </div>
         </div>
