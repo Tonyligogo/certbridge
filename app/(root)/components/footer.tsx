@@ -100,8 +100,8 @@ const Footer = () => {
         <div className="mt-16 pt-8 border-t border-slate-50 flex flex-col sm:flex-row justify-between text-xs text-slate-400 gap-4">
           <p>© {new Date().getFullYear()} CertBridge Global. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-slate-600">Privacy Policy</a>
-            <a href="#" className="hover:text-slate-600">Terms of Service</a>
+            <Link href="/privacy-policy" className="hover:text-slate-600">Privacy Policy</Link>
+            <Link href="/terms-and-conditions" className="hover:text-slate-600">Terms of Service</Link>
           </div>
         </div>
 
