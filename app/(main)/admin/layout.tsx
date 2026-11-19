@@ -24,7 +24,7 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
     >
       <AppSidebar variant="inset" className="border-r border-slate-100" user={user} />
       <SidebarInset className='bg-white' >
-        <SiteHeader />
+        <SiteHeader role={user.role} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 p-2 md:gap-6 md:p-6">

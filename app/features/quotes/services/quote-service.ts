@@ -17,7 +17,7 @@ export const quoteService = {
     bookingId: string
   ): Promise<ApiResponse<Quote | null>> {
     return api.get<Quote | null>(
-      `/api/admin/bookings/${bookingId}/quote`
+      `/api/admin/bookings/${bookingId}/quotes`
     );
   },
 
@@ -29,7 +29,7 @@ export const quoteService = {
     data: CreateQuoteInput
   ): Promise<ApiResponse<Quote>> {
     return api.post<Quote>(
-      `/api/admin/bookings/${bookingId}/quote`,
+      `/api/admin/bookings/${bookingId}/quotes`,
       data
     );
   },
@@ -40,7 +40,7 @@ export const quoteService = {
     data: SendInvoiceEmailInput = {}
   ): Promise<ApiResponse<Quote>> {
     return api.post<Quote>(
-      `/api/admin/bookings/${bookingId}/quote/${quoteId}/send`,
+      `/api/admin/bookings/${bookingId}/quotes/${quoteId}/send`,
       data
     );
   },
@@ -53,7 +53,7 @@ export const quoteService = {
     data: UpdateQuoteInput
   ): Promise<ApiResponse<Quote>> {
     return api.patch<Quote>(
-      `/api/admin/bookings/${bookingId}/quote`,
+      `/api/admin/bookings/${bookingId}/quotes`,
       data
     );
   },
@@ -63,7 +63,7 @@ export const quoteService = {
      data: UpdateQuoteStatusInput
    ): Promise<ApiResponse<QuoteStatusResponse>> {
      return api.patch<QuoteStatusResponse>(
-       `/api/admin/bookings/${bookingId}/quote/status`,
+       `/api/admin/bookings/${bookingId}/quotes/status`,
        data
      );
    },

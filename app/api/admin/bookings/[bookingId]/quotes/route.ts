@@ -88,7 +88,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-// Create the one quote belonging to a booking.
+// Create a quote belonging to a booking.
 export async function POST(
   request: NextRequest,
   { params }: RouteContext,
@@ -105,7 +105,7 @@ export async function POST(
         {
           success: false,
           message: "Validation failed",
-          errors: parsed.error.flatten().fieldErrors,
+          errors: parsed.error,
         },
         { status: 400 },
       );

@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Bell, BookOpenText, CalendarCheck } from "lucide-react"
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  role: "admin" | "user";
+};
+
+export function SiteHeader({ role }: SiteHeaderProps) {
+  const isAdmin = role === 'admin'
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b border-slate-100 ml-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -16,8 +21,14 @@ export function SiteHeader() {
             <span className="relative inline-flex size-2 rounded-full bg-sky-500"></span>
           </span>
         </button>
+        {isAdmin ? null : 
+        (
+          <>
         <Button variant='outline'> <CalendarCheck /> <span className="hidden sm:inline-block">Schedule</span> </Button>
         <Button> <BookOpenText /> Book Training</Button>
+          </>
+        )
+        }
       </div>
     </header>
   )

@@ -47,7 +47,7 @@ const formats = [
   {
     icon: Hotel,
     name: "At our Venue",
-    desc: "Training delivered at our one of our venues, closest to your location.",
+    desc: "Training delivered at one of our venues, closest to your location.",
   },
 ];
 
@@ -229,42 +229,8 @@ export default function CourseDetail({ course }: { course: Course }) {
                 </div>
               </div>
             </div>
-
-            {/* Trainer */}
-            <div className="rounded-2xl border border-blue-100 bg-white p-8">
-              <h2 className="mb-6 font-display text-2xl font-bold lg:text-3xl">
-                Your Trainer
-              </h2>
-
-              <div>
-                <div>
-                  <h3 className="font-display text-lg font-bold">
-                    Matched to your training needs
-                  </h3>
-
-                  <p className="mt-2 leading-relaxed text-text-secondary">
-                    Your trainer is selected after booking based on the course
-                    requirements, your industry, team profile, location, and
-                    learning objectives.
-                  </p>
-
-                  <p className="mt-3 leading-relaxed text-text-secondary">
-                    CertBridge Global works with vetted trainers and
-                    subject-matter experts, allowing us to match each engagement
-                    with a facilitator whose experience is relevant to the
-                    training being delivered.
-                  </p>
-
-                  <p className="mt-3 text-sm font-medium text-primary">
-                    Your assigned trainer will be confirmed as part of the
-                    training arrangements.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* certification */}
-            <div className="rounded-2xl border border-blue-100 bg-white p-8">
+            {/* <div className="rounded-2xl border border-blue-100 bg-white p-8">
               <div>
                 <div>
                   <h2 className="font-display text-2xl mb-6 font-bold lg:text-3xl">
@@ -282,7 +248,7 @@ export default function CourseDetail({ course }: { course: Course }) {
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Sticky booking card */}

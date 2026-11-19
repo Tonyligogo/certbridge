@@ -161,7 +161,7 @@ export function QuoteEmail({
               lineHeight: "1.6",
             }}
           >
-            <strong>Response Reminder:</strong> Let us know your response to the quotation before <strong>{dueAt}</strong>
+            <strong>Response Reminder:</strong> Let us know your response to the quotation before or on <strong>{dueAt}</strong>
           </Text>
         </Section>
       )}

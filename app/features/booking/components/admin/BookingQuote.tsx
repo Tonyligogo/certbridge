@@ -31,7 +31,7 @@ import {
 import { Quote } from "@/app/features/quotes/types/quote";
 import { QuoteStatusBadge } from "@/app/features/quotes/components/quoteStatusBadge";
 import { formatDate, formatMoney } from "../../utils/utils";
-import { TaxType } from "@/generated/prisma/enums";
+import { QuoteStatus, TaxType } from "@/generated/prisma/enums";
 
 interface QuoteLineItem {
   id: string;
@@ -165,7 +165,7 @@ export function PrepareQuote({ booking, onSaved, quoteId }: PrepareQuoteProps) {
       return;
     }
     const payload = {
-      status,
+      status: status === 'SENT' ? 'ISSUED' : 'DRAFT' as QuoteStatus,
 
       expiresAt: expiresAt ? new Date(expiresAt) : null,
 
@@ -392,9 +392,12 @@ export function PrepareQuote({ booking, onSaved, quoteId }: PrepareQuoteProps) {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="space-y-2">
+                    
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
                       <Label htmlFor={`item-${item.id}-name`}>
-                        Description
+                        Course name
                       </Label>
 
                       <Input
@@ -406,9 +409,7 @@ export function PrepareQuote({ booking, onSaved, quoteId }: PrepareQuoteProps) {
                         }
                       />
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
+                      {/* <div className="space-y-2">
                         <Label htmlFor={`item-${item.id}-quantity`}>
                           Quantity
                         </Label>
@@ -423,11 +424,11 @@ export function PrepareQuote({ booking, onSaved, quoteId }: PrepareQuoteProps) {
                             updateItem(item.id, "quantity", event.target.value)
                           }
                         />
-                      </div>
+                      </div> */}
 
                       <div className="space-y-2">
                         <Label htmlFor={`item-${item.id}-price`}>
-                          Unit price
+                          Training price
                         </Label>
 
                         <div className="relative">
