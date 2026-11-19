@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -28,17 +29,13 @@ function Navbar() {
   return (
     <nav className="flex items-center justify-between gap-5 h-20 px-4 md:px-6">
         <Link href='/'>
-       <div className="flex items-center gap-3 group cursor-pointer">
-            {/* Corporate Logo Icon */}
-            <div className="relative w-8 h-8 flex items-center justify-center bg-slate-950 rounded-full text-white font-black overflow-hidden tracking-tighter">
-              <span className="text-xs z-10">C</span>
-              <span className="text-xs z-10 -ml-0.5 text-blue-400">B</span>
-              <div className="absolute inset-0 bg-linear-to-tr from-slate-900 via-transparent to-slate-800 opacity-50" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">
-              CertBridge<span className="text-slate-500 font-medium text-lg ml-1">Global</span>
-            </span>
-          </div>
+          <Image
+            src="/Logo.png"
+            alt="CertBridge Global Logo"
+            width={500}
+            height={150}
+            className="h-auto w-full max-w-55 object-contain"
+          />
         </Link>
             <ul className="hidden md:flex items-center gap-1" role="list">
             {NAV_LINKS.map((link) => (
