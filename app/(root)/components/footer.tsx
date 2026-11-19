@@ -1,94 +1,123 @@
 import Link from "next/link";
+import { ArrowUpRight, Mail, Phone, ArrowRight } from "lucide-react";
+import Image from "next/image";
+
+const footerSections = [
+  {
+    title: "Explore Training",
+    links: [
+      { label: "Browse Courses", href: "/courses" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Delivery Options", href: "/delivery-options" },
+      { label: "Frequently Asked Questions", href: "/faqs" },
+    ],
+  },
+  {
+    title: "For Organisations",
+    links: [
+      { label: "Browse Training Programmes", href: "/courses" },
+      { label: "Request an Enquiry", href: "/contact" },
+      { label: "Contact Our Team", href: "/contact" },
+    ],
+  },
+  {
+    title: "Our Partners",
+    links: [
+      { label: "Become a Trainer", href: "/become-a-trainer" },
+      { label: "Trainer Requirements", href: "/trainer-requirements" },
+      { label: "Become a Venue Partner", href: "/become-a-venue-partner" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About CertBridge", href: "/about" },
+      { label: "Quality Assurance", href: "/quality-assurance" },
+      { label: "Contact Us", href: "/contact" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms & Conditions", href: "/terms-and-conditions" },
+    ],
+  },
+];
 
 const Footer = () => {
-  const footerSections = [
-    {
-      title: "Explore Courses",
-      links: [
-        "Business & Leadership",
-        "Tech & Digital Skills",
-        "Compliance & Safety",
-        "Human Resources",
-        "Customer Service",
-      ],
-    },
-    {
-      title: "Delivery Formats",
-      links: [
-        "Virtual Online Sessions",
-        "On-Site Corporate Training",
-        "Arranged Venues",
-        "Custom Group Packages",
-        "Individual 1-on-1 Learning",
-      ],
-    },
-    {
-      title: "For Partners & Clients",
-      links: [
-        "Become a Certified Trainer",
-        "Employer B2B Portal",
-        "Venue Partnership Program",
-        "Request a Training Quote",
-      ],
-    },
-    {
-      title: "Company & Trust",
-      links: [
-        "How CertBridge Works",
-        "Quality Assurance Vetting",
-        "Enterprise Case Studies",
-        "Contact CertBridge Support",
-      ],
-    },
-  ];
-
   return (
-    <footer className="w-full bg-white rounded-t-[50px]">
-      <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
-        
-        {/* Top Section: Branding and CTAs */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-16 pb-12 border-b border-slate-100">
-          
-          {/* Logo Brand Area */}
-          <div className="flex items-center gap-3 group cursor-pointer">
-            {/* Corporate Logo Icon */}
-            <div className="relative w-8 h-8 flex items-center justify-center bg-slate-950 rounded-full text-white font-black overflow-hidden tracking-tighter">
-              <span className="text-xs z-10">C</span>
-              <span className="text-xs z-10 -ml-0.5 text-blue-400">B</span>
-              <div className="absolute inset-0 bg-linear-to-tr from-slate-900 via-transparent to-slate-800 opacity-50" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">
-              CertBridge<span className="text-slate-500 font-medium text-lg ml-1">Global</span>
-            </span>
+    <footer className="relative isolate w-full overflow-hidden rounded-t-[40px] bg-primary text-white md:rounded-t-[56px]">
+      <div className=" z-10 mx-auto max-w-7xl px-6 pb-8 pt-16 md:px-10 md:pt-20 lg:px-12">
+        {/* Brand and contact section */}
+        <div className="flex flex-col justify-between gap-10 border-b border-white/20 pb-12 md:flex-row md:items-start md:pb-16">
+          <div className="max-w-md">
+            <Image
+              src="/Logo.png"
+              alt="CertBridge Global Logo"
+              width={500}
+              height={150}
+              className="h-auto w-full max-w-[320px] object-contain"
+            />
+
+            <p className="mt-6 max-w-sm text-sm leading-7 text-white/75">
+              Connecting organisations with relevant training programmes and
+              professional expertise to support meaningful learning and
+              development.
+            </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <Link href='/contact' className="flex-1 sm:flex-none text-center px-6 py-3 bg-primary text-white font-semibold text-sm rounded-xl transition-colors whitespace-nowrap">
+          <div className="flex flex-col gap-4 md:min-w-[260px]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
               Get in touch
+            </p>
+
+            <a
+              href="mailto:info@certbridgeglobal.com"
+              className="group flex items-center gap-3 text-sm text-white/80 transition-colors hover:text-white"
+            >
+              <Mail className="h-4 w-4 text-white/60" />
+              info@certbridgeglobal.com
+              <ArrowUpRight className="ml-auto h-3.5 w-3.5 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+            </a>
+
+            <a
+              href="tel:+254710507872"
+              className="group flex items-center gap-3 text-sm text-white/80 transition-colors hover:text-white"
+            >
+              <Phone className="h-4 w-4 text-white/60" />
+              +254 710 507 872
+              <ArrowUpRight className="ml-auto h-3.5 w-3.5 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+            </a>
+
+            <Link
+              href="/contact"
+              className="mt-3 inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-white/90"
+            >
+              Contact our team
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
 
-        {/* Bottom Section: Mega Menu Links Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6">
-          {footerSections.map((section, idx) => (
-            <div key={idx} className="flex flex-col">
-              {/* Small Header Title */}
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-6">
+        {/* Navigation links */}
+        <div className="relative z-50 grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-8 lg:py-16">
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h4 className="mb-6 text-[11px] font-bold uppercase tracking-[0.16em] text-white/55">
                 {section.title}
               </h4>
-              
-              {/* Links List */}
+
               <ul className="space-y-4">
-                {section.links.map((link, linkIdx) => (
-                  <li key={linkIdx}>
-                    <a 
-                      href="#" 
-                      className="text-[15px] font-semibold text-slate-800 hover:text-blue-600 transition-colors block leading-tight"
+                {section.links.map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link
+                      href={link.href}
+                      className="group inline-flex items-center gap-1.5 text-[13px] font-medium leading-5 text-white/80 transition-colors hover:text-white"
                     >
-                      {link}
-                    </a>
+                      {link.label}
+                      <ArrowUpRight className="h-3 w-3 -translate-y-0.5 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-70" />
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -96,15 +125,37 @@ const Footer = () => {
           ))}
         </div>
 
-        {/* Sub-footer copyright area */}
-        <div className="mt-16 pt-8 border-t border-slate-50 flex flex-col sm:flex-row justify-between text-xs text-slate-400 gap-4">
-          <p>© {new Date().getFullYear()} CertBridge Global. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy-policy" className="hover:text-slate-600">Privacy Policy</Link>
-            <Link href="/terms-and-conditions" className="hover:text-slate-600">Terms of Service</Link>
+        {/* Copyright */}
+        <div className="flex flex-col gap-4 border-t border-white/20 pt-7 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} CertBridge Global. All rights reserved.
+          </p>
+
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link
+              href="/privacy-policy"
+              className="transition-colors hover:text-white"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms-and-conditions"
+              className="transition-colors hover:text-white"
+            >
+              Terms & Conditions
+            </Link>
           </div>
         </div>
 
+        {/* Oversized brand wordmark */}
+        <div
+          className="absolute bottom-0 z-0 w-full left-0 right-0 whitespace-nowrap text-center text-[18vw] tracking-[-0.05em] text-white/5"
+          style={{
+            fontWeight: 900,
+          }}
+        >
+          CERTBRIDGE
+        </div>
       </div>
     </footer>
   );
