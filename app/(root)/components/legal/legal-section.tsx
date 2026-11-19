@@ -30,7 +30,7 @@ export function LegalSection({
         {title}
       </h2>
 
-      <div className="space-y-5 text-[14px] leading-7 text-muted-foreground sm:text-[15px]">
+      <div className="space-y-5 leading-7 text-muted-foreground">
         {children}
       </div>
     </section>

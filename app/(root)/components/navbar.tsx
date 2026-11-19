@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,10 +10,10 @@ import { useRef, useState } from "react";
 
 /* ── Nav links ─────────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: "Courses",      href: "/courses" },
+  { label: "Courses", href: "/courses" },
   { label: "How It Works", href: "/how-it-works" },
   // { label: "About",        href: "/about" },
-  { label: "Contact",      href: "/contact" },
+  { label: "Contact", href: "/contact" },
 ] as const;
 
 /* ── Helpers ───────────────────────────────────────────── */
@@ -23,75 +23,75 @@ function isActive(pathname: string, href: string) {
 }
 
 function Navbar() {
-     const pathname = usePathname();
-     const [open, setOpen] = useState(false);
-     const drawerRef  = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
   return (
-    <nav className="flex items-center justify-between gap-5 h-20 px-4 md:px-6">
-        <Link href='/'>
-          <Image
-            src="/Logo.png"
-            alt="CertBridge Global Logo"
-            width={500}
-            height={150}
-            className="h-auto w-full max-w-55 object-contain"
-          />
+    <nav className="flex items-center justify-between border-b gap-5 h-20 px-4 md:px-6">
+      <Link href="/">
+        <Image
+          src="/Logo.png"
+          alt="CertBridge Global Logo"
+          width={500}
+          height={150}
+          className="h-auto w-full max-w-55 object-contain"
+        />
+      </Link>
+      <ul className="hidden md:flex items-center gap-1" role="list">
+        {NAV_LINKS.map((link) => (
+          <li key={link.href}>
+            <DesktopLink
+              href={link.href}
+              label={link.label}
+              active={isActive(pathname, link.href)}
+            />
+          </li>
+        ))}
+      </ul>
+      <div className="hidden md:flex items-center gap-3">
+        <Link
+          href="/sign-in"
+          className={cn(
+            "text-sm font-medium px-4 py-2 transition-all duration-200",
+          )}
+        >
+          Log In
         </Link>
-            <ul className="hidden md:flex items-center gap-1" role="list">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <DesktopLink
-                  href={link.href}
-                  label={link.label}
-                  active={isActive(pathname, link.href)}
-                />
-              </li>
-            ))}
-          </ul>
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/sign-in"
-              className={cn(
-                "text-sm font-medium px-4 py-2 transition-all duration-200",
-              )}
-            >
-              Log In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="text-sm font-semibold px-5 py-2 rounded-lg bg-primary text-white transition-all duration-300 hover:scale-105"
-            >
-              Get Started
-            </Link>
-          </div>
-           {/* Mobile hamburger */}
-          <Button
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            size='icon'
-            aria-controls="mobile-drawer"
-            onClick={() => setOpen((v) => !v)}
-            className="md:hidden relative"
-          >
-            {/* Animated icon swap */}
-            <span
-              className={cn(
-                "absolute transition-all duration-100",
-                open ? "opacity-100 rotate-0" : "opacity-0 rotate-90"
-              )}
-            >
-              <X size={20} strokeWidth={2} />
-            </span>
-            <span
-              className={cn(
-                "absolute transition-all duration-100",
-                open ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"
-              )}
-            >
-              <Menu size={20} strokeWidth={2} />
-            </span>
-          </Button>
-          {/* ── Mobile drawer ────────────────────────────── */}
+        <Link
+          href="/sign-up"
+          className="text-sm font-semibold px-5 py-2 rounded-lg bg-primary text-white transition-all duration-300 hover:scale-105"
+        >
+          Get Started
+        </Link>
+      </div>
+      {/* Mobile hamburger */}
+      <Button
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        size="icon"
+        aria-controls="mobile-drawer"
+        onClick={() => setOpen((v) => !v)}
+        className="md:hidden relative"
+      >
+        {/* Animated icon swap */}
+        <span
+          className={cn(
+            "absolute transition-all duration-100",
+            open ? "opacity-100 rotate-0" : "opacity-0 rotate-90",
+          )}
+        >
+          <X size={20} strokeWidth={2} />
+        </span>
+        <span
+          className={cn(
+            "absolute transition-all duration-100",
+            open ? "opacity-0 -rotate-90" : "opacity-100 rotate-0",
+          )}
+        >
+          <Menu size={20} strokeWidth={2} />
+        </span>
+      </Button>
+      {/* ── Mobile drawer ────────────────────────────── */}
       <div
         id="mobile-drawer"
         ref={drawerRef}
@@ -103,7 +103,7 @@ function Navbar() {
           "flex flex-col",
           "bg-white",
           "duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-          open ? "translate-x-0" : "translate-x-full"
+          open ? "translate-x-0" : "translate-x-full",
         )}
       >
         {/* Drawer close button */}
@@ -111,7 +111,7 @@ function Navbar() {
           <Button
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            size='icon'
+            size="icon"
           >
             <X size={18} strokeWidth={2} />
           </Button>
@@ -120,7 +120,7 @@ function Navbar() {
         {/* Drawer links */}
         <ul className="flex-1 overflow-y-auto px-4 py-6 space-y-1" role="list">
           {NAV_LINKS.map((link, i) => (
-            <li key={link.href} onClick={()=>setOpen(false)}>
+            <li key={link.href} onClick={() => setOpen(false)}>
               <MobileLink
                 href={link.href}
                 label={link.label}
@@ -149,10 +149,10 @@ function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;
 
 /* Desktop nav link */
 function DesktopLink({
@@ -170,13 +170,8 @@ function DesktopLink({
       className={cn(
         "relative px-4 py-2 text-sm font-medium rounded-lg",
         "transition-all",
-        !active && [
-          "hover:bg-secondary",
-        ],
-        active && [
-          "text-white",
-          "bg-primary",
-        ]
+        !active && ["hover:bg-secondary"],
+        active && ["text-white", "bg-primary"],
       )}
     >
       {label}
@@ -203,12 +198,10 @@ function MobileLink({
       className={cn(
         "flex items-center justify-between px-4 py-3.5 rounded-xl",
         "text-sm font-medium",
-        active && "text-white bg-primary"
+        active && "text-white bg-primary",
       )}
     >
-      <span className="flex items-center gap-3">
-        {label}
-      </span>
+      <span className="flex items-center gap-3">{label}</span>
 
       <ChevronRight
         size={15}

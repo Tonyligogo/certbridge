@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, ShieldCheck } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -127,14 +127,6 @@ export function LegalDocumentLayout({
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-360 px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
         <header className="mb-12 max-w-3xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-
-            <span className="text-xs font-medium text-muted-foreground">
-              CertBridge Global / Legal
-            </span>
-          </div>
-
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
             {title}
           </h1>

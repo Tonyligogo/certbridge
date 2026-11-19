@@ -1,7 +1,6 @@
 import React from 'react'
 import Navbar from './components/navbar'
 import Footer from './components/footer'
-import NewFooter from './components/new-footer'
 
 export default function PublicSiteLayout({children}:{children: React.ReactNode}) {
   return (
@@ -11,7 +10,6 @@ export default function PublicSiteLayout({children}:{children: React.ReactNode})
           {children}
         </main>
         <Footer/>
-        <NewFooter/>
     </div>
   )
 }

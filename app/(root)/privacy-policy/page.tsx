@@ -71,32 +71,6 @@ export default function PrivacyPolicyPage() {
           &quot;us&quot; and &quot;our&quot; refer to CERTBRIDGE
           GLOBAL.
         </p>
-
-        <div className="rounded-lg border bg-muted/30 p-5">
-          <p className="font-semibold text-foreground">
-            CERTBRIDGE GLOBAL
-          </p>
-
-          <p className="mt-2">
-            Email:{" "}
-            <a
-              href="mailto:info@certbridgeglobal.com"
-              className="font-medium text-primary hover:underline"
-            >
-              info@certbridgeglobal.com
-            </a>
-          </p>
-
-          <p>
-            Telephone:{" "}
-            <a
-              href="tel:+254710507872"
-              className="font-medium text-primary hover:underline"
-            >
-              +254 710 507 872
-            </a>
-          </p>
-        </div>
       </LegalSection>
 
       {/* 02 — INFORMATION WE COLLECT */}
