@@ -3,10 +3,11 @@ import { HeroSlider } from "./components/heroSlider";
 import PopularCategories from "./components/categories";
 import ActionCTA from "./components/cta";
 import { PopularCourses } from "./components/courses";
-import DeliveryFormats from "./components/deliveryFormats";
 import { getLandingPageData } from "../features/landing-page/lib/landing-page";
 import FeaturedCourses from "./components/featured";
 import AudiencesSection from "./components/audiences";
+import TestimonialsSection from "./components/testimonials";
+import TrainingFormatsSection from "./components/trainingFormats";
 
 export const metadata = generatePageMetadata({
   title: "Browse Courses",
@@ -16,7 +17,7 @@ export const metadata = generatePageMetadata({
 const LandingPage = async() => {
   const data = await getLandingPageData();
   return (
-    <div className="space-y-16">
+    <div className="space-y-16 md:space-y-32">
     <HeroSlider/>
     {/* shows featured courses */}
     <FeaturedCourses courses={data.featuredCourses} />
@@ -25,7 +26,8 @@ const LandingPage = async() => {
     {/* shows popular courses */}
     <PopularCourses courses={data.popularCourses} />
     <PopularCategories categories={data.categories} />
-    <DeliveryFormats/>
+    <TrainingFormatsSection/>
+    <TestimonialsSection />
     <ActionCTA/>
     </div>
   )

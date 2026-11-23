@@ -1,79 +1,139 @@
+
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  BookOpen,
+  MessageSquareText,
+  UserRoundPlus,
+} from "lucide-react";
+
+const actions = [
+  {
+    number: "01",
+    title: "Talk to Our Team",
+    description:
+      "Have a training need or need help finding the right programme? Speak with our team and let's explore the best solution for your organisation.",
+    link: "/contact",
+    linkText: "Contact our team",
+    icon: MessageSquareText,
+    featured: true,
+  },
+  {
+    number: "02",
+    title: "Explore Our Courses",
+    description:
+      "Browse our training catalogue, discover available programmes, and find learning opportunities that match your team's development goals.",
+    link: "/courses",
+    linkText: "Browse courses",
+    icon: BookOpen,
+  },
+  {
+    number: "03",
+    title: "Create Your Account",
+    description:
+      "Get started with CertBridge Global. Create an account to manage your training bookings and keep track of your learning engagements.",
+    link: "/sign-up",
+    linkText: "Get started",
+    icon: UserRoundPlus,
+  },
+];
 
 const ActionCTA = () => {
   return (
-    <section className="w-full px-4 pb-16">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-          <div className="max-w-3xl mb-12">
-            <span className="text-sm font-semibold uppercase tracking-wider">
+    <section className="w-full bg-background px-4 pb-16 sm:pb-32">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="mb-12 flex flex-col justify-between gap-6 lg:mb-14 lg:flex-row lg:items-end">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center rounded-full bg-[#B9D7FF]/80 px-4 py-1.5 text-xs font-semibold tracking-wide text-[#0044B8] sm:text-sm">
               Get Started
             </span>
 
-            <h2 className="mt-3 text-4xl font-semibold lg:text-5xl">
-              Take the next step with CertBridge Global
+            <h2 className="mt-4 text-3xl leading-[1.15] font-bold tracking-tight text-[#071D49] sm:text-4xl lg:text-[42px]">
+              Your Next Step Starts Here
             </h2>
           </div>
 
-        {/* CTA Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Card 1: Contact Us */}
-          <div className="group flex flex-col bg-white rounded-3xl md:rounded-[32px] overflow-hidden border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
-            <div className="h-[180px] md:h-[280px] w-full overflow-hidden">
-              <img 
-                src="https://images.pexels.com/photos/8867252/pexels-photo-8867252.jpeg" 
-                alt="Contact our team"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-            <div className="p-6 md:p-10 flex flex-col flex-grow">
-              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
-                Contact Our Team
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-10 flex-grow">
-                Discuss your training needs, explore custom solutions for groups, and get a tailored consultation from our specialists.
-              </p>
-              <div>
-                <Link href='/contact' className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
-                  Get in touch
-                </Link>
-              </div>
-            </div>
-          </div>
+          <p className="max-w-md text-sm leading-relaxed font-medium text-[#16346E] sm:text-base lg:pb-1">
+            Whether you&apos;re ready to book training or simply exploring your
+            options, we&apos;re here to help you move forward.
+          </p>
+        </div>
 
-          {/* Card 2: Create Account */}
-          <div className="group flex flex-col bg-white rounded-3xl md:rounded-[32px] overflow-hidden border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
-            <div className="h-[180px] md:h-[280px] w-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-12">
-              {/* Illustration Placeholder */}
-              <div className="relative w-full h-full flex items-center justify-center">
-                 <div className="w-48 h-32 bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-indigo-200 shadow-lg flex flex-col p-4">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-full mb-3" />
-                    <div className="w-full h-2 bg-slate-200 rounded-full mb-2" />
-                    <div className="w-2/3 h-2 bg-slate-100 rounded-full" />
-                    <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-emerald-400 rounded-2xl flex items-center justify-center shadow-lg transform rotate-12">
-                      <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                 </div>
-              </div>
-            </div>
-            <div className="p-6 md:p-10 flex flex-col flex-grow">
-              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
-                Create An Account
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-10 flex-grow">
-                Join our training community to instantly unlock exclusive discounts, early course access, and manage your learning journey.
-              </p>
-              <div>
-                <Link href='/sign-up' className="bg-primary text-white px-7 py-3 rounded-lg font-bold text-sm">
-                  Create an account
-                </Link>
-              </div>
-            </div>
-          </div>
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {actions.map((action) => {
+            const Icon = action.icon;
 
+            return (
+              <div
+                key={action.number}
+                className={`group relative flex min-h-[330px] flex-col overflow-hidden rounded-3xl border p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-8 ${
+                  action.featured
+                    ? "border-primary bg-primary text-white"
+                    : "border-slate-100 bg-[#F7FAFF] hover:border-primary/20"
+                }`}
+              >
+                {/* Decorative background */}
+                {action.featured && (
+                  <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border-[35px] border-white/[0.06]" />
+                )}
+
+                <div className="relative flex items-center justify-between">
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                      action.featured
+                        ? "bg-white/10 text-white"
+                        : "bg-[#E5EFFF] text-primary"
+                    }`}
+                  >
+                    <Icon size={26} strokeWidth={1.8} />
+                  </div>
+
+                  <span
+                    className={`text-sm font-semibold tracking-wider ${
+                      action.featured ? "text-blue-200" : "text-blue-300"
+                    }`}
+                  >
+                    {action.number}
+                  </span>
+                </div>
+
+                <div className="relative mt-10 flex-grow">
+                  <h3 className="text-2xl font-bold tracking-tight">
+                    {action.title}
+                  </h3>
+
+                  <p
+                    className="mt-4 text-sm leading-7 sm:text-base"
+                  >
+                    {action.description}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative mt-8 border-t pt-5 ${
+                    action.featured ? "border-white/15" : "border-blue-100"
+                  }`}
+                >
+                  <Link
+                    href={action.link}
+                    className={`inline-flex items-center gap-2 text-sm font-bold transition-all duration-200 ${
+                      action.featured
+                        ? "text-white hover:text-blue-200"
+                        : "text-primary/80 hover:text-primary"
+                    }`}
+                  >
+                    {action.linkText}
+                    <ArrowUpRight
+                      size={18}
+                      className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

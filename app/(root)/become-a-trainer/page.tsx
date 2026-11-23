@@ -83,18 +83,14 @@ export default function BecomeATrainerPage() {
   return (
     <main className="bg-background">
       {/* Hero */}
-      <section className="mx-auto max-w-7xl px-5 pb-20 pt-20 sm:px-8 sm:pt-28 lg:px-12 lg:pb-28">
-        <div className="max-w-4xl">
-          <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-            Become a Trainer
-          </p>
-
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+        <div>
+          <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
             Share Your Expertise.{" "}
             <span className="text-primary">Shape Professional Growth.</span>
           </h1>
 
-          <p className="mt-7 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
+          <p className="mt-7 max-w-2xl text-lg leading-8">
             Are you an experienced professional or subject-matter expert
             passionate about sharing knowledge and developing others?
             Partner with CertBridge Global and bring your expertise to
@@ -126,7 +122,7 @@ export default function BecomeATrainerPage() {
               Turn Your Expertise Into Impact.
             </h2>
 
-            <p className="mt-5 text-base leading-8 text-muted-foreground">
+            <p className="mt-5 leading-7">
               We connect experienced trainers with organisations seeking
               practical, relevant and impactful professional development.
             </p>
@@ -137,7 +133,7 @@ export default function BecomeATrainerPage() {
               const Icon = benefit.icon;
 
               return (
-                <div key={benefit.title} className="border-t border-border pt-7">
+                <div key={benefit.title} className="border-t border-primary/20 pt-7">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
                   </div>
@@ -146,7 +142,7 @@ export default function BecomeATrainerPage() {
                     {benefit.title}
                   </h3>
 
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
+                  <p className="mt-3 leading-7">
                     {benefit.description}
                   </p>
                 </div>
@@ -167,7 +163,7 @@ export default function BecomeATrainerPage() {
             Are You the Right Fit?
           </h2>
 
-          <p className="mt-6 text-base leading-8 text-muted-foreground">
+          <p className="mt-6 leading-7">
             We&apos;re interested in working with professionals who bring a
             combination of subject knowledge, practical experience and the
             ability to facilitate meaningful learning.
@@ -176,11 +172,11 @@ export default function BecomeATrainerPage() {
 
         <div className="space-y-5">
           {trainerProfiles.map((profile, index) => (
-            <div key={profile} className="flex items-start gap-4 border-b border-border pb-5">
+            <div key={profile} className="flex items-center gap-4 border-b border-primary/20 pb-5">
               <span className="text-sm font-semibold text-primary">
                 0{index + 1}
               </span>
-              <p className="text-base leading-7 text-foreground">{profile}</p>
+              <p className="leading-7">{profile}</p>
             </div>
           ))}
         </div>
@@ -194,11 +190,11 @@ export default function BecomeATrainerPage() {
               What We Value
             </p>
 
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Expertise Matters. So Does How You Share It.
             </h2>
 
-            <p className="mt-6 text-base leading-8 text-muted-foreground">
+            <p className="mt-6 leading-7">
               We value trainers who can combine professional knowledge with
               the ability to engage participants and make learning practical,
               relevant and meaningful.
@@ -206,7 +202,7 @@ export default function BecomeATrainerPage() {
 
             <Link
               href="/trainer-requirements"
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              className="mt-7 inline-flex items-center gap-2 font-medium text-primary hover:underline"
             >
               Explore Trainer Requirements
               <ArrowRight className="h-4 w-4" />
@@ -217,7 +213,7 @@ export default function BecomeATrainerPage() {
             {qualities.map((quality) => (
               <div key={quality} className="flex items-start gap-3">
                 <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-primary" />
-                <p className="text-sm leading-7 text-foreground sm:text-base">
+                <p className="leading-7">
                   {quality}
                 </p>
               </div>
@@ -237,20 +233,20 @@ export default function BecomeATrainerPage() {
             Working Together, Step by Step.
           </h2>
 
-          <p className="mt-5 text-base leading-8 text-muted-foreground">
+          <p className="mt-5 text-base leading-7">
             Becoming a CertBridge trainer starts with an introduction.
             Here&apos;s an overview of how the process works.
           </p>
         </div>
 
-        <div className="mt-14 border-t border-border">
+        <div className="mt-14 border-t border-primary/20">
           {partnershipSteps.map((step, index) => {
             const reversed = index % 2 !== 0;
 
             return (
               <div
                 key={step.number}
-                className="grid grid-cols-1 items-center gap-6 border-b border-border py-10 sm:gap-10 sm:py-14 lg:grid-cols-2 lg:gap-16"
+                className="grid grid-cols-1 items-center gap-6 border-b border-primary/20 py-10 sm:gap-10 sm:py-14 lg:grid-cols-2 lg:gap-16"
               >
                 <div className={reversed ? "lg:order-2" : "lg:order-1"}>
                   <div className="flex items-center gap-5 sm:gap-7">
@@ -265,7 +261,7 @@ export default function BecomeATrainerPage() {
                 </div>
 
                 <div className={reversed ? "lg:order-1" : "lg:order-2"}>
-                  <p className="max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+                  <p className="max-w-xl leading-7">
                     {step.description}
                   </p>
                 </div>
@@ -287,7 +283,7 @@ export default function BecomeATrainerPage() {
               Ready to Put Your Expertise to Work?
             </h2>
 
-            <p className="mt-6 text-base leading-8 text-muted-foreground sm:text-lg">
+            <p className="mt-6 leading-7">
               Join a network of professionals committed to developing skills,
               sharing knowledge and supporting organisational growth.
             </p>

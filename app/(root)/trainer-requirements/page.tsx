@@ -1,11 +1,10 @@
-
 import Link from "next/link";
+
 import {
   ArrowRight,
   Award,
   BriefcaseBusiness,
   CheckCircle2,
-  ClipboardList,
   GraduationCap,
   Lightbulb,
   MessageSquareText,
@@ -114,17 +113,17 @@ export default function TrainerRequirementsPage() {
   return (
     <main className="overflow-hidden">
       {/* Hero */}
-      <section className="relative bg-muted/40">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-28">
+      <section className="relative">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-10">
           <div className="max-w-3xl">
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
               Bring Your Expertise.
               <span className="mt-2 block text-primary">
                 Deliver Meaningful Learning.
               </span>
             </h1>
 
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground">
+            <p className="mt-7 max-w-2xl text-lg leading-8">
               We work with professionals who combine relevant qualifications,
               practical experience and the ability to engage and develop
               others. Explore the qualities and credentials we look for in
@@ -154,7 +153,7 @@ export default function TrainerRequirementsPage() {
             </h2>
           </div>
 
-          <div className="space-y-5 text-base leading-8 text-muted-foreground">
+          <div className="space-y-5 leading-8">
             <p>
               The quality of a training programme depends greatly on the
               person delivering it. At CertBridge Global, we aim to work with
@@ -181,7 +180,7 @@ export default function TrainerRequirementsPage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               The Foundations of Effective Training
             </h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
+            <p className="mt-5 leading-8">
               These are the key areas we consider when assessing trainer
               suitability. Not every programme requires the same combination
               of qualifications and experience.
@@ -195,13 +194,13 @@ export default function TrainerRequirementsPage() {
               return (
                 <article
                   key={section.number}
-                  className="rounded-xl border border-border bg-background p-7 md:p-9"
+                  className="rounded-xl border border-primary/20 bg-background p-7 md:p-9"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className="text-sm font-semibold tracking-widest text-muted-foreground/60">
+                    <span className="text-sm font-semibold tracking-widest text-primary">
                       {section.number}
                     </span>
                   </div>
@@ -212,7 +211,7 @@ export default function TrainerRequirementsPage() {
                   <p className="mt-2 font-medium text-primary">
                     {section.subtitle}
                   </p>
-                  <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                  <p className="mt-4 leading-8">
                     {section.description}
                   </p>
 
@@ -235,30 +234,26 @@ export default function TrainerRequirementsPage() {
       <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-24">
         <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
           <div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <ClipboardList className="h-6 w-6" />
-            </div>
-
             <p className="mt-7 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
               Before Getting in Touch
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               What You Should Be Prepared to Share
             </h2>
-            <p className="mt-5 leading-8 text-muted-foreground">
+            <p className="mt-5 leading-8">
               If you are interested in working with CertBridge Global, having
               the following information ready will help us understand your
               professional background and areas of expertise.
             </p>
 
-            <p className="mt-5 text-sm leading-7 text-muted-foreground">
+            <p className="mt-5 leading-8">
               This is a guide to the information that may be useful when
               contacting our team. It is not a formal application process.
             </p>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-7 md:p-9">
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-xl font-semibold">
               Information to have ready
             </h3>
 
@@ -268,7 +263,7 @@ export default function TrainerRequirementsPage() {
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm leading-6">{item}</span>
+                  <span className="leading-6">{item}</span>
                 </li>
               ))}
             </ul>
@@ -286,7 +281,7 @@ export default function TrainerRequirementsPage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               Understanding Your Suitability
             </h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
+            <p className="mt-5 leading-8">
               We consider your overall professional profile and how well it
               aligns with the requirements of specific training programmes.
             </p>
@@ -304,8 +299,8 @@ export default function TrainerRequirementsPage() {
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-6 font-semibold">{factor.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  <h3 className="mt-6 text-lg font-semibold">{factor.title}</h3>
+                  <p className="mt-3 text-sm leading-6">
                     {factor.description}
                   </p>
                 </div>
