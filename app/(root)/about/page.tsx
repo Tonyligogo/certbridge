@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BookOpen,
   Building2,
-  CheckCircle2,
   ClipboardCheck,
   GraduationCap,
   MapPin,
@@ -102,22 +101,22 @@ export default function AboutPage() {
     <main className="overflow-hidden">
       {/* Hero */}
       <section className="relative overflow-hidden bg-muted/30">
-        <div className="mx-auto max-w-7xl items-center gap-14 px-6 py-20 md:px-10 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-10">
           <div>
-            <h1 className="mt-7 max-w-2xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Building Skills.
               <span className="mt-2 block text-primary">
                 Strengthening Organisations.
               </span>
             </h1>
 
-            <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground">
+            <p className="mt-7 max-w-2xl text-lg leading-8">
               CertBridge Global connects organisations with professional
               training opportunities designed to strengthen skills, develop
               capabilities and support workplace growth.
             </p>
 
-            <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
+            <p className="mt-4 max-w-2xl text-lg leading-8">
               We work with organisations to understand their learning needs
               and coordinate training programmes that bring together relevant
               expertise, practical learning and suitable delivery arrangements.
@@ -155,7 +154,7 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="space-y-6 text-base leading-8 text-muted-foreground">
+          <div className="space-y-6 text-lg leading-8">
             <p>
               CertBridge Global is a corporate training coordination and
               facilitation company focused on helping organisations access
@@ -187,7 +186,7 @@ export default function AboutPage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               Connecting Organisations with the Right Training Support
             </h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
+            <p className="mt-5 leading-8">
               We coordinate different parts of the corporate training
               experience to help organisations access and arrange relevant
               learning programmes.
@@ -201,13 +200,13 @@ export default function AboutPage() {
               return (
                 <article
                   key={service.number}
-                  className="rounded-xl border border-border bg-background p-7 transition-colors hover:border-primary/40 md:p-9"
+                  className="rounded-xl border border-primary/20 bg-background p-7 transition-colors hover:border-primary/40 md:p-9"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className="text-sm font-semibold tracking-widest text-muted-foreground/60">
+                    <span className="text-sm font-semibold tracking-widest text-primary">
                       {service.number}
                     </span>
                   </div>
@@ -215,7 +214,7 @@ export default function AboutPage() {
                   <h3 className="mt-7 text-xl font-semibold">
                     {service.title}
                   </h3>
-                  <p className="mt-4 max-w-lg text-sm leading-7 text-muted-foreground">
+                  <p className="mt-4 max-w-lg leading-7">
                     {service.description}
                   </p>
                 </article>
@@ -234,7 +233,7 @@ export default function AboutPage() {
           <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
             Training Should Be Relevant, Practical and Well Coordinated.
           </h2>
-          <p className="mt-5 leading-7 text-muted-foreground">
+          <p className="mt-5 leading-8">
             We approach each training engagement with attention to the
             organisation&apos;s needs, the expertise required and the arrangements
             that support effective delivery.
@@ -242,7 +241,7 @@ export default function AboutPage() {
         </div>
 
         <div className="relative mt-16 grid gap-10 md:grid-cols-3 md:gap-8">
-          <div className="absolute left-[16.6%] right-[16.6%] top-7 hidden h-px bg-border md:block" />
+          <div className="absolute left-[16.6%] right-[16.6%] top-7 hidden h-px bg-primary/20 md:block" />
 
           {approachSteps.map((step) => {
             const Icon = step.icon;
@@ -256,11 +255,11 @@ export default function AboutPage() {
                   <Icon className="h-6 w-6" />
                 </div>
 
-                <p className="mt-6 text-xs font-semibold tracking-[0.18em] text-primary">
+                <p className="mt-6 text-sm font-semibold tracking-[0.18em] text-primary">
                   STEP {step.number}
                 </p>
                 <h3 className="mt-3 text-xl font-semibold">{step.title}</h3>
-                <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
+                <p className="mx-auto mt-4 max-w-sm leading-8">
                   {step.description}
                 </p>
               </article>
@@ -280,7 +279,7 @@ export default function AboutPage() {
               <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
                 Supporting Learning Across Organisations.
               </h2>
-              <p className="mt-5 leading-8 text-muted-foreground">
+              <p className="mt-5 leading-8">
                 Our services are intended for organisations looking to
                 develop their people, strengthen professional capabilities
                 and support workplace growth.
@@ -294,13 +293,13 @@ export default function AboutPage() {
                 return (
                   <article
                     key={audience.title}
-                    className="rounded-xl border border-border bg-background p-6"
+                    className="rounded-xl border border-primary/20 bg-background p-6"
                   >
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <h3 className="mt-5 font-semibold">{audience.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                    <h3 className="mt-5 text-lg font-semibold">{audience.title}</h3>
+                    <p className="mt-3 text-sm leading-8">
                       {audience.description}
                     </p>
                   </article>
@@ -325,23 +324,18 @@ export default function AboutPage() {
             </div>
 
             <div className="space-y-6">
-              <p className="text-lg leading-8 text-muted-foreground">
+              <p className="text-lg leading-8">
                 We believe that professional development should be purposeful.
                 Every training engagement should respond to a learning need
                 and provide participants with knowledge and skills they can
                 apply in their work.
               </p>
 
-              <p className="leading-8 text-muted-foreground">
+              <p className="leading-8 text-lg">
                 We are committed to coordinating relevant training
                 opportunities, working with capable professionals and
                 supporting organisations throughout the training process.
               </p>
-
-              <div className="flex items-center gap-3 pt-2 text-sm font-medium text-primary">
-                <CheckCircle2 className="h-5 w-5" />
-                Relevant training. Practical learning. Coordinated delivery.
-              </div>
             </div>
           </div>
         </div>

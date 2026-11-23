@@ -119,29 +119,29 @@ export default function QualityAssurancePage() {
   return (
     <main className="overflow-hidden">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden bg-muted/30">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-28">
+      <section className="relative overflow-hidden bg-muted/30">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div>
-            <h1 className="mt-7 max-w-2xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Quality at Every Stage of the{" "}
               <span className="text-primary">Learning Experience.</span>
             </h1>
 
-            <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground">
+            <p className="mt-7 max-w-xl text-lg leading-8">
               At CertBridge Global, we believe effective training requires
               more than delivering course content. It requires relevant
               programmes, capable trainers, appropriate learning environments
               and thoughtful coordination.
             </p>
 
-            <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
+            <p className="mt-4 max-w-xl leading-8 text-lg">
               We pay attention to the different elements that contribute to
               a meaningful professional learning experience.
             </p>
 
             <Link
               href="/courses"
-              className="mt-9 inline-flex items-center gap-3 rounded-md bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="mt-9 inline-flex items-center gap-3 rounded-md bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Explore Our Training Programmes
               <ArrowRight className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function QualityAssurancePage() {
           <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
             Quality Is Built Into the Entire Training Process.
           </h2>
-          <p className="mt-5 leading-7 text-muted-foreground">
+          <p className="mt-5 leading-8">
             We consider the different elements that come together to support
             effective training, from selecting a relevant programme to
             coordinating its delivery.
@@ -173,13 +173,13 @@ export default function QualityAssurancePage() {
             return (
               <article
                 key={principle.number}
-                className="rounded-xl border border-border bg-background p-6 md:p-7"
+                className="rounded-xl border border-primary/20 bg-background p-6 md:p-7"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <span className="text-sm font-semibold tracking-widest text-muted-foreground/60">
+                  <span className="text-sm font-semibold tracking-widest text-primary">
                     {principle.number}
                   </span>
                 </div>
@@ -187,7 +187,7 @@ export default function QualityAssurancePage() {
                 <h3 className="mt-7 text-lg font-semibold">
                   {principle.title}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                <p className="mt-3 leading-7">
                   {principle.description}
                 </p>
               </article>
@@ -210,13 +210,13 @@ export default function QualityAssurancePage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               Relevant Content. Purposeful Learning.
             </h2>
-            <p className="mt-5 leading-8 text-muted-foreground">
+            <p className="mt-5 leading-8">
               We consider the relevance of each programme to its intended
               learning objectives and the needs of the organisation. Training
               should give participants knowledge and skills that connect with
               their professional responsibilities.
             </p>
-            <p className="mt-4 leading-8 text-muted-foreground">
+            <p className="mt-4 leading-8">
               The programme level, subject matter and intended audience all
               contribute to determining whether a training option is
               appropriate.
@@ -224,22 +224,22 @@ export default function QualityAssurancePage() {
 
             <Link
               href="/courses"
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              className="mt-7 inline-flex items-center gap-2 font-semibold text-primary hover:underline"
             >
               Browse our training catalogue
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-7 md:p-9">
-            <h3 className="text-lg font-semibold">
+          <div className="rounded-xl border border-primary/20 bg-background p-7 md:p-9">
+            <h3 className="text-xl font-semibold">
               What we consider
             </h3>
             <ul className="mt-7 space-y-5">
               {programmeCriteria.map((item) => (
                 <li key={item} className="flex gap-3">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <span className="text-sm leading-7">{item}</span>
+                  <span className="leading-7">{item}</span>
                 </li>
               ))}
             </ul>
@@ -261,7 +261,7 @@ export default function QualityAssurancePage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               The Right Expertise Makes a Difference.
             </h2>
-            <p className="mt-5 leading-8 text-muted-foreground">
+            <p className="mt-5 leading-8">
               Trainers play an important role in translating programme
               content into meaningful learning. We select trainers based on
               their suitability for the specific programme, considering both
@@ -271,23 +271,23 @@ export default function QualityAssurancePage() {
 
             <Link
               href="/trainer-requirements"
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              className="mt-7 inline-flex items-center gap-2 font-semibold text-primary hover:underline"
             >
               View Trainer Requirements
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-7 md:p-9">
-            <h3 className="text-lg font-semibold">
+          <div className="rounded-xl border border-primary/20 bg-card p-7 md:p-9">
+            <h3 className="text-xl font-semibold">
               Trainer suitability considerations
             </h3>
 
-            <ul className="mt-7 grid gap-5 sm:grid-cols-2">
+            <ul className="mt-7 space-y-3">
               {trainerCriteria.map((item) => (
-                <li key={item} className="flex gap-3">
+                <li key={item} className="flex items-center gap-3">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <span className="text-sm leading-7">{item}</span>
+                  <span className="leading-7">{item}</span>
                 </li>
               ))}
             </ul>
@@ -305,7 +305,7 @@ export default function QualityAssurancePage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               The Right Conditions for Effective Learning.
             </h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
+            <p className="mt-5 leading-7">
               We coordinate delivery arrangements based on the organisation&apos;s
               needs and the nature of the programme. Each format has different
               practical considerations.
@@ -319,7 +319,7 @@ export default function QualityAssurancePage() {
               return (
                 <article
                   key={option.title}
-                  className="flex flex-col rounded-xl border border-border bg-background p-7 md:p-8"
+                  className="flex flex-col rounded-xl border border-primary/20 bg-background p-7 md:p-8"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-6 w-6" />
@@ -328,7 +328,7 @@ export default function QualityAssurancePage() {
                   <h3 className="mt-6 text-xl font-semibold">
                     {option.title}
                   </h3>
-                  <p className="mt-4 flex-1 text-sm leading-7 text-muted-foreground">
+                  <p className="mt-4 flex-1 leading-7">
                     {option.description}
                   </p>
 
@@ -356,7 +356,7 @@ export default function QualityAssurancePage() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               Creating an Environment That Supports Learning.
             </h2>
-            <p className="mt-5 leading-8 text-muted-foreground">
+            <p className="mt-5 leading-7">
               The participant experience matters throughout the training
               engagement. From receiving clear information before a programme
               to participating in the learning activities, each stage
@@ -371,14 +371,14 @@ export default function QualityAssurancePage() {
               return (
                 <article
                   key={item.title}
-                  className="rounded-xl border border-border bg-background p-6"
+                  className="rounded-xl border border-primary/20 bg-background p-6"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
 
-                  <h3 className="mt-5 font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  <h3 className="mt-5 text-lg font-semibold">{item.title}</h3>
+                  <p className="mt-3 leading-7">
                     {item.description}
                   </p>
                 </article>
@@ -409,13 +409,13 @@ export default function QualityAssurancePage() {
               </div>
 
               <div className="space-y-6">
-                <p className="text-lg leading-8 text-muted-foreground">
+                <p className="text-lg leading-8">
                   Quality is an ongoing consideration. Feedback and
                   observations from training engagements can help identify
                   areas where programmes, coordination and delivery
                   arrangements may be improved.
                 </p>
-                <p className="leading-8 text-muted-foreground">
+                <p className="leading-8 text-lg">
                   We aim to use relevant feedback to inform future training
                   engagements and strengthen the overall learning experience.
                   By remaining attentive to what works well and where

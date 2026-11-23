@@ -67,7 +67,7 @@ export default function HowItWorksPage() {
             How it Works
           </h1>
 
-          <p className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
+          <p className="mt-6 max-w-2xl text-base leading-8 sm:text-lg">
             Getting the right training for your organisation doesn&apos;t have to
             be complicated. Here&apos;s how we take you from choosing a programme
             to completing your training.
@@ -140,7 +140,7 @@ export default function HowItWorksPage() {
               Let&apos;s find the right training for you.
             </h2>
 
-            <p className="mt-4 text-base leading-7 text-muted-foreground">
+            <p className="mt-4 text-base leading-7">
               If you can&apos;t find the programme you&apos;re looking for, or have a
               question about our training services, get in touch. We&apos;d be
               happy to explore how we can help.
